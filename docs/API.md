@@ -1,93 +1,62 @@
-# Contrato inicial da API
+# Integrações e convenções técnicas
 
-Este arquivo contém uma proposta para alinhamento, ainda não aprovada. Depois de marcada como `v1-approved`, ela permitirá que frontend e backend sejam desenvolvidos de forma independente.
+## Estado
 
-## Ciclo do contrato
+A proposta anterior de uma API HTTP/WebSocket própria foi substituída pela adoção do Matrix. Seus contratos não aprovados foram removidos e não devem orientar implementação nova.
 
-```text
-v1-draft → revisão conjunta → v1-approved → implementação paralela
-                                      ↓
-                          proposta de mudança futura
-```
+## Contrato principal
 
-- Exemplos JSON alimentam o servidor mock do frontend.
-- Os mesmos esquemas validam os testes de contrato do backend.
-- Campos novos opcionais podem ser compatíveis.
-- Remover, renomear ou alterar significado exige nova versão.
-- A indisponibilidade temporária do backend nunca deve impedir o frontend de funcionar em modo mock.
+O frontend utilizará a Matrix Client-Server API por meio de um adaptador sobre `matrix-js-sdk`. Não serão recriados endpoints próprios para salas, mensagens, sincronização, leitura, digitação, presença ou mídia.
 
-## Regras gerais
+## Configuração compartilhada inicial
 
-- Prefixo sugerido: `/api/v1`.
-- Conteúdo JSON em UTF-8.
-- Identificadores opacos.
-- Datas em ISO 8601 UTC.
-- Paginação por cursor.
-- Erros com `code`, `message` e `requestId`.
-- O servidor verifica autorização em todas as operações.
+Os dois colaboradores precisam aprovar e documentar:
 
-## Endpoints propostos
+- URL pública do homeserver por ambiente;
+- fluxo de login e redirecionamento OIDC;
+- versões suportadas do homeserver e do SDK;
+- convenção para conversas diretas e grupos;
+- política de presença, leitura e digitação;
+- limites de mídia;
+- política de criptografia ponta a ponta;
+- capacidades habilitadas ou desabilitadas no servidor.
 
-| Método | Rota | Finalidade |
-|---|---|---|
-| `GET` | `/me` | Obter usuário e permissões da sessão |
-| `GET` | `/users` | Consultar diretório autorizado |
-| `GET` | `/conversations` | Listar conversas paginadas |
-| `POST` | `/conversations` | Criar conversa ou grupo |
-| `GET` | `/conversations/:id` | Obter detalhes autorizados |
-| `PATCH` | `/conversations/:id` | Alterar grupo conforme permissão |
-| `GET` | `/conversations/:id/messages` | Obter histórico paginado |
-| `POST` | `/conversations/:id/messages` | Enviar mensagem |
-| `PATCH` | `/messages/:id` | Editar mensagem conforme política |
-| `DELETE` | `/messages/:id` | Excluir mensagem conforme política |
-| `POST` | `/conversations/:id/read` | Atualizar marcador de leitura |
-| `POST` | `/uploads` | Iniciar upload autorizado |
-| `GET` | `/attachments/:id/access` | Obter acesso temporário ao arquivo |
-| `GET` | `/admin/audit` | Consultar auditoria autorizada |
+## Adaptador do frontend
 
-## Eventos WebSocket propostos
+Componentes visuais não devem chamar `matrix-js-sdk` diretamente. Um adaptador próprio deve expor operações da aplicação, como:
 
-- `message.created`
-- `message.updated`
-- `message.deleted`
-- `message.read`
-- `conversation.created`
-- `conversation.updated`
-- `member.joined`
-- `member.removed`
-- `presence.changed`
-- `typing.started`
-- `typing.stopped`
+- iniciar e encerrar sessão;
+- observar sincronização;
+- listar e abrir conversas;
+- criar salas conforme as convenções aprovadas;
+- paginar histórico;
+- enviar mensagens e anexos;
+- atualizar leitura e digitação;
+- observar participantes e presença.
 
-## Envelope de evento
+Esse adaptador pertence ao frontend e não constitui uma API de servidor própria.
 
-```json
-{
-  "eventId": "evt_opaque",
-  "type": "message.created",
-  "version": 1,
-  "occurredAt": "2026-07-20T13:00:00Z",
-  "conversationId": "conv_opaque",
-  "data": {}
-}
-```
+## Extensões corporativas
 
-## Pontos pendentes
+Uma API auxiliar só será criada quando houver uma necessidade que Matrix, Synapse, OIDC e suas APIs administrativas não atendam, por exemplo:
 
-- Estratégia de reconexão e recuperação de eventos.
-- Limites de tamanho e tipos de arquivo.
-- Regras de edição e exclusão.
-- Política de presença.
-- Formato de menções, respostas e formatação de texto.
+- integração específica com RH ou ERP;
+- relatório corporativo personalizado;
+- fluxo administrativo próprio;
+- exportação de auditoria aprovada.
 
-## Artefatos que deverão ser criados
+Cada extensão deverá ter justificativa, responsável, autenticação, autorização, contrato versionado e testes. Tokens administrativos nunca serão entregues ao navegador.
 
-```text
-contracts/openapi.yaml
-contracts/events/message-created.schema.json
-contracts/events/presence-changed.schema.json
-contracts/examples/me.json
-contracts/examples/conversations.json
-contracts/examples/messages-page.json
-contracts/examples/error.json
-```
+## Eventos personalizados
+
+Usar eventos Matrix padrão sempre que possível. Um evento personalizado exige:
+
+1. caso de uso que não possa ser representado de forma padrão;
+2. namespace próprio da organização;
+3. esquema e exemplos versionados;
+4. comportamento definido para clientes que não o reconheçam;
+5. aprovação dos dois colaboradores.
+
+## Próximo artefato compartilhado
+
+Após a prova de conceito, criar um documento pequeno de configuração e convenções Matrix. O diretório `contracts/` só será recriado se uma extensão corporativa própria for aprovada.

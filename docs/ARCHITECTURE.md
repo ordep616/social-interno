@@ -2,124 +2,127 @@
 
 ## Visão geral
 
+O produto será uma adaptação de uma plataforma Matrix auto-hospedada. A equipe não implementará um protocolo de mensagens nem um servidor de chat próprio.
+
 ```text
 Navegador / PWA
-  ├── Interface de conversas
-  ├── Cache e sincronização local
-  └── Cliente HTTP e WebSocket
-              │
-              ▼
-API corporativa
-  ├── Identidade e autorização
-  ├── Usuários e grupos
-  ├── Conversas e mensagens
-  ├── Presença e confirmações
-  ├── Arquivos
-  ├── Administração
-  └── Auditoria e retenção
-              │
-       ┌──────┼────────┐
-       ▼      ▼        ▼
-  PostgreSQL Redis  MinIO/S3
+  ├── Interface e identidade visual próprias
+  ├── Estado e cache da aplicação
+  └── Adaptador isolado para matrix-js-sdk
+                    │
+                    ▼
+          Homeserver Matrix (Synapse)
+          ├── contas, salas e mensagens
+          ├── sincronização e tempo real
+          ├── anexos e confirmações
+          ├── autorização e administração
+          └── integração OIDC/SSO
+                    │
+             ┌──────┴──────┐
+             ▼             ▼
+        PostgreSQL   mídia/armazenamento
+
+Serviço corporativo opcional (FastAPI)
+  └── somente integrações que o Matrix não atender
 ```
 
-## Tecnologias candidatas
+## Tecnologias adotadas ou candidatas
 
-As escolhas finais devem ser registradas em `DECISIONS.md`.
-
-- Frontend: React e Next.js.
-- Backend: FastAPI ou NestJS.
-- Banco relacional: PostgreSQL.
-- Eventos e presença: Redis.
-- Tempo real: WebSockets.
-- Arquivos: MinIO on-premises ou armazenamento S3 privado.
-- Identidade: OIDC ou SAML por meio do provedor corporativo.
-- Ambiente: contêineres e Docker Compose durante desenvolvimento e homologação.
+- Protocolo: Matrix Client-Server API.
+- Homeserver inicial: Synapse, sujeito à prova de conceito e revisão de licença.
+- SDK do frontend: `matrix-js-sdk`.
+- Frontend: aplicação web/PWA própria; framework ainda deve ser confirmado.
+- Banco do Synapse: PostgreSQL.
+- Identidade: OIDC por meio do provedor corporativo.
+- Ambiente: contêineres durante desenvolvimento e homologação.
+- Serviço complementar: FastAPI somente se surgir uma necessidade corporativa não coberta pelo Matrix ou pelas APIs administrativas do Synapse.
 
 ## Limites
 
-### Frontend
+### Frontend — Colaborador 2
 
-- Não conhece credenciais do provedor de identidade.
-- Não acessa banco ou armazenamento diretamente.
-- Não importa clientes ou tipos MTProto.
-- Consome apenas contratos corporativos definidos em `API.md`.
+- Implementa somente interface, experiência, estado visual e adaptação do SDK.
+- Não acessa PostgreSQL, armazenamento ou APIs administrativas diretamente.
+- Não importa código, tipos ou clientes do Telegram.
+- Centraliza o acesso ao Matrix em um adaptador próprio para evitar acoplamento dos componentes visuais ao SDK.
+- Recebe URL do homeserver e opções públicas por configuração, nunca segredos administrativos.
 
-### Backend
+### Backend, plataforma e infraestrutura — Colaborador 1
 
-- É a fonte de verdade para autorização e estado das mensagens.
-- Valida participação em toda operação de conversa.
-- Autoriza inscrições WebSocket individualmente.
-- Emite URLs temporárias para arquivos.
-- Registra operações administrativas relevantes.
+- O Synapse é a fonte de verdade para contas Matrix, salas, participantes, mensagens, mídia e sincronização.
+- O acesso público, o registro livre e a federação externa permanecem desabilitados, salvo decisão conjunta posterior.
+- O provedor OIDC autentica os funcionários; as políticas do Synapse controlam o acesso à plataforma.
+- A administração deve usar APIs e módulos suportados, evitando alterações diretas no banco do Synapse.
+- FastAPI não duplicará mensagens, salas, presença ou sincronização.
 
-### Armazenamento
+### Dados
 
-- Banco relacional guarda usuários, conversas, participantes e metadados.
-- Redis guarda presença e estado efêmero, não o histórico definitivo.
-- Armazenamento de objetos guarda os bytes dos anexos.
+- PostgreSQL guarda o estado persistente do homeserver.
+- O armazenamento de mídia segue a configuração suportada pelo Synapse.
+- Cache e filas adicionais só serão incluídos quando houver necessidade comprovada.
+- Backup, retenção, auditoria e restauração precisam considerar banco, mídia e configuração como um conjunto.
 
 ## Arquitetura para trabalho paralelo
 
 ```text
-                  docs/contracts/
-             OpenAPI + eventos + exemplos
-                    /            \
-                   ▼              ▼
-       Frontend independente   Backend independente
-       ├─ servidor mock        ├─ API real
-       ├─ dados de exemplo     ├─ WebSocket real
-       ├─ testes de UI         ├─ banco e armazenamento
-       └─ adaptador da API     └─ testes de contrato
-                   \              /
-                    ▼            ▼
-                 Marco de integração
+            configuração e convenções aprovadas
+       homeserver + autenticação + tipos de sala
+                    /                 \
+                   ▼                   ▼
+       Colaborador 2           Colaborador 1
+       Frontend independente   Backend/plataforma independente
+       ├─ adaptador Matrix      ├─ Synapse de homologação
+       ├─ cliente de teste      ├─ PostgreSQL e mídia
+       ├─ estados simulados     ├─ OIDC e políticas
+       └─ testes de UI          └─ testes operacionais
+                   \                   /
+                    ▼                 ▼
+                 marcos de integração
 ```
 
 ### Regras de independência
 
-- O contrato é o único acoplamento obrigatório durante cada ciclo.
-- O frontend alterna entre `mock` e `real` por configuração, sem alterar componentes.
-- O backend valida respostas e eventos contra os esquemas publicados.
-- IDs, datas, paginação, erros e estados são definidos antes da implementação.
-- Funcionalidades experimentais ficam atrás de capacidades anunciadas por `/me` ou configuração.
-- Nenhum colaborador altera arquivos da área do outro durante seu trabalho normal.
+- O colaborador de frontend desenvolve contra um homeserver Matrix local ou de teste e simula estados de erro quando necessário.
+- O responsável pela plataforma valida o Synapse com clientes e ferramentas genéricas, sem depender da interface própria.
+- Eventos e formatos padrão do Matrix não serão redefinidos em contratos internos.
+- Eventos personalizados, APIs auxiliares e convenções de salas exigem aprovação conjunta e documentação.
+- Nenhum colaborador altera a área do outro durante o trabalho normal.
 
-### Estrutura futura recomendada
+### Estrutura recomendada
 
 ```text
-frontend/               propriedade do colaborador de frontend
-backend/                propriedade do responsável pelo backend
-contracts/              contratos versionados e aprovados em conjunto
-contracts/openapi.yaml  endpoints HTTP
-contracts/events/       esquemas dos eventos WebSocket
-contracts/examples/     respostas usadas pelo servidor mock
-docs/                   decisões e planejamento
+frontend/       Colaborador 2: interface, adaptador matrix-js-sdk e testes visuais
+platform/       Colaborador 1: configuração do Synapse, contêineres e operação
+backend/        Colaborador 1: integrações FastAPI opcionais; não é o servidor de chat
+docs/           decisões, planejamento e inventário de código aberto
 ```
 
-## Entidades iniciais
+O diretório `contracts/` será criado somente quando uma extensão corporativa própria exigir contrato versionado.
 
-- `User`
-- `Conversation`
-- `ConversationMember`
-- `Message`
-- `Attachment`
-- `Session`
-- `AuditLog`
-- `RetentionPolicy`
+## Mapeamento funcional inicial
+
+| Necessidade do produto | Recurso da plataforma |
+|---|---|
+| Conversa individual ou grupo | Sala Matrix |
+| Mensagem e histórico | Eventos e sincronização Matrix |
+| Leitura e digitação | Receipts e typing notifications |
+| Presença | Presence, se habilitada pela política |
+| Imagens e documentos | Repositório de mídia Matrix |
+| Login corporativo | OIDC no Synapse |
+| Administração | APIs administrativas e políticas do Synapse |
 
 ## Segurança
 
-- Login pelo provedor corporativo.
-- Autorização no servidor em todas as operações.
-- HTTPS obrigatório em ambientes compartilhados.
-- Sessões com expiração e revogação.
-- Proteção contra abuso e limites de requisição.
-- Validação de tipo, tamanho e conteúdo dos arquivos.
-- Verificação antimalware quando exigida.
+- HTTPS obrigatório fora do computador local.
+- Cadastro público desabilitado.
+- Federação desabilitada por padrão e validada em teste.
+- Login pelo provedor corporativo e encerramento de acesso após desligamento.
 - Segredos fora do frontend e do repositório.
+- Limites de requisição e upload configurados.
+- Política explícita para criptografia ponta a ponta, recuperação e auditoria.
 - Backups testados e criptografados.
+- Atualizações de segurança do homeserver acompanhadas continuamente.
 
 ## Estratégia de código aberto
 
-O Telegram Web será analisado por componente. Material aprovado deve ficar isolado, rastreável e desacoplado do backend. Consulte `OPEN_SOURCE.md`.
+O projeto adotará Matrix/Synapse como plataforma e `matrix-js-sdk` como SDK. A interface será própria; copiar Element Web ou Telegram Web não faz parte da arquitetura aprovada. Consulte `OPEN_SOURCE.md`.
