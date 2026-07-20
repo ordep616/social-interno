@@ -2,7 +2,7 @@
 
 Projeto de uma plataforma web/PWA para comunicação exclusiva entre funcionários de uma organização.
 
-O repositório está na fase de planejamento. A implementação somente deve avançar mediante autorização explícita e seguindo as responsabilidades registradas em `AGENTS.md`.
+O repositório está na fase de fundação da prova de conceito. A estrutura local de Synapse/PostgreSQL e o adaptador inicial de `matrix-js-sdk` foram adicionados; login, integração visual e fluxo completo ainda não foram implementados.
 
 ## Documentação
 
@@ -16,16 +16,18 @@ O repositório está na fase de planejamento. A implementação somente deve ava
 
 ## Participantes
 
-- Responsável principal deste workspace: backend, banco de dados, infraestrutura, segurança e integrações.
-- Outro colaborador: frontend, experiência web e análise de código aberto.
+- Colaborador 1 (usuário deste workspace): todo o backend, plataforma Matrix/Synapse, PostgreSQL, infraestrutura, identidade, segurança e integrações opcionais.
+- Colaborador 2: frontend, interface web/PWA, experiência e integração com `matrix-js-sdk`.
 
 ## Estrutura de trabalho
 
-- `backend/`: área independente do responsável por backend.
-- `frontend/`: área independente do colaborador de frontend.
-- `contracts/`: contrato HTTP, eventos e exemplos aprovados em conjunto.
+- `platform/`: área do Colaborador 1 para configuração e operação do Synapse.
+- `backend/`: área do Colaborador 1 para integrações corporativas opcionais.
+- `frontend/`: área do Colaborador 2 para interface própria e adaptador do SDK Matrix.
 - `docs/`: planejamento, tarefas, decisões e política de código aberto.
+
+O diretório `contracts/` somente será criado novamente se uma extensão corporativa própria for aprovada.
 
 ## Regra principal
 
-O Telegram poderá servir como fonte de estudo e, após análise, de componentes abertos isolados. A rede, autenticação, protocolo e infraestrutura do produto serão próprios.
+O produto adaptará uma plataforma Matrix auto-hospedada e terá interface própria. Telegram Web e Element Web poderão servir como referência, mas seus códigos não serão incorporados sem análise e aprovação.

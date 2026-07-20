@@ -1,0 +1,45 @@
+server_name: "__MATRIX_SERVER_NAME__"
+public_baseurl: "__MATRIX_PUBLIC_BASEURL__"
+pid_file: /data/homeserver.pid
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: false
+    bind_addresses: ["0.0.0.0"]
+    resources:
+      - names: [client]
+        compress: false
+
+database:
+  name: psycopg2
+  args:
+    user: "__POSTGRES_USER__"
+    password: "__POSTGRES_PASSWORD__"
+    dbname: "__POSTGRES_DB__"
+    host: postgres
+    port: 5432
+    cp_min: 5
+    cp_max: 10
+
+media_store_path: /data/media_store
+uploads_path: /data/uploads
+max_upload_size: 25M
+
+enable_registration: false
+enable_registration_without_verification: false
+registration_shared_secret: "__REGISTRATION_SHARED_SECRET__"
+
+allow_public_rooms_without_auth: false
+allow_public_rooms_over_federation: false
+federation_domain_whitelist: []
+trusted_key_servers: []
+suppress_key_server_warning: true
+
+report_stats: false
+url_preview_enabled: false
+
+macaroon_secret_key: "__MACAROON_SECRET_KEY__"
+form_secret: "__FORM_SECRET__"
+signing_key_path: /data/signing.key
+log_config: /data/log.config

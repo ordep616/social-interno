@@ -4,11 +4,11 @@
 
 Este repositório será usado para planejar e, somente após autorização explícita, desenvolver um sistema web privado de comunicação corporativa.
 
-O produto terá backend, autenticação e armazenamento próprios. Ele não utilizará contas, servidores, datacenters, `api_id` ou `api_hash` do Telegram.
+O produto adaptará uma plataforma Matrix auto-hospedada, inicialmente Synapse, e terá interface web própria. A organização controlará autenticação, dados e infraestrutura. O produto não utilizará contas, servidores, datacenters, `api_id` ou `api_hash` do Telegram.
 
 ## Estado atual
 
-O projeto está na fase de planejamento e divisão de responsabilidades.
+O projeto está na fase de fundação da prova de conceito Matrix. A configuração local de Synapse/PostgreSQL e o adaptador inicial do SDK já existem, mas o fluxo completo ainda não foi validado.
 
 - Não implemente funcionalidades sem solicitação explícita.
 - Não transforme pedidos de planejamento em alterações de código.
@@ -23,49 +23,52 @@ Antes de começar uma tarefa, leia os documentos relevantes:
 - `docs/ARCHITECTURE.md`: arquitetura pretendida.
 - `docs/TASKS.md`: responsáveis e andamento.
 - `docs/DECISIONS.md`: decisões já tomadas.
-- `docs/API.md`: contrato inicial entre frontend e backend.
+- `docs/API.md`: convenções Matrix e regras para integrações opcionais.
 - `docs/OPEN_SOURCE.md`: política de reutilização e licenças.
 
 Não é necessário carregar documentos sem relação com a tarefa atual.
 
+
 ## Colaboradores
 
-### Outro colaborador — Frontend e código aberto
+### Colaborador 2 — Frontend e SDK Matrix
 
 Responsável por:
 
-- Analisar os clientes web abertos do Telegram.
-- Criar o inventário de componentes potencialmente reutilizáveis.
 - Desenvolver a interface web e a PWA.
 - Implementar lista de conversas, chat, compositor e componentes de mídia.
-- Integrar o frontend à API HTTP e aos eventos WebSocket corporativos.
+- Criar um adaptador isolado para `matrix-js-sdk`.
+- Implementar sessão, sincronização e tratamento de eventos Matrix no cliente.
+- Registrar origem e licença do SDK e de qualquer código externo incorporado.
 - Garantir responsividade, acessibilidade e estados de erro.
 
-### Responsável principal (usuário deste workspace) — Backend, infraestrutura e segurança
+### Colaborador 1 (usuário deste workspace) — Backend, plataforma, infraestrutura e segurança
 
 Responsável por:
 
-- Modelar banco de dados e migrações.
-- Implementar API HTTP e servidor WebSocket.
-- Implementar autenticação, autorização e controle administrativo.
-- Implementar mensagens, grupos, anexos, auditoria e retenção.
-- Configurar armazenamento, Redis, observabilidade, backup e ambientes.
-- Integrar o provedor corporativo de identidade.
+- Assumir todo trabalho relacionado a backend e serviços de servidor.
+- Implantar e configurar Synapse e PostgreSQL.
+- Restringir cadastro e federação externa.
+- Integrar o provedor corporativo de identidade por OIDC.
+- Configurar políticas, mídia, retenção e administração da plataforma.
+- Configurar observabilidade, backup, restauração e ambientes.
+- Criar e manter integrações FastAPI somente para lacunas aprovadas, sem duplicar o Matrix.
 
 ### Responsabilidade compartilhada
 
 Exigem acordo dos dois colaboradores:
 
-- Aprovação da versão inicial dos contratos da API e eventos WebSocket.
+- Aprovação das versões do Synapse, Matrix e `matrix-js-sdk`.
+- Configuração compartilhada e convenções de salas e usuários.
 - Alterações no escopo do MVP.
 - Inclusão de dependências relevantes.
 - Incorporação de código de terceiros.
 - Política de segurança, auditoria e retenção.
 - Escolhas que afetem frontend e backend simultaneamente.
 
-Depois que um contrato for marcado como aprovado, cada colaborador deve trabalhar de forma independente. O frontend usa mocks baseados no contrato; o backend implementa o contrato com testes próprios. Dúvidas não bloqueantes devem ser registradas para o próximo marco de integração, sem interromper o trabalho do outro colaborador.
+Depois da prova de conceito e da aprovação das convenções, cada colaborador deve trabalhar de forma independente. O frontend usa um homeserver de desenvolvimento e estados simulados; a plataforma é validada com clientes Matrix genéricos. Dúvidas não bloqueantes devem ser registradas para o próximo marco de integração.
 
-## Reutilização de código do Telegram
+## Código aberto e plataforma
 
 Nenhum código deve ser incorporado antes de registrar:
 
@@ -86,7 +89,7 @@ Não utilizar no produto corporativo:
 - Datacenters, bots, canais ou busca global do Telegram.
 - Nome, logotipo ou identidade visual oficial do Telegram.
 
-Componentes visuais só podem falar com interfaces próprias do projeto. Eles não devem importar tipos ou clientes da Telegram API.
+O `matrix-js-sdk` deve ficar atrás de um adaptador do frontend. Element Web e Telegram Web são apenas referências por padrão; não copiar seus componentes sem registro e aprovação.
 
 ## Processo de trabalho
 
@@ -102,17 +105,16 @@ Componentes visuais só podem falar com interfaces próprias do projeto. Eles n�
 
 ## Trabalho independente
 
-- Frontend e backend vivem em diretórios e branches separados.
-- O frontend não deve depender de um backend local para desenvolver ou testar telas.
-- O backend não deve depender de componentes visuais para executar testes.
-- Exemplos JSON e um servidor mock representam o backend para o frontend.
-- Testes de contrato representam o frontend para o backend.
-- Mudanças incompatíveis criam uma nova versão do contrato; não altere silenciosamente a versão vigente.
+- O Colaborador 1 possui `platform/` e `backend/`; o Colaborador 2 possui `frontend/`.
+- O frontend usa um homeserver Matrix de desenvolvimento e não depende da infraestrutura de produção.
+- A plataforma usa clientes Matrix genéricos e não depende da interface própria.
+- O protocolo Matrix não deve ser redefinido em contratos internos.
+- Extensões corporativas e eventos personalizados exigem contratos versionados.
 - A integração acontece apenas nos marcos definidos em `docs/TASKS.md`.
 
 ## Restrições
 
-- Não alterar contratos compartilhados unilateralmente.
+- Não alterar configuração e convenções compartilhadas unilateralmente.
 - Não adicionar dependências sem justificativa e revisão de licença.
 - Não copiar código externo sem atualizar `docs/OPEN_SOURCE.md`.
 - Não inserir segredos ou credenciais no repositório.

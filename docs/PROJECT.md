@@ -48,12 +48,12 @@ Criar um sistema web privado de comunicação corporativa, acessível pelo naveg
 ## Fases
 
 1. Viabilidade, licenças e contratos técnicos.
-2. Fundação do frontend e backend.
-3. Conversas, mensagens e tempo real.
-4. Arquivos e mídia.
+2. Prova de conceito do Matrix/Synapse.
+3. Fundação da interface e da plataforma auto-hospedada.
+4. Conversas, mensagens, estados em tempo real e mídia.
 5. Administração e login corporativo.
 6. Segurança, homologação e implantação.
 
 ## Critério de sucesso do MVP
 
-Um grupo piloto deve conseguir entrar, iniciar conversas privadas, criar grupos, trocar mensagens e arquivos e recuperar o histórico sem qualquer dependência da rede Telegram.
+Um grupo piloto deve conseguir entrar, iniciar conversas privadas, criar grupos, trocar mensagens e arquivos e recuperar o histórico em uma plataforma Matrix controlada pela organização, sem qualquer dependência da rede Telegram.

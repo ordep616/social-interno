@@ -1,25 +1,25 @@
-# Backend
+# Backend auxiliar
 
-Área do responsável por backend, banco de dados, infraestrutura, segurança e integrações.
+Área exclusiva do Colaborador 1, reservada para integrações corporativas que Matrix, Synapse, OIDC e suas APIs administrativas não atendam.
 
 ## Situação
 
-Somente estrutura de planejamento. Nenhuma tecnologia ou implementação foi iniciada.
+Nenhum backend personalizado está autorizado ou é necessário para a prova de conceito. A decisão anterior de usar FastAPI como servidor principal de mensagens foi substituída por `DEC-010`.
 
-## Responsabilidades
+## Limites
 
-- API HTTP compatível com `contracts/openapi.yaml`.
-- Eventos WebSocket compatíveis com `contracts/events/`.
-- Banco de dados e migrações.
-- Autenticação e autorização.
-- Conversas, mensagens e arquivos.
-- Auditoria, retenção e administração.
-- Redis, armazenamento de objetos, observabilidade e backup.
+- Todo serviço de backend pertence ao Colaborador 1.
+- O Colaborador 2 não deve modificar esta pasta.
+- Não implementar salas, mensagens, sincronização, presença ou mídia que já existam no Matrix.
+- Não criar serviço auxiliar sem caso de uso e decisão registrados.
+- Não acessar diretamente o banco do Synapse para implementar regras de negócio.
+- Não expor tokens administrativos ao frontend.
 
-## Regra de independência
+## Possíveis usos futuros
 
-O backend deve ser executável e testável sem o frontend. Use testes de contrato e clientes automatizados como consumidores.
+- Integração com RH ou ERP.
+- Automação de provisionamento não atendida pelo OIDC.
+- Relatórios ou exportações aprovados.
+- Fluxos administrativos específicos.
 
-## Primeira tarefa
-
-Executar B1 de `docs/TASKS.md` somente depois de escolher a tecnologia e registrar a decisão em `docs/DECISIONS.md`.
+FastAPI continua como candidato para essas integrações, mas ORM, migrações e ambiente Python só serão escolhidos quando uma necessidade concreta for aprovada.

@@ -2,51 +2,55 @@
 
 ## Preparação
 
-1. Os dois colaboradores devem trabalhar a partir do mesmo repositório Git.
-2. Antes de iniciar, cada um deve atualizar sua cópia local.
-3. Cada colaborador deve abrir o Codex na raiz do repositório.
-4. Após mudanças importantes no `AGENTS.md`, iniciar uma nova conversa do Codex para carregar as instruções atualizadas.
-5. Cada tarefa de implementação deve usar sua própria branch.
+1. Trabalhar a partir do mesmo repositório Git, cada tarefa em uma branch própria.
+2. Atualizar a cópia local antes de iniciar.
+3. Abrir o Codex na raiz do repositório.
+4. Pedir primeiro uma análise; autorizar implementação separadamente.
+5. Não alterar a área pertencente ao outro colaborador.
 
-## Prompt do outro colaborador — Frontend
+## Prompt do Colaborador 2 — Frontend
 
 ```text
 Leia o AGENTS.md e os documentos indicados por ele.
 
-Eu sou o colaborador responsável pelo frontend, experiência web e análise
-dos componentes de código aberto do Telegram Web. Minha implementação deve
-funcionar com servidor mock e exemplos JSON, sem depender do backend real.
+Eu sou o Colaborador 2, responsável pelo frontend, interface web/PWA e integração
+do cliente com Matrix usando matrix-js-sdk. Não sou responsável por implantar
+ou administrar o Synapse, nem por qualquer serviço de backend.
 
 Analise o estado atual e o docs/TASKS.md. Não implemente nada ainda.
 Explique:
-1. o contexto do projeto;
-2. as tarefas F1 a F5 atribuídas ao frontend;
-3. quais componentes do Telegram Web podem ser apenas estudados ou avaliados;
-4. como trabalhar com mocks sem depender do backend;
-5. quais contratos compartilhados precisam ser respeitados;
+1. o contexto da adaptação da plataforma Matrix;
+2. as tarefas F1 a F5 atribuídas a mim;
+3. como isolar o matrix-js-sdk atrás de um adaptador;
+4. como trabalhar com um homeserver de desenvolvimento e estados simulados;
+5. quais configurações e convenções compartilhadas precisam ser respeitadas;
 6. os riscos e decisões pendentes da minha área;
-7. a primeira tarefa de frontend que recomenda executar.
+7. a primeira tarefa de frontend recomendada.
 
-Não altere backend, banco, infraestrutura ou segurança. Se encontrar uma
-dúvida sobre o backend que não impeça o mock, registre-a para o próximo marco
-de integração e continue o planejamento do frontend.
+Não altere platform/, backend/, infraestrutura ou segurança. Não copie código
+do Telegram Web ou Element Web sem registro de origem, licença e aprovação.
 ```
 
-## Prompt para você — Backend
+## Prompt do Colaborador 1 — Backend e plataforma
 
 ```text
 Leia o AGENTS.md e os documentos indicados por ele.
 
-Eu sou o responsável principal pelo backend, banco de dados, infraestrutura,
-segurança e integrações.
+Eu sou o Colaborador 1, responsável por todo o backend, pela plataforma
+Matrix/Synapse, PostgreSQL, infraestrutura, identidade, segurança e operação.
+FastAPI é apenas uma opção para integrações futuras e não será o servidor de mensagens.
 
 Analise o estado atual e o docs/TASKS.md. Não implemente nada ainda.
 Explique:
-1. o contexto do projeto;
-2. as tarefas atribuídas a mim;
-3. as dependências com o frontend;
-4. os riscos e decisões pendentes;
-5. a primeira tarefa que recomenda executar.
+1. o contexto da adaptação do Matrix/Synapse;
+2. as tarefas P1 a P5 atribuídas ao Colaborador 1;
+3. as dependências mínimas com a interface;
+4. os riscos de licença, federação, OIDC, criptografia, retenção e operação;
+5. as decisões pendentes;
+6. a primeira tarefa de plataforma recomendada.
+
+Não altere frontend/, que pertence ao Colaborador 2. Valide a plataforma com um cliente Matrix genérico e
+não crie backend próprio para recursos que o Matrix já oferece.
 ```
 
 ## Prompt para iniciar uma tarefa
@@ -66,40 +70,28 @@ Antes de alterar arquivos:
 
 ## Regra para trabalho independente
 
-Use este complemento nos dois Codex:
-
 ```text
-Trabalhe somente na minha área e use o contrato compartilhado como limite.
-Não dependa da implementação do outro colaborador:
-- no frontend, use mocks e exemplos do contrato;
-- no backend, use testes de contrato e clientes automatizados.
+Trabalhe somente na minha área e respeite o Matrix e as convenções aprovadas.
+- como Colaborador 2, trabalhe somente em `frontend/`, use um homeserver de desenvolvimento e simule estados de erro;
+- como Colaborador 1, trabalhe somente em `platform/` e `backend/` e use clientes Matrix genéricos para validar o Synapse.
 
-Se encontrar uma dúvida não bloqueante, registre uma proposta para o próximo
-marco de integração e continue com uma suposição compatível com o contrato.
-Não altere arquivos pertencentes à área do outro colaborador.
+Registre dúvidas não bloqueantes para o próximo marco de integração. Não
+altere arquivos pertencentes à área do outro colaborador.
 ```
 
-## Prompt para revisão cruzada
+## Revisão cruzada
 
 ```text
 Revise as alterações desta branch com base no AGENTS.md, nos critérios de
-aceitação da tarefa e nos contratos compartilhados.
+aceitação e nas decisões compartilhadas.
 
-Procure especialmente por:
-- alterações fora do escopo;
-- quebra do contrato entre frontend e backend;
-- falhas de autorização ou exposição de dados;
-- dependências ou código externo sem licença registrada;
-- falta de testes ou documentação.
+Procure por alterações fora do escopo, exposição de segredos, quebra do
+isolamento, uso indevido de APIs administrativas, código externo sem licença,
+duplicação de recursos Matrix e falta de testes ou documentação.
 
 Não implemente correções. Primeiro apresente os achados por prioridade.
 ```
 
-## Reunião de integração
+## Reuniões de integração
 
-Ao final de cada ciclo, atualizar em conjunto:
-
-- `TASKS.md`: andamento, bloqueios e próximas tarefas.
-- `DECISIONS.md`: decisões novas ou substituídas.
-- `API.md`: contratos aprovados.
-- `OPEN_SOURCE.md`: código externo avaliado ou incorporado.
+Ao final de cada marco, atualizar em conjunto `TASKS.md`, `DECISIONS.md`, `API.md` e `OPEN_SOURCE.md`.
