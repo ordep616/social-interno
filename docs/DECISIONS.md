@@ -29,7 +29,25 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 ## DEC-005 — Divisão inicial
 
 - Status: aceita.
-- Decisão: Colaborador 1 assume frontend e análise de código aberto; Colaborador 2 assume backend, infraestrutura e segurança.
+- Decisão: o responsável principal deste workspace assume backend, banco de dados, infraestrutura, segurança e integrações; o outro colaborador assume frontend e análise de código aberto.
+
+## DEC-006 — Desenvolvimento orientado a contratos
+
+- Status: aceita.
+- Decisão: frontend e backend serão desenvolvidos em paralelo usando contratos versionados.
+- Consequência: o frontend terá servidor mock e exemplos próprios; o backend terá testes de contrato e não dependerá das telas.
+
+## DEC-007 — Propriedade por diretório
+
+- Status: aceita.
+- Decisão: cada colaborador possui sua área principal e não modifica a área do outro durante o desenvolvimento normal.
+- Consequência: mudanças compartilhadas ficam limitadas a `contracts/` e documentos de integração.
+
+## DEC-008 — Integração por marcos
+
+- Status: aceita.
+- Decisão: a integração não será contínua nem bloqueará o trabalho diário. Ela ocorrerá em marcos curtos após cada conjunto funcional.
+- Marcos iniciais: autenticação, conversas, mensagens em tempo real e arquivos.
 
 ## Decisões pendentes
 

@@ -59,6 +59,44 @@ As escolhas finais devem ser registradas em `DECISIONS.md`.
 - Redis guarda presença e estado efêmero, não o histórico definitivo.
 - Armazenamento de objetos guarda os bytes dos anexos.
 
+## Arquitetura para trabalho paralelo
+
+```text
+                  docs/contracts/
+             OpenAPI + eventos + exemplos
+                    /            \
+                   ▼              ▼
+       Frontend independente   Backend independente
+       ├─ servidor mock        ├─ API real
+       ├─ dados de exemplo     ├─ WebSocket real
+       ├─ testes de UI         ├─ banco e armazenamento
+       └─ adaptador da API     └─ testes de contrato
+                   \              /
+                    ▼            ▼
+                 Marco de integração
+```
+
+### Regras de independência
+
+- O contrato é o único acoplamento obrigatório durante cada ciclo.
+- O frontend alterna entre `mock` e `real` por configuração, sem alterar componentes.
+- O backend valida respostas e eventos contra os esquemas publicados.
+- IDs, datas, paginação, erros e estados são definidos antes da implementação.
+- Funcionalidades experimentais ficam atrás de capacidades anunciadas por `/me` ou configuração.
+- Nenhum colaborador altera arquivos da área do outro durante seu trabalho normal.
+
+### Estrutura futura recomendada
+
+```text
+frontend/               propriedade do colaborador de frontend
+backend/                propriedade do responsável pelo backend
+contracts/              contratos versionados e aprovados em conjunto
+contracts/openapi.yaml  endpoints HTTP
+contracts/events/       esquemas dos eventos WebSocket
+contracts/examples/     respostas usadas pelo servidor mock
+docs/                   decisões e planejamento
+```
+
 ## Entidades iniciais
 
 - `User`

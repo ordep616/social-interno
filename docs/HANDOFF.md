@@ -8,12 +8,12 @@
 4. Após mudanças importantes no `AGENTS.md`, iniciar uma nova conversa do Codex para carregar as instruções atualizadas.
 5. Cada tarefa de implementação deve usar sua própria branch.
 
-## Prompt do Colaborador 1
+## Prompt do outro colaborador — Frontend
 
 ```text
 Leia o AGENTS.md e os documentos indicados por ele.
 
-Eu sou o Colaborador 1, responsável pelo frontend, experiência web e análise
+Eu sou o colaborador responsável pelo frontend, experiência web e análise
 dos componentes de código aberto do Telegram Web.
 
 Analise o estado atual e o docs/TASKS.md. Não implemente nada ainda.
@@ -25,12 +25,13 @@ Explique:
 5. a primeira tarefa que recomenda executar.
 ```
 
-## Prompt do Colaborador 2
+## Prompt para você — Backend
 
 ```text
 Leia o AGENTS.md e os documentos indicados por ele.
 
-Eu sou o Colaborador 2, responsável pelo backend, infraestrutura e segurança.
+Eu sou o responsável principal pelo backend, banco de dados, infraestrutura,
+segurança e integrações.
 
 Analise o estado atual e o docs/TASKS.md. Não implemente nada ainda.
 Explique:
@@ -54,6 +55,21 @@ Antes de alterar arquivos:
 3. informe quais arquivos pretende alterar;
 4. apresente um plano curto;
 5. aguarde minha autorização para implementar.
+```
+
+## Regra para trabalho independente
+
+Use este complemento nos dois Codex:
+
+```text
+Trabalhe somente na minha área e use o contrato compartilhado como limite.
+Não dependa da implementação do outro colaborador:
+- no frontend, use mocks e exemplos do contrato;
+- no backend, use testes de contrato e clientes automatizados.
+
+Se encontrar uma dúvida não bloqueante, registre uma proposta para o próximo
+marco de integração e continue com uma suposição compatível com o contrato.
+Não altere arquivos pertencentes à área do outro colaborador.
 ```
 
 ## Prompt para revisão cruzada

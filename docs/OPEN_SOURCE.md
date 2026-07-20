@@ -38,7 +38,7 @@ O Telegram Web poderá ser estudado e componentes isolados poderão ser incorpor
 
 | ID | Componente | Origem | Commit | Licença | Uso pretendido | Responsável | Estado |
 |---|---|---|---|---|---|---|---|
-| OS-001 | A definir | — | — | — | — | Colaborador 1 | Em análise |
+| OS-001 | A definir | — | — | — | — | Outro colaborador | Em análise |
 
 ## Regra de isolamento
 

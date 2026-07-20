@@ -1,122 +1,161 @@
-# Tarefas e responsabilidades
+# Tarefas independentes e marcos de integração
 
-Atualize este arquivo em toda reunião de alinhamento. Cada tarefa deve possuir responsável, critério de aceitação e dependências.
+## Princípio
 
-## Estado
+Depois da aprovação do contrato inicial, os dois colaboradores trabalham em paralelo. O frontend usa mocks; o backend usa testes de contrato. A dependência direta entre pessoas deve ocorrer somente nos marcos de integração.
 
-- `[ ]` não iniciada
-- `[~]` em andamento
-- `[R]` em revisão
-- `[x]` concluída
-- `[B]` bloqueada
+## Etapa conjunta curta — congelar contratos
 
-## Fase 1 — Viabilidade
+Prazo sugerido: 1–2 dias.
 
-### Colaborador 1 — Frontend
+- [ ] Aprovar entidades públicas: usuário, conversa, participante, mensagem, anexo e erro.
+- [ ] Aprovar endpoints HTTP do MVP.
+- [ ] Aprovar eventos WebSocket do MVP.
+- [ ] Criar exemplos JSON válidos.
+- [ ] Marcar o contrato como `v1-draft` e depois `v1-approved`.
 
-- [ ] Mapear os repositórios web oficiais relevantes.
-  - Aceitação: lista de repositórios, versões e licenças.
-- [ ] Identificar componentes visuais potencialmente reutilizáveis.
-  - Aceitação: cada componente possui dependências e nível de acoplamento registrados.
-- [ ] Criar uma proposta visual própria para o produto.
-  - Dependência: nome, marca e paleta da organização.
-- [ ] Classificar componentes em reutilizar, adaptar, usar como referência ou descartar.
-  - Dependência: revisão conjunta e jurídica.
+Após isso, nenhuma dúvida pequena deve bloquear o desenvolvimento. Questões são anotadas e resolvidas no próximo marco.
 
-### Colaborador 2 — Backend
+## Sua trilha — Backend, infraestrutura e segurança
 
-- [ ] Escolher a tecnologia do backend.
-  - Aceitação: decisão registrada com justificativa.
-- [ ] Definir o modelo inicial de dados.
-  - Aceitação: entidades, relações e regras de retenção descritas.
-- [ ] Definir contratos HTTP e WebSocket.
-  - Dependência: casos de uso do frontend.
-- [ ] Identificar o provedor de identidade corporativa.
-  - Dependência: informação da organização.
-- [ ] Propor ambientes local, homologação e produção.
+Você pode executar esta sequência sem depender das telas.
 
-### Compartilhadas
+### B1 — Fundação
 
-- [ ] Confirmar funcionalidades do MVP.
-- [ ] Definir política inicial de retenção e auditoria.
-- [ ] Aprovar a estratégia de reutilização de código.
-- [ ] Fechar o contrato inicial da API.
-- [ ] Criar o primeiro backlog de implementação.
+- [ ] Escolher FastAPI ou NestJS e registrar a decisão.
+- [ ] Criar estrutura exclusiva de `backend/`.
+- [ ] Preparar configuração, logs, tratamento de erros e teste de saúde.
+- [ ] Preparar ambiente local do banco, Redis e armazenamento.
+- [ ] Criar pipeline de testes do backend.
 
-## Fase 2 — Fundação
+Aceitação: backend inicia sozinho, possui teste de saúde e não exige frontend.
 
-### Colaborador 1
+### B2 — Identidade e autorização
 
-- [ ] Preparar frontend e identidade visual.
-- [ ] Criar interfaces corporativas independentes do Telegram.
-- [ ] Implementar protótipo com dados simulados.
+- [ ] Criar abstração do provedor de identidade.
+- [ ] Implementar sessão de desenvolvimento controlada.
+- [ ] Implementar usuários, perfis e bloqueios.
+- [ ] Implementar autorização centralizada.
+- [ ] Criar testes negativos de acesso.
 
-### Colaborador 2
+Aceitação: testes demonstram que um usuário não acessa conversas das quais não participa.
 
-- [ ] Preparar backend e banco de dados.
-- [ ] Criar migrações iniciais.
-- [ ] Implementar autenticação provisória controlada.
-- [ ] Preparar ambiente local reproduzível.
+### B3 — Conversas e mensagens HTTP
 
-## Fase 3 — Mensagens
+- [ ] Modelar banco e migrações.
+- [ ] Implementar conversas individuais e grupos.
+- [ ] Implementar histórico por cursor.
+- [ ] Implementar envio, edição e exclusão conforme contrato.
+- [ ] Validar respostas com os esquemas compartilhados.
 
-### Colaborador 1
+Aceitação: testes de integração cobrem o fluxo completo pela API, sem navegador.
 
-- [ ] Lista e busca de conversas.
+### B4 — Tempo real
+
+- [ ] Implementar autenticação WebSocket.
+- [ ] Implementar assinatura autorizada de conversas.
+- [ ] Publicar eventos versionados.
+- [ ] Implementar leitura, digitação e presença.
+- [ ] Testar reconexão e eventos duplicados.
+
+Aceitação: um cliente de teste recebe os eventos definidos no contrato.
+
+### B5 — Arquivos
+
+- [ ] Configurar armazenamento de objetos.
+- [ ] Implementar upload autorizado e metadados.
+- [ ] Implementar URLs temporárias.
+- [ ] Validar tamanho e tipo.
+- [ ] Preparar verificação antimalware, se exigida.
+
+Aceitação: testes enviam, consultam e bloqueiam arquivos sem utilizar o frontend.
+
+### B6 — Administração e produção
+
+- [ ] Implementar papéis administrativos.
+- [ ] Implementar auditoria.
+- [ ] Integrar OIDC/SAML real.
+- [ ] Definir backup, retenção, métricas e alertas.
+- [ ] Documentar implantação e recuperação.
+
+## Trilha do outro colaborador — Frontend e código aberto
+
+O outro colaborador pode executar esta sequência usando apenas contratos e mocks.
+
+### F1 — Fundação visual
+
+- [ ] Analisar componentes abertos e registrar licenças.
+- [ ] Criar estrutura exclusiva de `frontend/`.
+- [ ] Definir design próprio e componentes base.
+- [ ] Criar navegação responsiva e acessível.
+
+Aceitação: frontend inicia sozinho e não exige backend.
+
+### F2 — Cliente simulado
+
+- [ ] Criar adaptador único da API.
+- [ ] Criar servidor mock com os exemplos do contrato.
+- [ ] Criar cliente WebSocket simulado.
+- [ ] Simular sucesso, vazio, carregamento e erro.
+
+Aceitação: todas as telas podem ser demonstradas offline com dados simulados.
+
+### F3 — Conversas
+
+- [ ] Lista, busca e seleção de conversas.
 - [ ] Histórico paginado.
 - [ ] Compositor e estados de envio.
-- [ ] Integração HTTP e WebSocket.
+- [ ] Edição, exclusão, resposta e confirmação visual conforme escopo.
 
-### Colaborador 2
+Aceitação: fluxo completo funciona contra o mock.
 
-- [ ] Conversas individuais e grupos.
-- [ ] Persistência e paginação de mensagens.
-- [ ] Gateway WebSocket.
-- [ ] Entrega, leitura, presença e digitação.
+### F4 — Tempo real e arquivos simulados
 
-## Fase 4 — Arquivos
+- [ ] Aplicar eventos simulados ao estado da interface.
+- [ ] Exibir leitura, digitação e presença.
+- [ ] Implementar upload simulado com progresso e erro.
+- [ ] Implementar visualização segura de mídia.
 
-### Colaborador 1
+Aceitação: cenários de tempo real e arquivos são reproduzíveis sem backend.
 
-- [ ] Upload com progresso.
-- [ ] Visualização segura de imagens e documentos.
-- [ ] Lista de arquivos compartilhados.
+### F5 — Administração
 
-### Colaborador 2
+- [ ] Criar telas administrativas com dados simulados.
+- [ ] Criar estados de permissão negada e conta bloqueada.
+- [ ] Concluir acessibilidade e responsividade.
 
-- [ ] Armazenamento de objetos.
-- [ ] URLs temporárias e autorização.
-- [ ] Limites e validação de arquivos.
-- [ ] Integração antimalware, se exigida.
+## Marcos de integração
 
-## Fase 5 — Administração e SSO
+### I1 — Sessão e usuário
 
-### Colaborador 1
+- Trocar o mock de `/me` pelo backend real.
+- Corrigir apenas divergências do contrato.
 
-- [ ] Painel de usuários e grupos.
-- [ ] Visualização de auditoria conforme permissão.
+### I2 — Conversas HTTP
 
-### Colaborador 2
+- Integrar lista, histórico e envio.
+- Não incluir WebSocket nem arquivos neste marco.
 
-- [ ] Integração OIDC/SAML.
-- [ ] Perfis e permissões.
-- [ ] Ativação e bloqueio de contas.
-- [ ] Auditoria administrativa.
+### I3 — Tempo real
 
-## Fase 6 — Homologação
+- Integrar eventos e reconexão.
+- Registrar qualquer alteração como nova revisão do contrato.
 
-### Compartilhadas
+### I4 — Arquivos e administração
 
-- [ ] Testes funcionais e de integração.
-- [ ] Testes de segurança e autorização.
-- [ ] Testes de carga e recuperação.
-- [ ] Validação em computador e celular.
-- [ ] Piloto com grupo restrito.
-- [ ] Documentação de operação e implantação.
+- Integrar uploads, acesso temporário e permissões administrativas.
 
-## Bloqueios atuais
+## Regras para bloqueios
 
-- Nome e identidade visual ainda não definidos.
-- Provedor corporativo de identidade ainda não informado.
+- Dúvida visual não bloqueia backend.
+- Dúvida interna de banco não bloqueia frontend.
+- Campo ausente no contrato é registrado em uma proposta de mudança.
+- Correção compatível pode entrar na versão atual.
+- Mudança incompatível espera o próximo marco ou cria nova versão.
+
+## Bloqueios reais atuais
+
+- Provedor de identidade corporativa ainda não informado.
 - Política de retenção ainda não aprovada.
-- Licença desejada para o produto ainda não definida.
+- Licença desejada para o código próprio ainda não definida.
+- Nome e identidade visual ainda não definidos, mas isso não bloqueia o backend.

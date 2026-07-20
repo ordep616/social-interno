@@ -16,8 +16,8 @@ O repositório está na fase de planejamento. A implementação somente deve ava
 
 ## Participantes
 
-- Colaborador 1: frontend, experiência web e análise de código aberto.
-- Colaborador 2: backend, infraestrutura e segurança.
+- Responsável principal deste workspace: backend, banco de dados, infraestrutura, segurança e integrações.
+- Outro colaborador: frontend, experiência web e análise de código aberto.
 
 ## Regra principal
 

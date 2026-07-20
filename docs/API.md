@@ -1,6 +1,20 @@
 # Contrato inicial da API
 
-Este arquivo contém uma proposta para alinhamento, não um contrato aprovado. Alterações que afetem frontend e backend devem ser revisadas pelos dois colaboradores.
+Este arquivo contém uma proposta para alinhamento, ainda não aprovada. Depois de marcada como `v1-approved`, ela permitirá que frontend e backend sejam desenvolvidos de forma independente.
+
+## Ciclo do contrato
+
+```text
+v1-draft → revisão conjunta → v1-approved → implementação paralela
+                                      ↓
+                          proposta de mudança futura
+```
+
+- Exemplos JSON alimentam o servidor mock do frontend.
+- Os mesmos esquemas validam os testes de contrato do backend.
+- Campos novos opcionais podem ser compatíveis.
+- Remover, renomear ou alterar significado exige nova versão.
+- A indisponibilidade temporária do backend nunca deve impedir o frontend de funcionar em modo mock.
 
 ## Regras gerais
 
@@ -65,3 +79,15 @@ Este arquivo contém uma proposta para alinhamento, não um contrato aprovado. A
 - Regras de edição e exclusão.
 - Política de presença.
 - Formato de menções, respostas e formatação de texto.
+
+## Artefatos que deverão ser criados
+
+```text
+contracts/openapi.yaml
+contracts/events/message-created.schema.json
+contracts/events/presence-changed.schema.json
+contracts/examples/me.json
+contracts/examples/conversations.json
+contracts/examples/messages-page.json
+contracts/examples/error.json
+```

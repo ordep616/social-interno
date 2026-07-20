@@ -30,7 +30,7 @@ Não é necessário carregar documentos sem relação com a tarefa atual.
 
 ## Colaboradores
 
-### Colaborador 1 — Frontend e código aberto
+### Outro colaborador — Frontend e código aberto
 
 Responsável por:
 
@@ -41,7 +41,7 @@ Responsável por:
 - Integrar o frontend à API HTTP e aos eventos WebSocket corporativos.
 - Garantir responsividade, acessibilidade e estados de erro.
 
-### Colaborador 2 — Backend, infraestrutura e segurança
+### Responsável principal (usuário deste workspace) — Backend, infraestrutura e segurança
 
 Responsável por:
 
@@ -56,12 +56,14 @@ Responsável por:
 
 Exigem acordo dos dois colaboradores:
 
-- Contratos da API e eventos WebSocket.
+- Aprovação da versão inicial dos contratos da API e eventos WebSocket.
 - Alterações no escopo do MVP.
 - Inclusão de dependências relevantes.
 - Incorporação de código de terceiros.
 - Política de segurança, auditoria e retenção.
 - Escolhas que afetem frontend e backend simultaneamente.
+
+Depois que um contrato for marcado como aprovado, cada colaborador deve trabalhar de forma independente. O frontend usa mocks baseados no contrato; o backend implementa o contrato com testes próprios. Dúvidas não bloqueantes devem ser registradas para o próximo marco de integração, sem interromper o trabalho do outro colaborador.
 
 ## Reutilização de código do Telegram
 
@@ -97,6 +99,16 @@ Componentes visuais só podem falar com interfaces próprias do projeto. Eles n�
 7. Execute os testes aplicáveis quando houver implementação.
 8. Atualize decisões, contratos e inventário quando necessário.
 9. Entregue a alteração para revisão do outro colaborador.
+
+## Trabalho independente
+
+- Frontend e backend vivem em diretórios e branches separados.
+- O frontend não deve depender de um backend local para desenvolver ou testar telas.
+- O backend não deve depender de componentes visuais para executar testes.
+- Exemplos JSON e um servidor mock representam o backend para o frontend.
+- Testes de contrato representam o frontend para o backend.
+- Mudanças incompatíveis criam uma nova versão do contrato; não altere silenciosamente a versão vigente.
+- A integração acontece apenas nos marcos definidos em `docs/TASKS.md`.
 
 ## Restrições
 
