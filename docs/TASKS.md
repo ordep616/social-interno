@@ -8,11 +8,12 @@ Depois da aprovação do contrato inicial, os dois colaboradores trabalham em pa
 
 Prazo sugerido: 1–2 dias.
 
-- [ ] Aprovar entidades públicas: usuário, conversa, participante, mensagem, anexo e erro.
-- [ ] Aprovar endpoints HTTP do MVP.
-- [ ] Aprovar eventos WebSocket do MVP.
-- [ ] Criar exemplos JSON válidos.
-- [ ] Marcar o contrato como `v1-draft` e depois `v1-approved`.
+- [~] Aprovar entidades públicas: usuário, conversa, participante, mensagem, anexo e erro.
+- [~] Aprovar endpoints HTTP do MVP.
+- [~] Aprovar eventos WebSocket do MVP.
+- [~] Criar exemplos JSON válidos.
+- [~] Revisar o contrato já estruturado em `contracts/` como `v1-draft`.
+- [ ] Marcar o contrato como `v1-approved` somente após revisão dos dois colaboradores.
 
 Após isso, nenhuma dúvida pequena deve bloquear o desenvolvimento. Questões são anotadas e resolvidas no próximo marco.
 

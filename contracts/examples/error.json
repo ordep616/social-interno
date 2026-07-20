@@ -1,0 +1,6 @@
+{
+  "code": "FORBIDDEN",
+  "message": "Você não possui acesso a este recurso.",
+  "requestId": "req_example_001",
+  "details": null
+}

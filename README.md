@@ -19,6 +19,13 @@ O repositório está na fase de planejamento. A implementação somente deve ava
 - Responsável principal deste workspace: backend, banco de dados, infraestrutura, segurança e integrações.
 - Outro colaborador: frontend, experiência web e análise de código aberto.
 
+## Estrutura de trabalho
+
+- `backend/`: área independente do responsável por backend.
+- `frontend/`: área independente do colaborador de frontend.
+- `contracts/`: contrato HTTP, eventos e exemplos aprovados em conjunto.
+- `docs/`: planejamento, tarefas, decisões e política de código aberto.
+
 ## Regra principal
 
 O Telegram poderá servir como fonte de estudo e, após análise, de componentes abertos isolados. A rede, autenticação, protocolo e infraestrutura do produto serão próprios.

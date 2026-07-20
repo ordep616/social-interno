@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "id": "conv_product",
+      "kind": "group",
+      "title": "Produto e Design",
+      "members": [
+        {
+          "id": "usr_marina",
+          "displayName": "Marina Souza",
+          "avatarUrl": null,
+          "status": "active"
+        }
+      ],
+      "lastMessage": {
+        "id": "msg_001",
+        "clientId": null,
+        "conversationId": "conv_product",
+        "author": {
+          "id": "usr_marina",
+          "displayName": "Marina Souza",
+          "avatarUrl": null,
+          "status": "active"
+        },
+        "body": "Fechamos a pauta de hoje?",
+        "replyToId": null,
+        "attachments": [],
+        "createdAt": "2026-07-20T13:42:00Z",
+        "editedAt": null,
+        "deletedAt": null
+      },
+      "unreadCount": 3,
+      "updatedAt": "2026-07-20T13:42:00Z"
+    }
+  ],
+  "nextCursor": null
+}

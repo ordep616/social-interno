@@ -1,0 +1,9 @@
+{
+  "id": "usr_backend_owner",
+  "displayName": "Usuário de Exemplo",
+  "avatarUrl": null,
+  "status": "active",
+  "email": "usuario@empresa.exemplo",
+  "roles": ["user"],
+  "capabilities": ["messages.send", "attachments.upload"]
+}

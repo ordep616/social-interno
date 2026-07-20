@@ -14,15 +14,22 @@
 Leia o AGENTS.md e os documentos indicados por ele.
 
 Eu sou o colaborador responsável pelo frontend, experiência web e análise
-dos componentes de código aberto do Telegram Web.
+dos componentes de código aberto do Telegram Web. Minha implementação deve
+funcionar com servidor mock e exemplos JSON, sem depender do backend real.
 
 Analise o estado atual e o docs/TASKS.md. Não implemente nada ainda.
 Explique:
 1. o contexto do projeto;
-2. as tarefas atribuídas a mim;
-3. as dependências com o backend;
-4. os riscos e decisões pendentes;
-5. a primeira tarefa que recomenda executar.
+2. as tarefas F1 a F5 atribuídas ao frontend;
+3. quais componentes do Telegram Web podem ser apenas estudados ou avaliados;
+4. como trabalhar com mocks sem depender do backend;
+5. quais contratos compartilhados precisam ser respeitados;
+6. os riscos e decisões pendentes da minha área;
+7. a primeira tarefa de frontend que recomenda executar.
+
+Não altere backend, banco, infraestrutura ou segurança. Se encontrar uma
+dúvida sobre o backend que não impeça o mock, registre-a para o próximo marco
+de integração e continue o planejamento do frontend.
 ```
 
 ## Prompt para você — Backend
