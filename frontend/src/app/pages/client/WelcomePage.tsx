@@ -1,10 +1,15 @@
 import React from 'react';
-import { Box, Text, config } from 'folds';
+import { useNavigate } from 'react-router-dom';
+import { Box, Button, Text, config } from 'folds';
 import { Page, PageHeroSection } from '../../components/page';
+import { getDirectCreatePath } from '../pathUtils';
+import { NeonChatButton, NeonChatButtonText } from './WelcomePage.css';
 import AppLogo from '../../../../public/res/logo/company-logo.png';
 import ExplorerNetLogo from '../../../../public/res/logo/explorernet-logo.png';
 
 export function WelcomePage() {
+  const navigate = useNavigate();
+
   return (
     <Page style={{ position: 'relative', overflow: 'hidden' }}>
       <Box
@@ -25,6 +30,16 @@ export function WelcomePage() {
             <Text as="h1" align="Center" size="H2">
               Bem-Vindo ao Betweenus
             </Text>
+            <Button
+              className={NeonChatButton}
+              size="500"
+              radii="300"
+              onClick={() => navigate(getDirectCreatePath())}
+            >
+              <Text className={NeonChatButtonText} as="span" size="B400" truncate>
+                Comece a conversar agora!
+              </Text>
+            </Button>
           </Box>
         </PageHeroSection>
       </Box>
