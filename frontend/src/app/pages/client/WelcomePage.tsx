@@ -1,26 +1,53 @@
 import React from 'react';
-import { Text } from 'folds';
-import { Page } from '../../components/page';
-import * as css from './WelcomePage.css';
+import { useNavigate } from 'react-router-dom';
+import { Box, Button, Text, config } from 'folds';
+import { Page, PageHeroSection } from '../../components/page';
+import { getDirectCreatePath } from '../pathUtils';
+import {
+  NeonChatButton,
+  NeonChatButtonText,
+  WelcomePageRoot,
+  WelcomeTitle,
+} from './WelcomePage.css';
 import WelcomeBackground from '../../../../public/res/background/betweenus-welcome.jpeg';
 import AppLogo from '../../../../public/res/logo/company-logo.png';
-import ExplorerNetLogo from '../../../../public/res/logo/explorernet-logo.png';
 
 export function WelcomePage() {
+  const navigate = useNavigate();
+
   return (
-    <Page className={css.WelcomePageRoot} style={{ backgroundImage: `url(${WelcomeBackground})` }}>
-      <Text as="h1" className={css.ScreenReaderOnly}>
-        Bem-vindo ao Betweenus
-      </Text>
-      <div className={css.CenterStage} aria-hidden="true">
-        <div className={css.CenterLockup}>
-          <img className={css.AppLogo} width="184" height="184" src={AppLogo} alt="" />
-          <Text className={css.WelcomeTitle} as="p">
-            Bem-vindo ao Betweenus
-          </Text>
-        </div>
-      </div>
-      <img className={css.ExplorerNetLogo} src={ExplorerNetLogo} alt="" aria-hidden="true" />
+    <Page className={WelcomePageRoot} style={{ backgroundImage: `url(${WelcomeBackground})` }}>
+      <Box
+        grow="Yes"
+        style={{ padding: config.space.S700 }}
+        alignItems="Center"
+        justifyContent="Center"
+      >
+        <PageHeroSection>
+          <Box direction="Column" alignItems="Center" gap="500">
+            <img
+              width="160"
+              height="160"
+              src={AppLogo}
+              alt="Betweenus logo"
+              style={{ borderRadius: '50%', objectFit: 'cover' }}
+            />
+            <Text className={WelcomeTitle} as="h1" align="Center" size="H2">
+              Bem-Vindo ao Betweenus
+            </Text>
+            <Button
+              className={NeonChatButton}
+              size="500"
+              radii="300"
+              onClick={() => navigate(getDirectCreatePath())}
+            >
+              <Text className={NeonChatButtonText} as="span" size="B400" truncate>
+                Comece a conversar agora!
+              </Text>
+            </Button>
+          </Box>
+        </PageHeroSection>
+      </Box>
     </Page>
   );
 }
