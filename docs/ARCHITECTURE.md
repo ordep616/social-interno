@@ -17,14 +17,16 @@ Navegador / PWA
           ├── sincronização e tempo real
           ├── anexos e confirmações
           ├── autorização e administração
-          └── integração OIDC/SSO
+          └── autenticação e administração Matrix
                     │
              ┌──────┴──────┐
              ▼             ▼
         PostgreSQL   mídia/armazenamento
 
-Serviço corporativo opcional (FastAPI)
-  └── somente integrações que o Matrix não atender
+Serviço de convites (FastAPI)
+  ├── convites, papéis e auditoria
+  ├── API administrativa do Synapse
+  └── PostgreSQL próprio
 ```
 
 ## Tecnologias adotadas ou candidatas
@@ -34,9 +36,9 @@ Serviço corporativo opcional (FastAPI)
 - Frontend: fork do Cinny `v4.12.3`, baseado em React, Vite e `matrix-js-sdk`.
 - SDK do frontend: versão utilizada e fixada pelo Cinny; atualizações exigem teste conjunto.
 - Banco do Synapse: PostgreSQL.
-- Identidade: OIDC por meio do provedor corporativo.
+- Identidade inicial: conta local criada por convite administrativo de uso único; OIDC poderá ser avaliado posteriormente.
 - Ambiente: contêineres durante desenvolvimento e homologação.
-- Serviço complementar: FastAPI somente se surgir uma necessidade corporativa não coberta pelo Matrix ou pelas APIs administrativas do Synapse.
+- Serviço complementar: FastAPI aprovado para convites, provisionamento e ciclo de vida de contas; novos usos exigem outra decisão.
 
 ## Limites
 
@@ -52,9 +54,10 @@ Serviço corporativo opcional (FastAPI)
 
 - O Synapse é a fonte de verdade para contas Matrix, salas, participantes, mensagens, mídia e sincronização.
 - O acesso público, o registro livre e a federação externa permanecem desabilitados, salvo decisão conjunta posterior.
-- O provedor OIDC autentica os funcionários; as políticas do Synapse controlam o acesso à plataforma.
+- O serviço de convites controla a criação inicial; o Synapse autentica as contas e controla o acesso à plataforma.
 - A administração deve usar APIs e módulos suportados, evitando alterações diretas no banco do Synapse.
 - FastAPI não duplicará mensagens, salas, presença ou sincronização.
+- O serviço FastAPI usa PostgreSQL próprio e mantém credenciais administrativas fora do navegador.
 
 ### Dados
 
@@ -74,7 +77,7 @@ Serviço corporativo opcional (FastAPI)
        Frontend independente   Backend/plataforma independente
        ├─ fork do Cinny         ├─ Synapse de homologação
        ├─ cliente de teste      ├─ PostgreSQL e mídia
-       ├─ estados simulados     ├─ OIDC e políticas
+       ├─ estados simulados     ├─ convites e políticas
        └─ testes de UI          └─ testes operacionais
                    \                   /
                     ▼                 ▼
@@ -94,7 +97,7 @@ Serviço corporativo opcional (FastAPI)
 ```text
 frontend/       Colaborador 2: fork do Cinny, personalização e testes visuais
 platform/       Colaborador 1: configuração do Synapse, contêineres e operação
-backend/        Colaborador 1: integrações FastAPI opcionais; não é o servidor de chat
+backend/        Colaborador 1: convites e integrações FastAPI aprovadas; não é o servidor de chat
 docs/           decisões, planejamento e inventário de código aberto
 ```
 
@@ -109,15 +112,16 @@ O diretório `contracts/` será criado somente quando uma extensão corporativa 
 | Leitura e digitação | Receipts e typing notifications |
 | Presença | Presence, se habilitada pela política |
 | Imagens e documentos | Repositório de mídia Matrix |
-| Login corporativo | OIDC no Synapse |
-| Administração | APIs administrativas e políticas do Synapse |
+| Criação de conta | Convite FastAPI e API administrativa do Synapse |
+| Login | Autenticação local do Synapse; OIDC é evolução possível |
+| Administração | FastAPI, APIs administrativas e políticas do Synapse |
 
 ## Segurança
 
 - HTTPS obrigatório fora do computador local.
 - Cadastro público desabilitado.
 - Federação desabilitada por padrão e validada em teste.
-- Login pelo provedor corporativo e encerramento de acesso após desligamento.
+- Cadastro por convite administrativo e encerramento de acesso após desligamento.
 - Segredos fora do frontend e do repositório.
 - Limites de requisição e upload configurados.
 - Política explícita para criptografia ponta a ponta, recuperação e auditoria.
