@@ -714,6 +714,7 @@ export const Message = as<'div', MessageProps>(
     const mx = useMatrixClient();
     const useAuthentication = useMediaAuthentication();
     const senderId = mEvent.getSender() ?? '';
+    const isOwnMessage = senderId === mx.getUserId();
 
     const [hover, setHover] = useState(false);
     const { hoverProps } = useHover({ onHoverChange: setHover });
@@ -1128,7 +1129,13 @@ export const Message = as<'div', MessageProps>(
           </CompactLayout>
         )}
         {messageLayout === MessageLayout.Bubble && (
-          <BubbleLayout before={avatarJSX} header={headerJSX} onContextMenu={handleContextMenu}>
+          <BubbleLayout
+            align={isOwnMessage ? 'Right' : 'Left'}
+            before={isOwnMessage ? undefined : avatarJSX}
+            header={headerJSX}
+            showTail={!collapse}
+            onContextMenu={handleContextMenu}
+          >
             {msgContentJSX}
           </BubbleLayout>
         )}

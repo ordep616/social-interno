@@ -3,13 +3,16 @@ import classNames from 'classnames';
 import { Box, ContainerColor, as, color } from 'folds';
 import * as css from './layout.css';
 
+type BubbleSide = 'Left' | 'Right';
+
 type BubbleArrowProps = {
   variant: ContainerColor;
+  side: BubbleSide;
 };
-function BubbleLeftArrow({ variant }: BubbleArrowProps) {
+function BubbleArrow({ variant, side }: BubbleArrowProps) {
   return (
     <svg
-      className={css.BubbleLeftArrow}
+      className={side === 'Right' ? css.BubbleRightArrow : css.BubbleLeftArrow}
       width="9"
       height="8"
       viewBox="0 0 9 8"
@@ -27,37 +30,45 @@ function BubbleLeftArrow({ variant }: BubbleArrowProps) {
 }
 
 type BubbleLayoutProps = {
+  align?: BubbleSide;
   hideBubble?: boolean;
   before?: ReactNode;
   header?: ReactNode;
+  showTail?: boolean;
 };
 
 export const BubbleLayout = as<'div', BubbleLayoutProps>(
-  ({ hideBubble, before, header, children, ...props }, ref) => (
-    <Box gap="300" {...props} ref={ref}>
-      <Box className={css.BubbleBefore} shrink="No">
-        {before}
-      </Box>
-      <Box grow="Yes" direction="Column">
-        {header}
-        {hideBubble ? (
-          children
-        ) : (
-          <Box>
-            <Box
-              className={
-                hideBubble
-                  ? undefined
-                  : classNames(css.BubbleContent, before ? css.BubbleContentArrowLeft : undefined)
-              }
-              direction="Column"
-            >
-              {before ? <BubbleLeftArrow variant="SurfaceVariant" /> : null}
-              {children}
-            </Box>
+  ({ align = 'Left', hideBubble, before, header, showTail, children, ...props }, ref) => {
+    const right = align === 'Right';
+    const tail = showTail ?? !!before;
+
+    return (
+      <Box gap="300" {...props} ref={ref}>
+        {!right && (
+          <Box className={css.BubbleBefore} shrink="No">
+            {before}
           </Box>
         )}
+        <Box grow="Yes" direction="Column" alignItems={right ? 'End' : 'Start'}>
+          {header}
+          {hideBubble ? (
+            children
+          ) : (
+            <Box justifyContent={right ? 'End' : 'Start'} style={{ maxWidth: '100%' }}>
+              <Box
+                className={classNames(
+                  css.BubbleContent,
+                  tail && (right ? css.BubbleContentArrowRight : css.BubbleContentArrowLeft)
+                )}
+                direction="Column"
+              >
+                {tail ? <BubbleArrow variant="SurfaceVariant" side={align} /> : null}
+                {children}
+              </Box>
+            </Box>
+          )}
+        </Box>
       </Box>
-    </Box>
-  )
+    );
+  }
 );

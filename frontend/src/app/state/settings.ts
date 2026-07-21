@@ -64,7 +64,7 @@ const defaultSettings: Settings = {
   isPeopleDrawer: true,
   memberSortFilterIndex: 0,
   enterForNewline: false,
-  messageLayout: 0,
+  messageLayout: MessageLayout.Bubble,
   messageSpacing: '400',
   hideMembershipEvents: false,
   hideNickAvatarEvents: true,
@@ -89,11 +89,18 @@ export const getSettings = () => {
   return {
     ...defaultSettings,
     ...(JSON.parse(settings) as Settings),
+    messageLayout: MessageLayout.Bubble,
   };
 };
 
 export const setSettings = (settings: Settings) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      ...settings,
+      messageLayout: MessageLayout.Bubble,
+    })
+  );
 };
 
 const baseSettings = atom<Settings>(getSettings());

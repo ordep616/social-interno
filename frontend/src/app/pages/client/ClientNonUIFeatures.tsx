@@ -2,10 +2,8 @@ import { useAtomValue } from 'jotai';
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RoomEvent, RoomEventHandlerMap } from 'matrix-js-sdk';
-import { roomToUnreadAtom, unreadEqual, unreadInfoToUnread } from '../../state/room/roomToUnread';
-import LogoSVG from '../../../../public/res/svg/cinny.svg';
-import LogoUnreadSVG from '../../../../public/res/svg/cinny-unread.svg';
-import LogoHighlightSVG from '../../../../public/res/svg/cinny-highlight.svg';
+import { unreadEqual, unreadInfoToUnread } from '../../state/room/roomToUnread';
+import AppLogo from '../../../../public/res/logo/company-logo.png';
 import NotificationSound from '../../../../public/sound/notification.ogg';
 import InviteSound from '../../../../public/sound/invite.ogg';
 import { notificationPermission, setFavicon } from '../../utils/dom';
@@ -52,26 +50,9 @@ function PageZoomFeature() {
 }
 
 function FaviconUpdater() {
-  const roomToUnread = useAtomValue(roomToUnreadAtom);
-
   useEffect(() => {
-    let notification = false;
-    let highlight = false;
-    roomToUnread.forEach((unread) => {
-      if (unread.total > 0) {
-        notification = true;
-      }
-      if (unread.highlight > 0) {
-        highlight = true;
-      }
-    });
-
-    if (notification) {
-      setFavicon(highlight ? LogoHighlightSVG : LogoUnreadSVG);
-    } else {
-      setFavicon(LogoSVG);
-    }
-  }, [roomToUnread]);
+    setFavicon(AppLogo);
+  }, []);
 
   return null;
 }
@@ -89,8 +70,8 @@ function InviteNotifications() {
   const notify = useCallback(
     (count: number) => {
       const noti = new window.Notification('Invitation', {
-        icon: LogoSVG,
-        badge: LogoSVG,
+        icon: AppLogo,
+        badge: AppLogo,
         body: `You have ${count} new invitation request.`,
         silent: true,
       });
