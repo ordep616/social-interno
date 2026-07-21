@@ -41,9 +41,12 @@ services:
       timeout: 5s
       retries: 12
     networks:
-      - matrix-internal
+      matrix-edge:
+        gw_priority: 1
+      matrix-internal: {}
 
 networks:
+  matrix-edge:
   matrix-internal:
     internal: true
 
