@@ -4,6 +4,7 @@ import { Box, Button, Text, config } from 'folds';
 import { Page, PageHeroSection } from '../../components/page';
 import { getDirectCreatePath } from '../pathUtils';
 import {
+  CenterContrast,
   NeonChatButton,
   NeonChatButtonText,
   WelcomePageRoot,
@@ -24,7 +25,7 @@ export function WelcomePage() {
         justifyContent="Center"
       >
         <PageHeroSection>
-          <Box direction="Column" alignItems="Center" gap="500">
+          <Box className={CenterContrast} direction="Column" alignItems="Center" gap="500">
             <img
               width="160"
               height="160"
@@ -33,7 +34,7 @@ export function WelcomePage() {
               style={{ borderRadius: '50%', objectFit: 'cover' }}
             />
             <Text className={WelcomeTitle} as="h1" align="Center" size="H2">
-              Bem-Vindo ao Betweenus
+              Bem-vindo ao Betweenus
             </Text>
             <Button
               className={NeonChatButton}
