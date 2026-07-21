@@ -6,7 +6,9 @@
 
 - Synapse `1.156.0` em imagem oficial.
 - PostgreSQL `17.6-alpine`.
-- Rede Docker interna e porta Matrix publicada somente em `127.0.0.1`.
+- PostgreSQL isolado na rede Docker interna, sem porta publicada.
+- Synapse conectado à rede interna e a uma rede de borda, com a API Matrix
+  publicada somente em `127.0.0.1`.
 - Cadastro público desabilitado.
 - Listener configurado apenas para a API de cliente, sem recurso de federação.
 - Federação limitada por lista vazia.

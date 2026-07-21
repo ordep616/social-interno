@@ -12,7 +12,7 @@ O Matrix define o protocolo compartilhado. Depois que configuração, autentica�
 - [ ] Decidir se criptografia ponta a ponta pertence ao MVP.
 - [ ] Escolher o provedor OIDC e o formato dos identificadores dos usuários.
 - [ ] Definir convenções para conversas diretas, grupos e departamentos.
-- [ ] Executar prova de conceito: dois usuários, uma sala, mensagem, leitura e arquivo.
+- [x] Executar prova de conceito: dois usuários, uma sala, mensagem, leitura e arquivo.
 
 Aceitação: a equipe comprova o fluxo mínimo e registra as decisões antes da personalização ampla.
 
@@ -23,11 +23,11 @@ Todo trabalho de backend pertence ao Colaborador 1. Esta trilha pode ser validad
 ### P1 — Fundação do homeserver
 
 - [x] Criar a área exclusiva `platform/` e documentar seus limites.
-- [~] Preparar Synapse e PostgreSQL em Compose; execução pendente em máquina com Docker.
+- [x] Preparar e executar Synapse e PostgreSQL em Compose no ambiente local.
 - [x] Fixar versões iniciais das imagens e registrar suas licenças.
 - [x] Configurar domínio local, logs e verificação de saúde.
-- [ ] Criar dois usuários de teste sem credenciais reais.
-- [ ] Validar mensagens, histórico, leitura e mídia com um cliente de teste.
+- [x] Criar dois usuários de teste sem credenciais reais.
+- [x] Validar mensagens, histórico, leitura e mídia com o cliente web local.
 
 Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próprio.
 
