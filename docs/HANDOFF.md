@@ -13,22 +13,23 @@
 ```text
 Leia o AGENTS.md e os documentos indicados por ele.
 
-Eu sou o Colaborador 2, responsável pelo frontend, interface web/PWA e integração
-do cliente com Matrix usando matrix-js-sdk. Não sou responsável por implantar
+Eu sou o Colaborador 2, responsável pelo fork corporativo do Cinny, interface
+web/PWA e integração Matrix no cliente. Não sou responsável por implantar
 ou administrar o Synapse, nem por qualquer serviço de backend.
 
 Analise o estado atual e o docs/TASKS.md. Não implemente nada ainda.
 Explique:
-1. o contexto da adaptação da plataforma Matrix;
+1. o contexto da adaptação da plataforma Matrix e do fork do Cinny;
 2. as tarefas F1 a F5 atribuídas a mim;
-3. como isolar o matrix-js-sdk atrás de um adaptador;
+3. como manter as personalizações corporativas pequenas e separadas do núcleo do Cinny;
 4. como trabalhar com um homeserver de desenvolvimento e estados simulados;
 5. quais configurações e convenções compartilhadas precisam ser respeitadas;
 6. os riscos e decisões pendentes da minha área;
 7. a primeira tarefa de frontend recomendada.
 
-Não altere platform/, backend/, infraestrutura ou segurança. Não copie código
-do Telegram Web ou Element Web sem registro de origem, licença e aprovação.
+Não altere platform/, backend/, infraestrutura ou segurança. Preserve a licença
+AGPL e o registro de origem do Cinny. Não copie código do Telegram Web ou
+Element Web sem registro de origem, licença e aprovação.
 ```
 
 ## Prompt do Colaborador 1 — Backend e plataforma

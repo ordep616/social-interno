@@ -6,9 +6,10 @@ O produto será uma adaptação de uma plataforma Matrix auto-hospedada. A equip
 
 ```text
 Navegador / PWA
-  ├── Interface e identidade visual próprias
+  ├── Fork corporativo do Cinny
+  ├── Identidade visual e restrições corporativas
   ├── Estado e cache da aplicação
-  └── Adaptador isolado para matrix-js-sdk
+  └── Integração Matrix mantida pelo cliente
                     │
                     ▼
           Homeserver Matrix (Synapse)
@@ -30,8 +31,8 @@ Serviço corporativo opcional (FastAPI)
 
 - Protocolo: Matrix Client-Server API.
 - Homeserver inicial: Synapse, sujeito à prova de conceito e revisão de licença.
-- SDK do frontend: `matrix-js-sdk`.
-- Frontend: aplicação web/PWA própria; framework ainda deve ser confirmado.
+- Frontend: fork do Cinny `v4.12.3`, baseado em React, Vite e `matrix-js-sdk`.
+- SDK do frontend: versão utilizada e fixada pelo Cinny; atualizações exigem teste conjunto.
 - Banco do Synapse: PostgreSQL.
 - Identidade: OIDC por meio do provedor corporativo.
 - Ambiente: contêineres durante desenvolvimento e homologação.
@@ -41,10 +42,10 @@ Serviço corporativo opcional (FastAPI)
 
 ### Frontend — Colaborador 2
 
-- Implementa somente interface, experiência, estado visual e adaptação do SDK.
+- Mantém o fork do Cinny, sua interface, experiência e integração Matrix no navegador.
 - Não acessa PostgreSQL, armazenamento ou APIs administrativas diretamente.
 - Não importa código, tipos ou clientes do Telegram.
-- Centraliza o acesso ao Matrix em um adaptador próprio para evitar acoplamento dos componentes visuais ao SDK.
+- Evita alterações profundas na camada Matrix original do Cinny e mantém personalizações corporativas isoladas sempre que possível.
 - Recebe URL do homeserver e opções públicas por configuração, nunca segredos administrativos.
 
 ### Backend, plataforma e infraestrutura — Colaborador 1
@@ -71,7 +72,7 @@ Serviço corporativo opcional (FastAPI)
                    ▼                   ▼
        Colaborador 2           Colaborador 1
        Frontend independente   Backend/plataforma independente
-       ├─ adaptador Matrix      ├─ Synapse de homologação
+       ├─ fork do Cinny         ├─ Synapse de homologação
        ├─ cliente de teste      ├─ PostgreSQL e mídia
        ├─ estados simulados     ├─ OIDC e políticas
        └─ testes de UI          └─ testes operacionais
@@ -91,7 +92,7 @@ Serviço corporativo opcional (FastAPI)
 ### Estrutura recomendada
 
 ```text
-frontend/       Colaborador 2: interface, adaptador matrix-js-sdk e testes visuais
+frontend/       Colaborador 2: fork do Cinny, personalização e testes visuais
 platform/       Colaborador 1: configuração do Synapse, contêineres e operação
 backend/        Colaborador 1: integrações FastAPI opcionais; não é o servidor de chat
 docs/           decisões, planejamento e inventário de código aberto
@@ -125,4 +126,4 @@ O diretório `contracts/` será criado somente quando uma extensão corporativa 
 
 ## Estratégia de código aberto
 
-O projeto adotará Matrix/Synapse como plataforma e `matrix-js-sdk` como SDK. A interface será própria; copiar Element Web ou Telegram Web não faz parte da arquitetura aprovada. Consulte `OPEN_SOURCE.md`.
+O projeto adotará Matrix/Synapse como plataforma e o Cinny como base do cliente web. Element Web e Telegram Web não fazem parte da implementação aprovada. Consulte `OPEN_SOURCE.md`.

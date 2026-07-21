@@ -4,11 +4,11 @@
 
 Este repositório será usado para planejar e, somente após autorização explícita, desenvolver um sistema web privado de comunicação corporativa.
 
-O produto adaptará uma plataforma Matrix auto-hospedada, inicialmente Synapse, e terá interface web própria. A organização controlará autenticação, dados e infraestrutura. O produto não utilizará contas, servidores, datacenters, `api_id` ou `api_hash` do Telegram.
+O produto adaptará uma plataforma Matrix auto-hospedada, inicialmente Synapse, e utilizará um fork corporativo do Cinny como interface web. A organização controlará autenticação, dados e infraestrutura. O produto não utilizará contas, servidores, datacenters, `api_id` ou `api_hash` do Telegram.
 
 ## Estado atual
 
-O projeto está na fase de fundação da prova de conceito Matrix. A configuração local de Synapse/PostgreSQL e o adaptador inicial do SDK já existem, mas o fluxo completo ainda não foi validado.
+O projeto está na fase de fundação da prova de conceito Matrix. A configuração local de Synapse/PostgreSQL e o fork inicial do Cinny já existem, mas o fluxo completo ainda não foi validado.
 
 - Não implemente funcionalidades sem solicitação explícita.
 - Não transforme pedidos de planejamento em alterações de código.
@@ -35,10 +35,10 @@ Não é necessário carregar documentos sem relação com a tarefa atual.
 
 Responsável por:
 
-- Desenvolver a interface web e a PWA.
+- Manter o fork corporativo do Cinny e a PWA.
 - Implementar lista de conversas, chat, compositor e componentes de mídia.
-- Criar um adaptador isolado para `matrix-js-sdk`.
-- Implementar sessão, sincronização e tratamento de eventos Matrix no cliente.
+- Preservar a integração Matrix do Cinny e evitar alterações profundas sem necessidade.
+- Implementar as adaptações de sessão, sincronização e eventos necessárias ao ambiente corporativo.
 - Registrar origem e licença do SDK e de qualquer código externo incorporado.
 - Garantir responsividade, acessibilidade e estados de erro.
 
@@ -58,7 +58,7 @@ Responsável por:
 
 Exigem acordo dos dois colaboradores:
 
-- Aprovação das versões do Synapse, Matrix e `matrix-js-sdk`.
+- Aprovação das versões do Synapse, Cinny, Matrix e `matrix-js-sdk`.
 - Configuração compartilhada e convenções de salas e usuários.
 - Alterações no escopo do MVP.
 - Inclusão de dependências relevantes.
@@ -89,23 +89,25 @@ Não utilizar no produto corporativo:
 - Datacenters, bots, canais ou busca global do Telegram.
 - Nome, logotipo ou identidade visual oficial do Telegram.
 
-O `matrix-js-sdk` deve ficar atrás de um adaptador do frontend. Element Web e Telegram Web são apenas referências por padrão; não copiar seus componentes sem registro e aprovação.
+O Cinny aprovado deve preservar sua licença AGPL, origem e avisos. Element Web e Telegram Web são apenas referências; não copiar seus componentes sem registro e aprovação.
 
 ## Processo de trabalho
 
 1. Leia a tarefa e os documentos relacionados.
-2. Confirme o responsável em `docs/TASKS.md`.
-3. Identifique dependências com o trabalho do outro colaborador.
-4. Apresente um plano antes de mudanças grandes ou irreversíveis.
-5. Trabalhe em uma branch específica, nunca diretamente na `main`.
-6. Mantenha a alteração pequena e limitada à tarefa.
-7. Execute os testes aplicáveis quando houver implementação.
-8. Atualize decisões, contratos e inventário quando necessário.
-9. Entregue a alteração para revisão do outro colaborador.
+2. Ao trabalhar em `frontend/`, `platform/` ou `backend/`, leia também o
+   `AGENTS.md` local dessa pasta.
+3. Confirme o responsável em `docs/TASKS.md`.
+4. Identifique dependências com o trabalho do outro colaborador.
+5. Apresente um plano antes de mudanças grandes ou irreversíveis.
+6. Trabalhe em uma branch específica, nunca diretamente na `main`.
+7. Mantenha a alteração pequena e limitada à tarefa.
+8. Execute os testes aplicáveis quando houver implementação.
+9. Atualize decisões, contratos e inventário quando necessário.
+10. Entregue a alteração para revisão do outro colaborador.
 
 ## Trabalho independente
 
-- O Colaborador 1 possui `platform/` e `backend/`; o Colaborador 2 possui `frontend/`.
+- O Colaborador 1 possui `platform/` e `backend/`; o Colaborador 2 possui o fork do Cinny em `frontend/`.
 - O frontend usa um homeserver Matrix de desenvolvimento e não depende da infraestrutura de produção.
 - A plataforma usa clientes Matrix genéricos e não depende da interface própria.
 - O protocolo Matrix não deve ser redefinido em contratos internos.
