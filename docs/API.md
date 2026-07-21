@@ -6,7 +6,7 @@ A proposta anterior de uma API HTTP/WebSocket própria foi substituída pela ado
 
 ## Contrato principal
 
-O frontend utilizará a Matrix Client-Server API por meio de um adaptador sobre `matrix-js-sdk`. Não serão recriados endpoints próprios para salas, mensagens, sincronização, leitura, digitação, presença ou mídia.
+O frontend utilizará a Matrix Client-Server API por meio da integração existente no fork do Cinny. Não serão recriados endpoints próprios para salas, mensagens, sincronização, leitura, digitação, presença ou mídia.
 
 ## Configuração compartilhada inicial
 
@@ -21,9 +21,9 @@ Os dois colaboradores precisam aprovar e documentar:
 - política de criptografia ponta a ponta;
 - capacidades habilitadas ou desabilitadas no servidor.
 
-## Adaptador do frontend
+## Integração do frontend
 
-Componentes visuais não devem chamar `matrix-js-sdk` diretamente. Um adaptador próprio deve expor operações da aplicação, como:
+O fork deve preservar, sempre que possível, a separação interna do Cinny entre componentes visuais e operações Matrix. Personalizações corporativas não devem espalhar novas chamadas diretas ao SDK. A integração existente cobre operações como:
 
 - iniciar e encerrar sessão;
 - observar sincronização;
@@ -34,7 +34,7 @@ Componentes visuais não devem chamar `matrix-js-sdk` diretamente. Um adaptador 
 - atualizar leitura e digitação;
 - observar participantes e presença.
 
-Esse adaptador pertence ao frontend e não constitui uma API de servidor própria.
+Essa camada pertence ao frontend e não constitui uma API de servidor própria.
 
 ## Extensões corporativas
 

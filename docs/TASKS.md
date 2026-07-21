@@ -2,12 +2,12 @@
 
 ## Princípio
 
-O Matrix define o protocolo compartilhado. Depois que configuração, autenticação e convenções forem aprovadas, os colaboradores trabalham em paralelo: um desenvolve a interface sobre `matrix-js-sdk`; o outro implanta, protege e opera o Synapse.
+O Matrix define o protocolo compartilhado. Depois que configuração, autenticação e convenções forem aprovadas, os colaboradores trabalham em paralelo: um mantém o fork corporativo do Cinny; o outro implanta, protege e opera o Synapse.
 
 ## Etapa conjunta curta — prova de conceito e congelamento
 
 - [~] Confirmar Synapse após a prova de conceito; configuração inicial criada, revisão final pendente.
-- [~] Avaliar Synapse `1.156.0` e `matrix-js-sdk` `41.9.0`; aprovação conjunta pendente.
+- [~] Avaliar Synapse `1.156.0`, Cinny `v4.12.3` e `matrix-js-sdk` `41.7.0`; validação conjunta pendente.
 - [ ] Decidir se a federação ficará completamente desabilitada.
 - [ ] Decidir se criptografia ponta a ponta pertence ao MVP.
 - [ ] Escolher o provedor OIDC e o formato dos identificadores dos usuários.
@@ -75,15 +75,17 @@ Aceitação: nenhum backend personalizado duplica funcionalidades nativas da pla
 
 Esta trilha utiliza um homeserver Matrix local ou compartilhado e não depende da configuração de produção.
 
-### F1 — Fundação e SDK
+### F1 — Fundação do fork
 
 - [x] Criar estrutura exclusiva de `frontend/`.
-- [x] Registrar origem, versão e licença do `matrix-js-sdk`.
-- [~] Criar adaptador próprio para encapsular o SDK; autenticação e eventos reativos ainda pendentes.
-- [ ] Definir design, identidade provisória e componentes base.
-- [x] Configurar a URL do homeserver por ambiente.
+- [x] Aprovar o Cinny como base do frontend.
+- [x] Registrar origem, commit e licença AGPL do Cinny.
+- [x] Incorporar o Cinny `v4.12.3` sem o histórico Git externo.
+- [~] Restringir o cliente ao homeserver corporativo; configuração local criada, validação pendente.
+- [ ] Definir nome, identidade e ativos próprios.
+- [ ] Documentar o procedimento de atualização do fork.
 
-Aceitação: a interface inicia sem código do Telegram ou Element e o SDK fica isolado dos componentes visuais.
+Aceitação: o fork inicia, conecta somente ao homeserver configurado e preserva licença, origem e rastreabilidade das alterações.
 
 ### F2 — Sessão e sincronização
 
@@ -92,6 +94,7 @@ Aceitação: a interface inicia sem código do Telegram ou Element e o SDK fica 
 - [ ] Inicializar sincronização e tratar reconexão.
 - [ ] Criar estados de carregamento, vazio, indisponibilidade e acesso negado.
 - [ ] Simular erros para não depender de falhas reais do servidor.
+- [ ] Remover ou ocultar cadastro, seleção de homeserver e descoberta pública.
 
 Aceitação: sessão e sincronização funcionam no homeserver de desenvolvimento.
 
@@ -103,7 +106,7 @@ Aceitação: sessão e sincronização funcionam no homeserver de desenvolviment
 - [ ] Implementar estados de envio, falha e repetição.
 - [ ] Implementar leitura, digitação e presença conforme política.
 
-Aceitação: dois usuários trocam mensagens pela interface própria.
+Aceitação: dois usuários trocam mensagens pelo fork corporativo.
 
 ### F4 — Mídia e experiência
 

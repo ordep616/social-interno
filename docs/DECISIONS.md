@@ -23,9 +23,9 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 
 ## DEC-004 — Reutilização seletiva
 
-- Status: substituída por `DEC-011`.
+- Status: substituída inicialmente por `DEC-011` e posteriormente por `DEC-014`.
 - Decisão original: componentes abertos do Telegram Web poderiam ser avaliados individualmente.
-- Consequência atual: Telegram Web e Element Web podem ser estudados como referência, mas a interface será própria.
+- Consequência atual: o Cinny é a base aprovada; Telegram Web e Element Web permanecem somente como referências.
 
 ## DEC-005 — Divisão inicial
 
@@ -67,7 +67,7 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 
 ## DEC-011 — Interface própria sobre o SDK Matrix
 
-- Status: aceita.
+- Status: substituída por `DEC-014`.
 - Decisão: criar interface web/PWA própria usando `matrix-js-sdk`, sem criar um fork integral do Telegram Web ou Element Web.
 - Motivo: manter identidade e experiência próprias com menor risco de acoplamento e licenciamento.
 - Consequência: referências visuais podem ser estudadas, mas qualquer código incorporado continua sujeito ao inventário e à aprovação.
@@ -80,11 +80,21 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 
 ## DEC-013 — Versões da prova de conceito Matrix
 
-- Status: em avaliação; requer revisão do Colaborador 2 antes do merge.
-- Decisão: iniciar a prova de conceito com Synapse `1.156.0`, PostgreSQL `17.6-alpine` e `matrix-js-sdk` `41.9.0`.
+- Status: atualizada por `DEC-014`; versões ainda exigem validação antes de produção.
+- Decisão original: iniciar a prova de conceito com Synapse `1.156.0`, PostgreSQL `17.6-alpine` e `matrix-js-sdk` `41.9.0`.
+- Atualização: o fork do Cinny `v4.12.3` fixa `matrix-js-sdk` `41.7.0`; essa passa a ser a versão do cliente durante a prova de conceito.
 - Motivo: utilizar versões estáveis e explícitas, evitando tags mutáveis como `latest`.
 - Consequência: atualizações serão deliberadas e acompanhadas de testes e revisão de mudanças incompatíveis.
 - Limite: essas versões ainda não estão aprovadas para produção.
+
+## DEC-014 — Fork corporativo do Cinny
+
+- Status: aceita pelos dois colaboradores.
+- Decisão: utilizar o Cinny `v4.12.3`, commit `69515e8e81d082a7b0609247e296391d3d6f1e38`, como base integral do frontend e preservar o máximo possível de sua interface.
+- Motivo: reduzir o desenvolvimento de recursos Matrix já disponíveis e concentrar a equipe em isolamento, identidade corporativa, autenticação e operação.
+- Licença: AGPL-3.0-only; o código-fonte correspondente e os avisos obrigatórios serão preservados e disponibilizados conforme a licença.
+- Consequência: a interface Next.js própria e seu adaptador inicial foram substituídos. Alterações no fork devem ser pequenas, rastreáveis e reaplicáveis sobre novas versões do Cinny.
+- Limite: servidores externos, cadastro público, descoberta de comunidades públicas e recursos fora do MVP devem permanecer indisponíveis na implantação corporativa.
 
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.
@@ -95,4 +105,4 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Armazenamento de mídia e estratégia de backup.
 - Licença do código próprio.
 - Política de retenção.
-- Nome e identidade visual.
+- Nome e identidade visual definitivos; os textos genéricos atuais são provisórios.
