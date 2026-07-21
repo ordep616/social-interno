@@ -8,9 +8,9 @@ O Matrix define o protocolo compartilhado. Depois que configuração, autentica�
 
 - [~] Confirmar Synapse após a prova de conceito; configuração inicial criada, revisão final pendente.
 - [~] Avaliar Synapse `1.156.0`, Cinny `v4.12.3` e `matrix-js-sdk` `41.7.0`; validação conjunta pendente.
-- [ ] Decidir se a federação ficará completamente desabilitada.
-- [ ] Decidir se criptografia ponta a ponta pertence ao MVP.
-- [ ] Escolher o provedor OIDC e o formato dos identificadores dos usuários.
+- [x] Definir federação privada por lista de permissão, iniciando sem organizações parceiras e sem listener de federação exposto.
+- [x] Definir política híbrida de criptografia ponta a ponta para o MVP.
+- [~] Definir autenticação inicial por convite; domínio de produção e formato definitivo dos identificadores ainda pendentes.
 - [ ] Definir convenções para conversas diretas, grupos e departamentos.
 - [x] Executar prova de conceito: dois usuários, uma sala, mensagem, leitura e arquivo.
 
@@ -34,10 +34,11 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 ### P2 — Isolamento e identidade
 
 - [x] Desabilitar cadastro público na configuração local.
-- [~] Retirar o listener de federação e configurar lista vazia; teste em execução pendente.
-- [ ] Integrar o provedor OIDC escolhido.
-- [ ] Definir provisionamento, bloqueio e desligamento de usuários.
-- [ ] Separar papéis de usuário, operador e administrador.
+- [x] Retirar o listener de federação, configurar lista vazia e validar o bloqueio localmente e pela borda pública temporária.
+- [ ] Implementar o serviço FastAPI de convites administrativos de uso único, com validade de 24 horas.
+- [ ] Implementar provisionamento, bloqueio, redefinição de senha e desligamento de usuários pela API administrativa do Synapse.
+- [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
+- [ ] Avaliar OIDC como evolução posterior, sem bloquear o MVP baseado em convite.
 - [ ] Testar acessos negados e revogação de sessão.
 
 Aceitação: somente identidades corporativas autorizadas entram e não há comunicação externa.
@@ -155,8 +156,8 @@ Aceitação: o fluxo de mídia funciona em computador e celular dentro dos limit
 ## Bloqueios reais atuais
 
 - Aceitação final da licença e do modelo de manutenção do Synapse.
-- Provedor de identidade corporativa ainda não informado.
-- Federação e criptografia ponta a ponta ainda não decididas.
+- Domínio de produção e formato definitivo dos identificadores Matrix ainda não definidos.
+- Serviço de convites e ciclo de vida das contas ainda não implementados.
 - Política de retenção ainda não aprovada.
 - Licença do código próprio ainda não definida.
 - Nome e identidade visual ainda não definidos; isso não bloqueia a prova de conceito.
