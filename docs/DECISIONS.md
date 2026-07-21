@@ -96,12 +96,38 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Consequência: a interface Next.js própria e seu adaptador inicial foram substituídos. Alterações no fork devem ser pequenas, rastreáveis e reaplicáveis sobre novas versões do Cinny.
 - Limite: servidores externos, cadastro público, descoberta de comunidades públicas e recursos fora do MVP devem permanecer indisponíveis na implantação corporativa.
 
+## DEC-015 — Federação privada inicialmente fechada
+
+- Status: aceita pelos dois colaboradores e validada na prova de conceito.
+- Decisão: a arquitetura admite somente federação privada por lista explícita de organizações parceiras; inicialmente a lista ficará vazia e nenhum listener de federação será exposto.
+- Validação: a API cliente respondeu com `200`, enquanto a API de federação respondeu com `404`, tanto localmente quanto pela borda pública temporária. O cadastro público respondeu com `403` e o diretório público sem autenticação respondeu com `401`.
+- Consequência: no estado inicial não existe comunicação externa. A inclusão futura de uma organização exige aprovação conjunta, lista de permissão recíproca, proteção na borda e novo teste entre dois homeservers.
+- Limite: a lista de permissão do Synapse não substitui firewall, proxy reverso ou controle de ingresso.
+
+## DEC-016 — Política híbrida de criptografia ponta a ponta
+
+- Status: aceita pelos dois colaboradores.
+- Decisão: conversas diretas internas terão criptografia ponta a ponta obrigatória; grupos confidenciais também usarão criptografia; grupos institucionais ou sujeitos a auditoria operarão sem criptografia ponta a ponta.
+- Administração: o administrador define a política no momento da criação do grupo e a interface deve indicar claramente o estado de criptografia.
+- Recuperação: recuperação e proteção das chaves devem estar definidas e testadas antes do piloto.
+- Federação: salas federadas, quando existirem, terão política de criptografia avaliada separadamente.
+
+## DEC-017 — Cadastro controlado por convite
+
+- Status: aceita pelos dois colaboradores.
+- Decisão: o cadastro público continuará desabilitado. Um `platform_admin` poderá gerar um link secreto, de uso único e com validade de 24 horas, para que o convidado escolha usuário e senha sem informar e-mail.
+- Papéis: o convite poderá conceder `user` ou `group_admin`. A promoção a `platform_admin` será uma operação administrativa separada.
+- Implementação: um serviço FastAPI validará o hash do token, validade, uso, cancelamento e limites de tentativa; depois criará a conta pela API administrativa do Synapse, aplicará o papel e invalidará o convite.
+- Segurança: token administrativo nunca será entregue ao navegador. Logs de auditoria não registrarão token de convite, senha ou credenciais administrativas.
+- Ciclo de vida: redefinição de senha, bloqueio e desligamento serão operações administrativas; seus procedimentos e a revogação de sessões ainda precisam ser implementados e testados.
+- Evolução: OIDC poderá ser avaliado posteriormente e não bloqueia o MVP baseado em convite.
+
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.
 - Aprovação das versões da prova de conceito para homologação e produção.
-- Federação completamente desabilitada ou restrita.
-- Criptografia ponta a ponta no MVP e política de recuperação.
-- Provedor OIDC.
+- Domínio de produção e formato definitivo dos identificadores Matrix.
+- Implementação e teste da recuperação de chaves para a política híbrida de criptografia.
+- Implementação do serviço de convites e do ciclo de vida das contas.
 - Armazenamento de mídia e estratégia de backup.
 - Licença do código próprio.
 - Política de retenção.
