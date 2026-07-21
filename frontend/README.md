@@ -9,9 +9,9 @@ npm ci
 npm start
 ```
 
-O cliente usa inicialmente `http://localhost:8008`, definido em `config.json`,
-e não permite selecionar outro homeserver. Antes de homologação, esse endereço
-deverá ser substituído pelo domínio HTTPS aprovado.
+O cliente usa inicialmente `http://localhost:8008`, definido em `config.json`.
+O homeserver é fixo na configuração e não possui seletor na interface. Antes
+de homologação, esse endereço deverá ser substituído pelo domínio HTTPS aprovado.
 
 ## Limites atuais
 

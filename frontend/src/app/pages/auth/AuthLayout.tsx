@@ -20,7 +20,6 @@ import {
 } from '../../hooks/useClientConfig';
 import { AsyncStatus, useAsyncCallback } from '../../hooks/useAsyncCallback';
 import { LOGIN_PATH, RESET_PASSWORD_PATH } from '../paths';
-import { ServerPicker } from './ServerPicker';
 import { AutoDiscoveryAction, autoDiscovery } from '../../cs-api';
 import { SpecVersionsLoader } from '../../components/SpecVersionsLoader';
 import { SpecVersionsProvider } from '../../hooks/useSpecVersions';
@@ -101,20 +100,6 @@ export function AuthLayout() {
     }
   }, [urlEncodedServer, navigate, location, server]);
 
-  const selectServer = useCallback(
-    (newServer: string) => {
-      if (newServer === server) {
-        if (discoveryState.status === AsyncStatus.Loading) return;
-        discoverServer(server);
-        return;
-      }
-      navigate(
-        generatePath(currentAuthPath(location.pathname), { server: encodeURIComponent(newServer) })
-      );
-    },
-    [navigate, location, discoveryState, server, discoverServer]
-  );
-
   const [autoDiscoveryError, autoDiscoveryInfo] =
     discoveryState.status === AsyncStatus.Success ? discoveryState.data.response : [];
 
@@ -134,17 +119,6 @@ export function AuthLayout() {
             </Box>
           </Header>
           <Box className={css.AuthCardContent} direction="Column">
-            <Box direction="Column" gap="100">
-              <Text as="label" size="L400" priority="300">
-                Homeserver
-              </Text>
-              <ServerPicker
-                server={server}
-                serverList={clientConfig.homeserverList ?? []}
-                allowCustomServer={clientConfig.allowCustomHomeservers}
-                onServerChange={selectServer}
-              />
-            </Box>
             {discoveryState.status === AsyncStatus.Loading && (
               <AuthLayoutLoading message="Looking for homeserver..." />
             )}
