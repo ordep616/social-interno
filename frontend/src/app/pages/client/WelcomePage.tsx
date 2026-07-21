@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button, Icon, Icons, Text, config, toRem } from 'folds';
 import { Page, PageHero, PageHeroSection } from '../../components/page';
-import CinnySVG from '../../../../public/res/svg/cinny.svg';
+import AppLogo from '../../../../public/res/logo/company-logo.png';
 
 export function WelcomePage() {
   return (
@@ -14,11 +14,19 @@ export function WelcomePage() {
       >
         <PageHeroSection>
           <PageHero
-            icon={<img width="70" height="70" src={CinnySVG} alt="Cinny Logo" />}
-            title="Welcome to Cinny"
+            icon={
+              <img
+                width="70"
+                height="70"
+                src={AppLogo}
+                alt="Betweenus logo"
+                style={{ borderRadius: '50%', objectFit: 'cover' }}
+              />
+            }
+            title="Bem-Vindo ao Betweenus"
             subTitle={
               <span>
-                Yet another matrix client.{' '}
+                Exp -- TalkToMe
                 <a
                   href="https://github.com/cinnyapp/cinny/releases"
                   target="_blank"

@@ -4,7 +4,7 @@ import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
 import { SettingTile } from '../../../components/setting-tile';
-import CinnySVG from '../../../../../public/res/svg/cinny.svg';
+import AppLogo from '../../../../../public/res/logo/company-logo.png';
 import { clearCacheAndReload } from '../../../../client/initMatrix';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 
@@ -37,15 +37,20 @@ export function About({ requestClose }: AboutProps) {
               <Box gap="400">
                 <Box shrink="No">
                   <img
-                    style={{ width: toRem(60), height: toRem(60) }}
-                    src={CinnySVG}
-                    alt="Cinny logo"
+                    style={{
+                      width: toRem(60),
+                      height: toRem(60),
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                    }}
+                    src={AppLogo}
+                    alt="Exp logo"
                   />
                 </Box>
                 <Box direction="Column" gap="300">
                   <Box direction="Column" gap="100">
                     <Box gap="100" alignItems="End">
-                      <Text size="H3">Cinny</Text>
+                      <Text size="H3">Exp</Text>
                       <Text size="T200">v4.12.3</Text>
                     </Box>
                     <Text>Yet another matrix client.</Text>
