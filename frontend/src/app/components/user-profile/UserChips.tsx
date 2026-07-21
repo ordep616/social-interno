@@ -1,5 +1,4 @@
 import React, { MouseEventHandler, useCallback, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import FocusTrap from 'focus-trap-react';
 import { isKeyHotkey } from 'is-hotkey';
 import { Room } from 'matrix-js-sdk';
@@ -22,10 +21,8 @@ import {
 } from 'folds';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { getMxIdServer } from '../../utils/matrix';
-import { useCloseUserRoomProfile } from '../../state/hooks/userRoomProfile';
 import { stopPropagation } from '../../utils/keyboard';
 import { copyToClipboard } from '../../utils/dom';
-import { getExploreServerPath } from '../../pages/pathUtils';
 import { AsyncStatus, useAsyncCallback } from '../../hooks/useAsyncCallback';
 import { factoryRoomIdByAtoZ } from '../../utils/sort';
 import {
@@ -33,6 +30,7 @@ import {
   useMutualRoomsSupport,
   useUnstableMutualRoomsSupport,
 } from '../../hooks/useMutualRooms';
+import { useCloseUserRoomProfile } from '../../state/hooks/userRoomProfile';
 import { useRoomNavigate } from '../../hooks/useRoomNavigate';
 import { useDirectRooms } from '../../pages/client/direct/useDirectRooms';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
@@ -49,8 +47,6 @@ import { SettingTile } from '../setting-tile';
 export function ServerChip({ server }: { server: string }) {
   const mx = useMatrixClient();
   const myServer = getMxIdServer(mx.getSafeUserId());
-  const navigate = useNavigate();
-  const closeProfile = useCloseUserRoomProfile();
   const [copied, setCopied] = useTimeoutToggle();
 
   const [cords, setCords] = useState<RectCords>();
@@ -92,18 +88,6 @@ export function ServerChip({ server }: { server: string }) {
                 }}
               >
                 <Text size="B300">Copy Server</Text>
-              </MenuItem>
-              <MenuItem
-                variant="Surface"
-                fill="None"
-                size="300"
-                radii="300"
-                onClick={() => {
-                  navigate(getExploreServerPath(server));
-                  closeProfile();
-                }}
-              >
-                <Text size="B300">Explore Community</Text>
               </MenuItem>
             </div>
             <Line size="300" />

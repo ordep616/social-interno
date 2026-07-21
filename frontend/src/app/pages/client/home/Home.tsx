@@ -29,14 +29,7 @@ import {
   NavItemContent,
   NavLink,
 } from '../../../components/nav';
-import {
-  encodeSearchParamValueArray,
-  getExplorePath,
-  getHomeCreatePath,
-  getHomeRoomPath,
-  getHomeSearchPath,
-  withSearchParam,
-} from '../../pathUtils';
+import { getHomeCreatePath, getHomeRoomPath, getHomeSearchPath } from '../../pathUtils';
 import { getCanonicalAliasOrRoomId } from '../../../utils/matrix';
 import { useSelectedRoom } from '../../../hooks/router/useSelectedRoom';
 import {
@@ -62,9 +55,6 @@ import {
   getRoomNotificationMode,
   useRoomsNotificationPreferencesContext,
 } from '../../../hooks/useRoomsNotificationPreferences';
-import { UseStateProvider } from '../../../components/UseStateProvider';
-import { JoinAddressPrompt } from '../../../components/join-address-prompt';
-import { _RoomSearchParams } from '../../paths';
 
 type HomeMenuProps = {
   requestClose: () => void;
@@ -170,23 +160,11 @@ function HomeEmpty() {
           </Text>
         }
         options={
-          <>
-            <Button onClick={() => navigate(getHomeCreatePath())} variant="Secondary" size="300">
-              <Text size="B300" truncate>
-                Create Room
-              </Text>
-            </Button>
-            <Button
-              onClick={() => navigate(getExplorePath())}
-              variant="Secondary"
-              fill="Soft"
-              size="300"
-            >
-              <Text size="B300" truncate>
-                Explore Community Rooms
-              </Text>
-            </Button>
-          </>
+          <Button onClick={() => navigate(getHomeCreatePath())} variant="Secondary" size="300">
+            <Text size="B300" truncate>
+              Create Room
+            </Text>
+          </Button>
         }
       />
     </NavEmptyCenter>
@@ -257,44 +235,6 @@ export function Home() {
                   </NavItemContent>
                 </NavButton>
               </NavItem>
-              <UseStateProvider initial={false}>
-                {(open, setOpen) => (
-                  <>
-                    <NavItem variant="Background" radii="400">
-                      <NavButton onClick={() => setOpen(true)}>
-                        <NavItemContent>
-                          <Box as="span" grow="Yes" alignItems="Center" gap="200">
-                            <Avatar size="200" radii="400">
-                              <Icon src={Icons.Link} size="100" />
-                            </Avatar>
-                            <Box as="span" grow="Yes">
-                              <Text as="span" size="Inherit" truncate>
-                                Join with Address
-                              </Text>
-                            </Box>
-                          </Box>
-                        </NavItemContent>
-                      </NavButton>
-                    </NavItem>
-                    {open && (
-                      <JoinAddressPrompt
-                        onCancel={() => setOpen(false)}
-                        onOpen={(roomIdOrAlias, viaServers, eventId) => {
-                          setOpen(false);
-                          const path = getHomeRoomPath(roomIdOrAlias, eventId);
-                          navigate(
-                            viaServers
-                              ? withSearchParam<_RoomSearchParams>(path, {
-                                  viaServers: encodeSearchParamValueArray(viaServers),
-                                })
-                              : path
-                          );
-                        }}
-                      />
-                    )}
-                  </>
-                )}
-              </UseStateProvider>
               <NavItem variant="Background" radii="400" aria-selected={searchSelected}>
                 <NavLink to={getHomeSearchPath()}>
                   <NavItemContent>
