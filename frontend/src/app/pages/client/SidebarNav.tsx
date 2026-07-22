@@ -61,7 +61,9 @@ export function SidebarNav() {
 
     const handlePointerMove = (evt: PointerEvent) => {
       const offset = evt.clientX - resizeStartRef.current.pointerX;
-      setSidebarWidth(clampSidebarWidth(resizeStartRef.current.sidebarWidth + offset));
+      const nextWidth = clampSidebarWidth(resizeStartRef.current.sidebarWidth + offset);
+      manuallyResizedRef.current = nextWidth > DEFAULT_SIDEBAR_WIDTH;
+      setSidebarWidth(nextWidth);
     };
 
     const handlePointerEnd = () => setResizing(false);
@@ -86,7 +88,7 @@ export function SidebarNav() {
     evt.preventDefault();
     evt.stopPropagation();
     clearHoverExpandTimer();
-    manuallyResizedRef.current = true;
+    manuallyResizedRef.current = sidebarWidth > DEFAULT_SIDEBAR_WIDTH;
     resizeStartRef.current = {
       pointerX: evt.clientX,
       sidebarWidth,
@@ -98,21 +100,27 @@ export function SidebarNav() {
     if (evt.key === 'ArrowLeft') {
       evt.preventDefault();
       clearHoverExpandTimer();
-      manuallyResizedRef.current = true;
-      setSidebarWidth((currentWidth) => clampSidebarWidth(currentWidth - 16));
+      setSidebarWidth((currentWidth) => {
+        const nextWidth = clampSidebarWidth(currentWidth - 16);
+        manuallyResizedRef.current = nextWidth > DEFAULT_SIDEBAR_WIDTH;
+        return nextWidth;
+      });
     }
 
     if (evt.key === 'ArrowRight') {
       evt.preventDefault();
       clearHoverExpandTimer();
-      manuallyResizedRef.current = true;
-      setSidebarWidth((currentWidth) => clampSidebarWidth(currentWidth + 16));
+      setSidebarWidth((currentWidth) => {
+        const nextWidth = clampSidebarWidth(currentWidth + 16);
+        manuallyResizedRef.current = nextWidth > DEFAULT_SIDEBAR_WIDTH;
+        return nextWidth;
+      });
     }
 
     if (evt.key === 'Home') {
       evt.preventDefault();
       clearHoverExpandTimer();
-      manuallyResizedRef.current = true;
+      manuallyResizedRef.current = false;
       setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
     }
 
