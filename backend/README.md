@@ -39,4 +39,37 @@ O contrato está definido em `../docs/API.md` e segue o estilo REST aprovado em 
 
 A fundação aprovada em `DEC-019` usa CPython `>=3.14,<3.15`, FastAPI síncrono, Uvicorn, SQLAlchemy `2.0.x`, Psycopg 3 com extra `binary`, Alembic, `pydantic-settings` e HTTPX. O ambiente será gerenciado por `uv` com `uv.lock`; Ruff, mypy, pytest e pytest-cov formam a verificação inicial de qualidade.
 
-As versões exatas serão fixadas na primeira resolução do `uv.lock`. Dependências transitivas e bibliotecas incluídas pelo extra `binary` devem ser inventariadas antes da incorporação; as obrigações da `LGPL-3.0-only` do Psycopg exigem conferência antes de homologação ou produção.
+As versões exatas e dependências transitivas estão fixadas no `uv.lock` e inventariadas em `../docs/OPEN_SOURCE.md`. As obrigações da `LGPL-3.0-only` do Psycopg e as bibliotecas incluídas pelo extra `binary` ainda exigem conferência antes de homologação ou produção.
+
+## Fundação executável
+
+A fundação inicial contém apenas:
+
+- aplicação FastAPI com `GET /health`;
+- configuração validada por variáveis `BACKEND_*`;
+- criação preguiçosa do engine e das sessões SQLAlchemy;
+- Alembic com revisão-base, sem tabelas de negócio;
+- testes de saúde, configuração, banco e ponto de entrada ASGI.
+
+Endpoints de convite, modelos de negócio e chamadas administrativas ao Synapse ainda não foram implementados.
+
+## Desenvolvimento local
+
+Na pasta `backend/`:
+
+```bash
+uv sync
+cp .env.example .env
+uv run uvicorn social_internal_backend.main:app --app-dir src --host 127.0.0.1 --port 8081
+```
+
+Verificações:
+
+```bash
+uv run ruff format --check .
+uv run ruff check .
+uv run mypy
+uv run pytest
+```
+
+O arquivo `.env` é local e não deve ser versionado. `.env.example` contém apenas valores fictícios.

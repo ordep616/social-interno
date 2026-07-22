@@ -45,3 +45,14 @@ next-env.d.ts
 /.pnpm-store/
 /outputs/
 /work/
+
+# Python
+**/.venv/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+coverage.xml
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
