@@ -49,7 +49,8 @@ A fundação inicial contém apenas:
 - configuração validada por variáveis `BACKEND_*`;
 - criação preguiçosa do engine e das sessões SQLAlchemy;
 - modelo `Invitation` que armazena apenas o hash SHA-256 do token;
-- Alembic com revisão-base e migração reversível da tabela `invitations`;
+- modelo `UserRoleAssignment` que associa uma identidade Matrix a um papel próprio;
+- Alembic com revisão-base e migrações reversíveis de `invitations` e `user_role_assignments`;
 - gerador de token URL-safe com 256 bits de entropia e hash SHA-256;
 - repositório SQLAlchemy com paginação e transições atômicas;
 - serviço interno para emissão, validação, revogação, reserva, conclusão e liberação;
@@ -57,7 +58,20 @@ A fundação inicial contém apenas:
 
 O token aberto existe apenas no retorno da emissão e não aparece no `repr` do resultado. A emissão fixa validade de 24 horas. A reserva usa uma atualização condicional de `pending` para `processing`, impedindo que duas tentativas processem o mesmo convite; a conclusão e a liberação também usam transições condicionais.
 
-Endpoints REST, autenticação e autorização administrativas, limites de tentativa, auditoria e chamadas administrativas ao Synapse ainda não foram implementados.
+Endpoints REST, validação da sessão Matrix, aplicação da autorização nos endpoints, limites de tentativa, auditoria e chamadas administrativas ao Synapse ainda não foram implementados.
+
+## Bootstrap do primeiro administrador
+
+O primeiro `platform_admin` é atribuído por um comando local, depois que a conta Matrix correspondente já existir no Synapse. O comando não cria a conta, não recebe senha ou token e não concede administração global do Synapse.
+
+Com o banco próprio migrado e as variáveis `BACKEND_*` disponíveis, execute na pasta `backend/`:
+
+```bash
+PYTHONPATH=src uv run python -m \
+  social_internal_backend.commands.bootstrap_platform_admin @admin:localhost
+```
+
+Repetir o comando para a mesma identidade é idempotente. Depois do primeiro bootstrap, outra identidade é recusada; promoções posteriores deverão usar o processo administrativo separado e auditado previsto em `DEC-017`. Um bloqueio transacional no PostgreSQL impede que duas execuções concorrentes criem dois primeiros administradores.
 
 ## Desenvolvimento local
 
@@ -88,5 +102,7 @@ uv run alembic check
 A migração de convites foi validada com upgrade, downgrade e reaplicação em PostgreSQL `17.6-alpine`. O banco rejeitou papéis fora do contrato, hashes inválidos e estados `used` ou `revoked` sem seus campos obrigatórios.
 
 O serviço interno também foi validado em PostgreSQL `17.6-alpine`: emissão, validade de 24 horas, validação sem mutação, revogação idempotente, expiração, liberação após falha e conclusão funcionaram. Em duas reservas simultâneas do mesmo token, apenas uma avançou para `processing`.
+
+A migração de papéis e o bootstrap foram validados no mesmo PostgreSQL com upgrade, downgrade e reaplicação. O comando foi testado de forma idempotente e duas execuções simultâneas com identidades diferentes resultaram em somente um `platform_admin` inicial.
 
 O arquivo `.env` é local e não deve ser versionado. `.env.example` contém apenas valores fictícios.
