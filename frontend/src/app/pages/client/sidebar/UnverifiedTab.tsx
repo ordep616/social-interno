@@ -3,7 +3,9 @@ import { Badge, color, Icon, Icons, Text } from 'folds';
 import {
   SidebarAvatar,
   SidebarItem,
+  SidebarItemAction,
   SidebarItemBadge,
+  SidebarItemLabel,
   SidebarItemTooltip,
 } from '../../../components/sidebar';
 import { useDeviceIds, useDeviceList, useSplitCurrentDevice } from '../../../hooks/useDeviceList';
@@ -53,18 +55,21 @@ function UnverifiedIndicator() {
             tooltip={unverified ? 'Dispositivo não verificado' : 'Dispositivos não verificados'}
           >
             {(triggerRef) => (
-              <SidebarAvatar
-                className={unverified ? css.UnverifiedAvatar : css.UnverifiedOtherAvatar}
-                as="button"
-                ref={triggerRef}
-                outlined
-                onClick={() => setSettings(true)}
-              >
-                <Icon
-                  style={{ color: unverified ? color.Critical.Main : color.Warning.Main }}
-                  src={Icons.ShieldUser}
-                />
-              </SidebarAvatar>
+              <SidebarItemAction ref={triggerRef} onClick={() => setSettings(true)}>
+                <SidebarAvatar
+                  className={unverified ? css.UnverifiedAvatar : css.UnverifiedOtherAvatar}
+                  as="span"
+                  outlined
+                >
+                  <Icon
+                    style={{ color: unverified ? color.Critical.Main : color.Warning.Main }}
+                    src={Icons.ShieldUser}
+                  />
+                </SidebarAvatar>
+                <SidebarItemLabel>
+                  {unverified ? 'Dispositivo não verificado' : 'Dispositivos não verificados'}
+                </SidebarItemLabel>
+              </SidebarItemAction>
             )}
           </SidebarItemTooltip>
           {!unverified && unverifiedDeviceCount && unverifiedDeviceCount > 0 && (

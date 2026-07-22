@@ -5,7 +5,9 @@ import { useAtomValue } from 'jotai';
 import {
   SidebarAvatar,
   SidebarItem,
+  SidebarItemAction,
   SidebarItemBadge,
+  SidebarItemLabel,
   SidebarItemTooltip,
 } from '../../../components/sidebar';
 import { allInvitesAtom } from '../../../state/room-list/inviteList';
@@ -47,9 +49,12 @@ export function InboxTab() {
     <SidebarItem active={inboxSelected}>
       <SidebarItemTooltip tooltip="Caixa de entrada">
         {(triggerRef) => (
-          <SidebarAvatar as="button" ref={triggerRef} outlined onClick={handleInboxClick}>
-            <Icon src={Icons.Inbox} filled={inboxSelected} />
-          </SidebarAvatar>
+          <SidebarItemAction ref={triggerRef} onClick={handleInboxClick}>
+            <SidebarAvatar as="span" outlined>
+              <Icon src={Icons.Inbox} filled={inboxSelected} />
+            </SidebarAvatar>
+            <SidebarItemLabel>Caixa de entrada</SidebarItemLabel>
+          </SidebarItemAction>
         )}
       </SidebarItemTooltip>
       {inviteCount > 0 && (
