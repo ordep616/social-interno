@@ -38,6 +38,11 @@ export const CenterContrast = style({
   },
 });
 
+export const WelcomeLogo = style({
+  borderRadius: 8,
+  objectFit: 'contain',
+});
+
 export const NeonChatButton = style({
   minWidth: 'min(100%, 320px)',
   paddingInline: '24px',

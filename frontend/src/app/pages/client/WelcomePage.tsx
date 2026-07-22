@@ -22,13 +22,14 @@ import {
   AddUserModal,
   AddUserModalBody,
   CenterContrast,
+  WelcomeLogo,
   NeonChatButton,
   NeonChatButtonText,
   WelcomePageRoot,
   WelcomeTitle,
 } from './WelcomePage.css';
 import WelcomeBackground from '../../../../public/res/background/betweenus-welcome.jpeg';
-import AppLogo from '../../../../public/res/logo/company-logo.png';
+import WelcomeLogoImage from '../../../../public/res/logo/welcome-logo.png';
 
 export function WelcomePage() {
   const [addUserModal, setAddUserModal] = useState(false);
@@ -47,11 +48,11 @@ export function WelcomePage() {
           <PageHeroSection>
             <Box className={CenterContrast} direction="Column" alignItems="Center" gap="500">
               <img
+                className={WelcomeLogo}
                 width="160"
                 height="160"
-                src={AppLogo}
-                alt="Betweenus logo"
-                style={{ borderRadius: '50%', objectFit: 'cover' }}
+                src={WelcomeLogoImage}
+                alt="Logo Betweenus"
               />
               <Text className={WelcomeTitle} as="h1" align="Center" size="H2">
                 Bem-vindo ao Betweenus
