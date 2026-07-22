@@ -65,9 +65,9 @@ Aceitação: o ambiente de homologação é observável, recuperável e pronto p
 
 ### P5 — Integrações opcionais
 
-- [ ] Levantar lacunas que Synapse, Matrix e OIDC não atendem.
+- [ ] Levantar lacunas que Synapse, Matrix e suas APIs administrativas não atendem.
 - [ ] Priorizar integrações com RH, ERP, relatórios ou auditoria personalizada.
-- [ ] Criar FastAPI somente após aprovar uma necessidade concreta.
+- [ ] Criar novas integrações FastAPI somente após aprovar outra necessidade concreta.
 - [ ] Manter qualquer serviço auxiliar fora do caminho principal das mensagens.
 
 Aceitação: nenhum backend personalizado duplica funcionalidades nativas da plataforma.
@@ -90,7 +90,7 @@ Aceitação: o fork inicia, conecta somente ao homeserver configurado e preserva
 
 ### F2 — Sessão e sincronização
 
-- [ ] Implementar entrada pelo fluxo definido com o Synapse/OIDC.
+- [ ] Implementar entrada pelo fluxo de convite e autenticação local do Synapse.
 - [ ] Restaurar e encerrar sessão com segurança.
 - [ ] Inicializar sincronização e tratar reconexão.
 - [ ] Criar estados de carregamento, vazio, indisponibilidade e acesso negado.
@@ -143,7 +143,7 @@ Aceitação: o fluxo de mídia funciona em computador e celular dentro dos limit
 
 ### I4 — Segurança e piloto
 
-- Validar OIDC, permissões, retenção, auditoria, backup e experiência PWA.
+- Validar convites, permissões, retenção, auditoria, backup e experiência PWA.
 
 ## Regras para bloqueios
 

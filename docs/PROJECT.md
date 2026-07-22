@@ -12,7 +12,7 @@ Criar um sistema web privado de comunicação corporativa, acessível pelo naveg
 
 ## MVP
 
-- Login corporativo ou login provisório controlado durante a homologação.
+- Cadastro por convite administrativo e login Matrix controlado.
 - Diretório interno de usuários.
 - Conversas individuais.
 - Grupos privados.
@@ -23,6 +23,7 @@ Criar um sistema web privado de comunicação corporativa, acessível pelo naveg
 - Envio de imagens e documentos.
 - Painel administrativo básico.
 - Registro de ações administrativas.
+- Criptografia ponta a ponta conforme a política híbrida aprovada.
 - Interface responsiva para computador e celular.
 
 ## Fora do MVP
@@ -31,7 +32,6 @@ Criar um sistema web privado de comunicação corporativa, acessível pelo naveg
 - Comunicação com usuários externos.
 - Bots públicos.
 - Chamadas de voz e vídeo.
-- Criptografia ponta a ponta com múltiplos dispositivos.
 - Federação com outras organizações.
 - Compatibilidade com a rede Telegram.
 
