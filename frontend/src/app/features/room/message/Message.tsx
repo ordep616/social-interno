@@ -32,7 +32,7 @@ import React, {
 } from 'react';
 import FocusTrap from 'focus-trap-react';
 import { useHover, useFocusWithin } from 'react-aria';
-import { MatrixEvent, Room } from 'matrix-js-sdk';
+import { EventStatus, MatrixEvent, Room } from 'matrix-js-sdk';
 import { Relations } from 'matrix-js-sdk/lib/models/relations';
 import classNames from 'classnames';
 import { RoomPinnedEventsEventContent } from 'matrix-js-sdk/lib/types';
@@ -74,8 +74,89 @@ import { MemberPowerTag, StateEvent } from '../../../../types/matrix/room';
 import { PowerIcon } from '../../../components/power';
 import colorMXID from '../../../../util/colorMXID';
 import { getPowerTagIconSrc } from '../../../hooks/useMemberPowerTag';
+import { useRoomEventReaders } from '../../../hooks/useRoomEventReaders';
 
 export type ReactionHandler = (keyOrMxc: string, shortcode: string) => void;
+
+type MessageDeliveryState = 'sending' | 'sent' | 'seen' | 'failed';
+
+const getMessageDeliveryState = (mEvent: MatrixEvent, seen: boolean): MessageDeliveryState => {
+  const status = mEvent.getAssociatedStatus();
+  const eventId = mEvent.getId();
+
+  if (status === EventStatus.NOT_SENT || status === EventStatus.CANCELLED) {
+    return 'failed';
+  }
+
+  if (seen) {
+    return 'seen';
+  }
+
+  if (
+    status === EventStatus.ENCRYPTING ||
+    status === EventStatus.SENDING ||
+    status === EventStatus.QUEUED ||
+    (!eventId && status !== EventStatus.SENT) ||
+    (eventId && !eventId.startsWith('$') && status !== EventStatus.SENT)
+  ) {
+    return 'sending';
+  }
+
+  return 'sent';
+};
+
+type MessageDeliveryIndicatorProps = {
+  room: Room;
+  mEvent: MatrixEvent;
+  hideReadReceipts?: boolean;
+};
+
+function MessageDeliveryIndicator({
+  room,
+  mEvent,
+  hideReadReceipts,
+}: MessageDeliveryIndicatorProps) {
+  const mx = useMatrixClient();
+  const myUserId = mx.getUserId();
+  const readers = useRoomEventReaders(room, hideReadReceipts ? undefined : mEvent.getId());
+  const seen = readers.some((readerId) => readerId !== myUserId);
+  const status = getMessageDeliveryState(mEvent, seen);
+
+  const statusContent = {
+    sending: {
+      icon: Icons.Clock,
+      label: 'Enviando',
+    },
+    sent: {
+      icon: Icons.Check,
+      label: 'Enviado',
+    },
+    seen: {
+      icon: Icons.CheckTwice,
+      label: 'Visto',
+    },
+    failed: {
+      icon: Icons.Warning,
+      label: 'Falhou',
+    },
+  }[status];
+
+  return (
+    <Box
+      className={css.MessageDeliveryStatus}
+      data-status={status}
+      title={statusContent.label}
+      aria-label={statusContent.label}
+    >
+      <Text as="span" size="T200">
+        {statusContent.label}
+      </Text>
+      <span className={css.MessageDeliveryIcon}>
+        <Icon size="50" src={statusContent.icon} />
+      </span>
+    </Box>
+  );
+}
 
 type MessageQuickReactionsProps = {
   onReaction: ReactionHandler;
@@ -715,6 +796,13 @@ export const Message = as<'div', MessageProps>(
     const useAuthentication = useMediaAuthentication();
     const senderId = mEvent.getSender() ?? '';
     const isOwnMessage = senderId === mx.getUserId();
+    const deliveryIndicatorJSX = isOwnMessage && !edit && !mEvent.isRedacted() && (
+      <MessageDeliveryIndicator
+        room={room}
+        mEvent={mEvent}
+        hideReadReceipts={hideReadReceipts}
+      />
+    );
 
     const [hover, setHover] = useState(false);
     const { hoverProps } = useHover({ onHoverChange: setHover });
@@ -825,6 +913,7 @@ export const Message = as<'div', MessageProps>(
         ) : (
           children
         )}
+        {deliveryIndicatorJSX}
         {reactions}
       </Box>
     );
