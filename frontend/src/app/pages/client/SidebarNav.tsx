@@ -1,5 +1,6 @@
 import React, {
   KeyboardEventHandler,
+  MouseEventHandler,
   PointerEventHandler,
   useEffect,
   useRef,
@@ -28,18 +29,29 @@ import { CreateTab } from './sidebar/CreateTab';
 const DEFAULT_SIDEBAR_WIDTH = 66;
 const MAX_SIDEBAR_WIDTH = 240;
 const EXPANDED_SIDEBAR_WIDTH = 128;
+const HOVER_EXPAND_DELAY_MS = 500;
 
 const clampSidebarWidth = (width: number): number =>
   Math.min(MAX_SIDEBAR_WIDTH, Math.max(DEFAULT_SIDEBAR_WIDTH, width));
 
 export function SidebarNav() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const hoverExpandTimerRef = useRef<number>();
+  const manuallyResizedRef = useRef(false);
   const resizeStartRef = useRef({
     pointerX: 0,
     sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
   });
   const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
   const [resizing, setResizing] = useState(false);
+
+  const clearHoverExpandTimer = () => {
+    if (hoverExpandTimerRef.current === undefined) return;
+    window.clearTimeout(hoverExpandTimerRef.current);
+    hoverExpandTimerRef.current = undefined;
+  };
+
+  useEffect(() => clearHoverExpandTimer, []);
 
   useEffect(() => {
     if (!resizing) return undefined;
@@ -73,6 +85,8 @@ export function SidebarNav() {
     if (evt.button !== 0) return;
     evt.preventDefault();
     evt.stopPropagation();
+    clearHoverExpandTimer();
+    manuallyResizedRef.current = true;
     resizeStartRef.current = {
       pointerX: evt.clientX,
       sidebarWidth,
@@ -83,29 +97,60 @@ export function SidebarNav() {
   const handleResizeKeyDown: KeyboardEventHandler<HTMLDivElement> = (evt) => {
     if (evt.key === 'ArrowLeft') {
       evt.preventDefault();
+      clearHoverExpandTimer();
+      manuallyResizedRef.current = true;
       setSidebarWidth((currentWidth) => clampSidebarWidth(currentWidth - 16));
     }
 
     if (evt.key === 'ArrowRight') {
       evt.preventDefault();
+      clearHoverExpandTimer();
+      manuallyResizedRef.current = true;
       setSidebarWidth((currentWidth) => clampSidebarWidth(currentWidth + 16));
     }
 
     if (evt.key === 'Home') {
       evt.preventDefault();
+      clearHoverExpandTimer();
+      manuallyResizedRef.current = true;
       setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
     }
 
     if (evt.key === 'End') {
       evt.preventDefault();
+      clearHoverExpandTimer();
+      manuallyResizedRef.current = true;
       setSidebarWidth(MAX_SIDEBAR_WIDTH);
     }
+  };
+
+  const handleSidebarMouseEnter: MouseEventHandler<HTMLDivElement> = () => {
+    if (manuallyResizedRef.current || resizing) return;
+
+    clearHoverExpandTimer();
+    hoverExpandTimerRef.current = window.setTimeout(() => {
+      hoverExpandTimerRef.current = undefined;
+      setSidebarWidth(MAX_SIDEBAR_WIDTH);
+    }, HOVER_EXPAND_DELAY_MS);
+  };
+
+  const handleSidebarMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
+    clearHoverExpandTimer();
+
+    if (manuallyResizedRef.current || resizing) return;
+    setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
   };
 
   const expanded = sidebarWidth >= EXPANDED_SIDEBAR_WIDTH;
 
   return (
-    <Sidebar data-expanded={expanded} data-resizing={resizing} style={{ width: sidebarWidth }}>
+    <Sidebar
+      data-expanded={expanded}
+      data-resizing={resizing}
+      style={{ width: sidebarWidth }}
+      onMouseEnter={handleSidebarMouseEnter}
+      onMouseLeave={handleSidebarMouseLeave}
+    >
       <SidebarContent
         scrollable={
           <Scroll ref={scrollRef} variant="Background" size="0">
