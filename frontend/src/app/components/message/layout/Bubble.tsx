@@ -8,11 +8,15 @@ type BubbleSide = 'Left' | 'Right';
 type BubbleArrowProps = {
   variant: ContainerColor;
   side: BubbleSide;
+  customColor?: boolean;
 };
-function BubbleArrow({ variant, side }: BubbleArrowProps) {
+function BubbleArrow({ variant, side, customColor }: BubbleArrowProps) {
   return (
     <svg
-      className={side === 'Right' ? css.BubbleRightArrow : css.BubbleLeftArrow}
+      className={classNames(
+        side === 'Right' ? css.BubbleRightArrow : css.BubbleLeftArrow,
+        customColor && css.BubbleOwnArrow
+      )}
       width="9"
       height="8"
       viewBox="0 0 9 8"
@@ -23,7 +27,7 @@ function BubbleArrow({ variant, side }: BubbleArrowProps) {
         fillRule="evenodd"
         clipRule="evenodd"
         d="M9.00004 8V0H4.82847C3.04666 0 2.15433 2.15428 3.41426 3.41421L8.00004 8H9.00004Z"
-        fill={color[variant].Container}
+        fill={customColor ? 'currentColor' : color[variant].Container}
       />
     </svg>
   );
@@ -31,6 +35,7 @@ function BubbleArrow({ variant, side }: BubbleArrowProps) {
 
 type BubbleLayoutProps = {
   align?: BubbleSide;
+  highlight?: boolean;
   hideBubble?: boolean;
   before?: ReactNode;
   header?: ReactNode;
@@ -38,7 +43,10 @@ type BubbleLayoutProps = {
 };
 
 export const BubbleLayout = as<'div', BubbleLayoutProps>(
-  ({ align = 'Left', hideBubble, before, header, showTail, children, ...props }, ref) => {
+  (
+    { align = 'Left', highlight, hideBubble, before, header, showTail, children, ...props },
+    ref
+  ) => {
     const right = align === 'Right';
     const tail = showTail ?? !!before;
 
@@ -58,11 +66,14 @@ export const BubbleLayout = as<'div', BubbleLayoutProps>(
               <Box
                 className={classNames(
                   css.BubbleContent,
+                  highlight && css.BubbleContentOwn,
                   tail && (right ? css.BubbleContentArrowRight : css.BubbleContentArrowLeft)
                 )}
                 direction="Column"
               >
-                {tail ? <BubbleArrow variant="SurfaceVariant" side={align} /> : null}
+                {tail ? (
+                  <BubbleArrow variant="SurfaceVariant" side={align} customColor={highlight} />
+                ) : null}
                 {children}
               </Box>
             </Box>

@@ -1131,6 +1131,7 @@ export const Message = as<'div', MessageProps>(
         {messageLayout === MessageLayout.Bubble && (
           <BubbleLayout
             align={isOwnMessage ? 'Right' : 'Left'}
+            highlight={isOwnMessage}
             before={isOwnMessage ? undefined : avatarJSX}
             header={headerJSX}
             showTail={!collapse}

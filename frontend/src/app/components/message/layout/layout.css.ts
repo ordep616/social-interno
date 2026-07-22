@@ -147,6 +147,12 @@ export const BubbleContent = style({
   position: 'relative',
 });
 
+export const BubbleContentOwn = style({
+  background: 'linear-gradient(135deg, #7e3ff2 0%, #6d28d9 55%, #5b21b6 100%)',
+  color: '#ffffff',
+  boxShadow: '0 8px 22px rgba(91, 33, 182, 0.24)',
+});
+
 export const BubbleContentArrowLeft = style({
   borderTopLeftRadius: 0,
 });
@@ -174,6 +180,10 @@ export const BubbleRightArrow = style({
   right: toRem(-8),
   zIndex: 1,
   transform: 'scaleX(-1)',
+});
+
+export const BubbleOwnArrow = style({
+  color: '#6d28d9',
 });
 
 export const Username = style({
