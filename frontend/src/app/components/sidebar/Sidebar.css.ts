@@ -17,7 +17,7 @@ export const Sidebar = style([
     display: 'flex',
     flexDirection: 'column',
     color: color.Background.OnContainer,
-    transition: 'width 220ms ease',
+    transition: 'width 240ms ease',
   },
 ]);
 
@@ -29,8 +29,8 @@ export const SidebarStack = style([
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: config.space.S300,
-    padding: `${config.space.S300} 0`,
+    gap: config.space.S200,
+    padding: `${config.space.S300} ${config.space.S200}`,
 
     selectors: {
       [`${Sidebar}[data-expanded=true] &`]: {
@@ -97,26 +97,29 @@ export const SidebarItem = recipe({
       alignItems: 'center',
       justifyContent: 'center',
       position: 'relative',
-      transition: 'transform 200ms cubic-bezier(0, 0.8, 0.67, 0.97)',
+      borderRadius: config.radii.R500,
+      color: color.Background.OnContainer,
+      transition: 'color 160ms ease, transform 160ms ease',
 
       selectors: {
         '&:hover': {
-          transform: `translateX(${toRem(PUSH_X)})`,
+          color: color.Primary.Main,
         },
         '&::before': {
           content: '',
-          display: 'none',
           position: 'absolute',
-          left: toRem(-11.5 - PUSH_X),
-          width: toRem(3 + PUSH_X),
+          left: toRem(-8 - PUSH_X),
+          width: toRem(3),
           height: toRem(16),
           borderRadius: `0 ${toRem(4)} ${toRem(4)} 0`,
-          background: 'CurrentColor',
-          transition: 'height 200ms linear',
+          backgroundColor: color.Primary.Main,
+          opacity: 0,
+          transform: `scaleY(0.65) translateX(${toRem(-2)})`,
+          transition: 'height 160ms ease, opacity 160ms ease, transform 160ms ease',
         },
         '&:hover::before': {
-          display: 'block',
-          width: toRem(3),
+          opacity: config.opacity.P300,
+          transform: 'scaleY(1) translateX(0)',
         },
         [`${Sidebar}[data-expanded=true] &`]: {
           width: '100%',
@@ -133,13 +136,15 @@ export const SidebarItem = recipe({
   variants: {
     active: {
       true: {
+        color: color.Primary.Main,
         selectors: {
           '&::before': {
-            display: 'block',
-            height: toRem(24),
+            height: toRem(26),
+            opacity: 1,
+            transform: 'scaleY(1) translateX(0)',
           },
           '&:hover::before': {
-            width: toRem(3 + PUSH_X),
+            opacity: 1,
           },
         },
       },
@@ -163,14 +168,26 @@ export const SidebarItemAction = style([
     borderRadius: config.radii.R400,
     cursor: 'pointer',
     textAlign: 'start',
+    transition: 'background-color 160ms ease, color 160ms ease, box-shadow 160ms ease',
 
     selectors: {
       '&:hover': {
+        backgroundColor: color.Background.ContainerHover,
         textDecoration: 'none',
+      },
+      '&:active': {
+        backgroundColor: color.Background.ContainerActive,
+      },
+      [`${SidebarItem({ active: true })} &`]: {
+        backgroundColor: color.Background.ContainerActive,
+        boxShadow: `inset 0 0 0 ${config.borderWidth.B300} ${color.Primary.ContainerLine}`,
       },
       [`${Sidebar}[data-expanded=true] &`]: {
         width: '100%',
         minWidth: 0,
+        minHeight: toRem(44),
+        paddingLeft: config.space.S200,
+        paddingRight: config.space.S300,
         justifyContent: 'flex-start',
         gap: config.space.S300,
       },
@@ -182,14 +199,25 @@ export const SidebarItemAction = style([
 export const SidebarItemLabel = style([
   DefaultReset,
   {
-    display: 'none',
+    display: 'block',
     minWidth: 0,
-    flex: '1 1 auto',
+    maxWidth: 0,
+    flex: '0 1 auto',
+    overflow: 'hidden',
     color: color.Background.OnContainer,
+    opacity: 0,
+    transform: `translateX(${toRem(-4)})`,
+    transition: 'max-width 220ms ease, opacity 160ms ease, transform 160ms ease',
 
     selectors: {
       [`${Sidebar}[data-expanded=true] &`]: {
-        display: 'block',
+        maxWidth: toRem(160),
+        flex: '1 1 auto',
+        opacity: 1,
+        transform: 'translateX(0)',
+      },
+      [`${SidebarItem({ active: true })} &`]: {
+        color: color.Primary.Main,
       },
     },
   },
@@ -227,10 +255,17 @@ export const SidebarAvatar = recipe({
   base: [
     {
       flexShrink: 0,
+      transition: 'background-color 160ms ease, border-color 160ms ease, transform 160ms ease',
 
       selectors: {
         'button&': {
           cursor: 'pointer',
+        },
+        [`${SidebarItem()}:hover &`]: {
+          borderColor: color.Primary.ContainerLine,
+        },
+        [`${SidebarItem({ active: true })} &`]: {
+          borderColor: color.Primary.ContainerLine,
         },
       },
     },
