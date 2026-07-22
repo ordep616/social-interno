@@ -88,7 +88,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              Developer Tools
+              Ferramentas de desenvolvedor
             </Text>
           </Box>
           <Box shrink="No">
@@ -103,7 +103,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
           <PageContent>
             <Box direction="Column" gap="700">
               <Box direction="Column" gap="100">
-                <Text size="L400">Options</Text>
+                <Text size="L400">Opções</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
@@ -111,7 +111,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                   gap="400"
                 >
                   <SettingTile
-                    title="Enable Developer Tools"
+                    title="Ativar ferramentas de desenvolvedor"
                     after={
                       <Switch
                         variant="Primary"
@@ -129,8 +129,8 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                     gap="400"
                   >
                     <SettingTile
-                      title="Room ID"
-                      description={`Copy room ID to clipboard. ("${room.roomId}")`}
+                      title="ID da sala"
+                      description={`Copiar ID da sala para a área de transferência. ("${room.roomId}")`}
                       after={
                         <Button
                           onClick={() => copyToClipboard(room.roomId ?? '<NO_ROOM_ID_FOUND>')}
@@ -140,7 +140,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                           radii="300"
                           outlined
                         >
-                          <Text size="B300">Copy</Text>
+                          <Text size="B300">Copiar</Text>
                         </Button>
                       }
                     />
@@ -150,7 +150,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
 
               {developerTools && (
                 <Box direction="Column" gap="100">
-                  <Text size="L400">Data</Text>
+                  <Text size="L400">Dados</Text>
 
                   <SequenceCard
                     className={SequenceCardStyle}
@@ -159,8 +159,8 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                     gap="400"
                   >
                     <SettingTile
-                      title="New Message Event"
-                      description="Create and send a new message event within the room."
+                      title="Novo evento de mensagem"
+                      description="Crie e envie um novo evento de mensagem dentro da sala."
                       after={
                         <Button
                           onClick={() => setComposeEvent({})}
@@ -170,7 +170,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                           radii="300"
                           outlined
                         >
-                          <Text size="B300">Compose</Text>
+                          <Text size="B300">Compor</Text>
                         </Button>
                       }
                     />
@@ -182,8 +182,8 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                     gap="400"
                   >
                     <SettingTile
-                      title="Room State"
-                      description="State events of the room."
+                      title="Estado da sala"
+                      description="Eventos de estado da sala."
                       after={
                         <Button
                           onClick={() => setExpandState(!expandState)}
@@ -200,14 +200,14 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                             />
                           }
                         >
-                          <Text size="B300">{expandState ? 'Collapse' : 'Expand'}</Text>
+                          <Text size="B300">{expandState ? 'Recolher' : 'Expandir'}</Text>
                         </Button>
                       }
                     />
                     {expandState && (
                       <Box direction="Column" gap="100">
                         <Box justifyContent="SpaceBetween">
-                          <Text size="L400">Events</Text>
+                          <Text size="L400">Eventos</Text>
                           <Text size="L400">Total: {roomState.size}</Text>
                         </Box>
                         <CutoutCard>
@@ -221,7 +221,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                           >
                             <Box grow="Yes">
                               <Text size="T200" truncate>
-                                Add New
+                                Adicionar novo
                               </Text>
                             </Box>
                           </MenuItem>
@@ -275,7 +275,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                                       >
                                         <Box grow="Yes">
                                           <Text size="T200" truncate>
-                                            Add New
+                                            Adicionar novo
                                           </Text>
                                         </Box>
                                       </MenuItem>
@@ -298,7 +298,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                                           >
                                             <Box grow="Yes">
                                               <Text size="T200" truncate>
-                                                {stateKey ? `"${stateKey}"` : 'Default'}
+                                                {stateKey ? `"${stateKey}"` : 'Padrão'}
                                               </Text>
                                             </Box>
                                           </MenuItem>
@@ -319,8 +319,8 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                     gap="400"
                   >
                     <SettingTile
-                      title="Account Data"
-                      description="Private personalization data stored within room."
+                      title="Dados da conta"
+                      description="Dados privados de personalização armazenados dentro da sala."
                       after={
                         <Button
                           onClick={() => setExpandAccountData(!expandAccountData)}
@@ -337,14 +337,14 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                             />
                           }
                         >
-                          <Text size="B300">{expandAccountData ? 'Collapse' : 'Expand'}</Text>
+                          <Text size="B300">{expandAccountData ? 'Recolher' : 'Expandir'}</Text>
                         </Button>
                       }
                     />
                     {expandAccountData && (
                       <Box direction="Column" gap="100">
                         <Box justifyContent="SpaceBetween">
-                          <Text size="L400">Events</Text>
+                          <Text size="L400">Eventos</Text>
                           <Text size="L400">Total: {accountData.size}</Text>
                         </Box>
                         <CutoutCard>
@@ -358,7 +358,7 @@ export function DeveloperTools({ requestClose }: DeveloperToolsProps) {
                           >
                             <Box grow="Yes">
                               <Text size="T200" truncate>
-                                Add New
+                                Adicionar novo
                               </Text>
                             </Box>
                           </MenuItem>

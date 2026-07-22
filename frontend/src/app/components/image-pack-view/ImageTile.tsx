@@ -71,7 +71,7 @@ export function ImageTile({
               radii="Pill"
               onClick={() => onDeleteToggle?.(defaultShortcode)}
             >
-              {deleted ? <Text size="B300">Undo</Text> : <Icon size="50" src={Icons.Delete} />}
+              {deleted ? <Text size="B300">Desfazer</Text> : <Icon size="50" src={Icons.Delete} />}
             </Chip>
             {!deleted && (
               <Chip
@@ -79,7 +79,7 @@ export function ImageTile({
                 radii="Pill"
                 onClick={() => onEdit?.(defaultShortcode, image)}
               >
-                <Text size="B300">Edit</Text>
+                <Text size="B300">Editar</Text>
               </Chip>
             )}
           </Box>
@@ -171,7 +171,7 @@ export function ImageTileEdit({
       <Box as="form" onSubmit={handleSubmit} direction="Column" gap="200">
         <Box direction="Column" className={css.ImagePackImageInputs}>
           <Input
-            before={<Text size="L400">Shortcode:</Text>}
+            before={<Text size="L400">Código:</Text>}
             defaultValue={image.shortcode}
             name="shortcodeInput"
             variant="Secondary"
@@ -181,7 +181,7 @@ export function ImageTileEdit({
             autoFocus
           />
           <Input
-            before={<Text size="L400">Body:</Text>}
+            before={<Text size="L400">Texto:</Text>}
             defaultValue={image.body}
             name="bodyInput"
             variant="Secondary"
@@ -195,7 +195,7 @@ export function ImageTileEdit({
           </Box>
           <Box grow="Yes" />
           <Button type="submit" variant="Success" size="300" radii="300">
-            <Text size="B300">Save</Text>
+            <Text size="B300">Salvar</Text>
           </Button>
           <Button
             type="reset"
@@ -205,7 +205,7 @@ export function ImageTileEdit({
             radii="300"
             onClick={() => onCancel(defaultShortcode)}
           >
-            <Text size="B300">Cancel</Text>
+            <Text size="B300">Cancelar</Text>
           </Button>
         </Box>
       </Box>

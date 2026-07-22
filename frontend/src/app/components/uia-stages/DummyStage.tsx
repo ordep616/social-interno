@@ -23,12 +23,12 @@ function DummyErrorDialog({
         </Box>
         <Button variant="Critical" onClick={onRetry}>
           <Text as="span" size="B400">
-            Retry
+            Tentar novamente
           </Text>
         </Button>
         <Button variant="Critical" fill="None" outlined onClick={onCancel}>
           <Text as="span" size="B400">
-            Cancel
+            Cancelar
           </Text>
         </Button>
       </Box>
@@ -54,7 +54,7 @@ export function AutoDummyStageDialog({ stageData, submitAuthDict, onCancel }: St
     return (
       <DummyErrorDialog
         title={errorCode}
-        message={error ?? 'Failed to register.'}
+        message={error ?? 'Falha ao cadastrar.'}
         onRetry={handleSubmit}
         onCancel={onCancel}
       />

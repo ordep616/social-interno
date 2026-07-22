@@ -123,7 +123,7 @@ function ProfileAvatar({ profile, userId }: ProfileProps) {
             radii="300"
             disabled={disableSetAvatar}
           >
-            <Text size="B300">Upload</Text>
+            <Text size="B300">Enviar</Text>
           </Button>
           {avatarUrl && (
             <Button
@@ -134,7 +134,7 @@ function ProfileAvatar({ profile, userId }: ProfileProps) {
               disabled={disableSetAvatar}
               onClick={() => setAlertRemove(true)}
             >
-              <Text size="B300">Remove</Text>
+              <Text size="B300">Remover</Text>
             </Button>
           )}
         </Box>
@@ -183,7 +183,7 @@ function ProfileAvatar({ profile, userId }: ProfileProps) {
                 size="500"
               >
                 <Box grow="Yes">
-                  <Text size="H4">Remove Avatar</Text>
+                  <Text size="H4">Remover avatar</Text>
                 </Box>
                 <IconButton size="300" onClick={() => setAlertRemove(false)} radii="300">
                   <Icon src={Icons.Cross} />
@@ -191,10 +191,10 @@ function ProfileAvatar({ profile, userId }: ProfileProps) {
               </Header>
               <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
                 <Box direction="Column" gap="200">
-                  <Text priority="400">Are you sure you want to remove profile avatar?</Text>
+                  <Text priority="400">Tem certeza que deseja remover o avatar do perfil?</Text>
                 </Box>
                 <Button variant="Critical" onClick={handleRemoveAvatar}>
-                  <Text size="B400">Remove</Text>
+                  <Text size="B400">Remover</Text>
                 </Button>
               </Box>
             </Dialog>
@@ -248,7 +248,7 @@ function ProfileDisplayName({ profile, userId }: ProfileProps) {
     <SettingTile
       title={
         <Text as="span" size="L400">
-          Display Name
+          Nome de exibição
         </Text>
       }
     >
@@ -295,7 +295,7 @@ function ProfileDisplayName({ profile, userId }: ProfileProps) {
             type="submit"
           >
             {changingDisplayName && <Spinner variant="Success" fill="Solid" size="300" />}
-            <Text size="B400">Save</Text>
+            <Text size="B400">Salvar</Text>
           </Button>
         </Box>
       </Box>
@@ -310,7 +310,7 @@ export function Profile() {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Profile</Text>
+      <Text size="L400">Perfil</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"

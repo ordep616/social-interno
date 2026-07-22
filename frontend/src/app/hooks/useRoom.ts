@@ -7,7 +7,7 @@ export const RoomProvider = RoomContext.Provider;
 
 export function useRoom(): Room {
   const room = useContext(RoomContext);
-  if (!room) throw new Error('Room not provided!');
+  if (!room) throw new Error('Sala não informada.');
   return room;
 }
 

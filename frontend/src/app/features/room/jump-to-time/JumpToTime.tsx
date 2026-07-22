@@ -106,7 +106,7 @@ export function JumpToTime({ onCancel, onSubmit }: JumpToTimeProps) {
               size="500"
             >
               <Box grow="Yes">
-                <Text size="H4">Jump to Time</Text>
+                <Text size="H4">Ir para data e hora</Text>
               </Box>
               <IconButton size="300" onClick={onCancel} radii="300">
                 <Icon src={Icons.Cross} />
@@ -116,7 +116,7 @@ export function JumpToTime({ onCancel, onSubmit }: JumpToTimeProps) {
               <Box direction="Row" gap="300">
                 <Box direction="Column" gap="100">
                   <Text size="L400" priority="400">
-                    Time
+                    Hora
                   </Text>
                   <Box gap="100" alignItems="Center">
                     <Chip
@@ -157,7 +157,7 @@ export function JumpToTime({ onCancel, onSubmit }: JumpToTimeProps) {
                 </Box>
                 <Box direction="Column" gap="100">
                   <Text size="L400" priority="400">
-                    Date
+                    Data
                   </Text>
                   <Box gap="100" alignItems="Center">
                     <Chip
@@ -198,7 +198,7 @@ export function JumpToTime({ onCancel, onSubmit }: JumpToTimeProps) {
                 </Box>
               </Box>
               <Box direction="Column" gap="100">
-                <Text size="L400">Preset</Text>
+                <Text size="L400">Predefinição</Text>
                 <Box gap="200">
                   {createTs < todayTs && (
                     <Chip
@@ -207,7 +207,7 @@ export function JumpToTime({ onCancel, onSubmit }: JumpToTimeProps) {
                       aria-pressed={ts === todayTs}
                       onClick={handleToday}
                     >
-                      <Text size="B300">Today</Text>
+                      <Text size="B300">Hoje</Text>
                     </Chip>
                   )}
                   {createTs < yesterdayTs && (
@@ -217,7 +217,7 @@ export function JumpToTime({ onCancel, onSubmit }: JumpToTimeProps) {
                       aria-pressed={ts === yesterdayTs}
                       onClick={handleYesterday}
                     >
-                      <Text size="B300">Yesterday</Text>
+                      <Text size="B300">Ontem</Text>
                     </Chip>
                   )}
                   <Chip
@@ -226,7 +226,7 @@ export function JumpToTime({ onCancel, onSubmit }: JumpToTimeProps) {
                     aria-pressed={ts === createTs}
                     onClick={handleBeginning}
                   >
-                    <Text size="B300">Beginning</Text>
+                    <Text size="B300">Início</Text>
                   </Chip>
                 </Box>
               </Box>
@@ -249,7 +249,7 @@ export function JumpToTime({ onCancel, onSubmit }: JumpToTimeProps) {
                 }
                 onClick={handleSubmit}
               >
-                <Text size="B400">Open Timeline</Text>
+                <Text size="B400">Abrir linha do tempo</Text>
               </Button>
             </Box>
           </Dialog>

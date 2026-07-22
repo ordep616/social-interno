@@ -297,7 +297,7 @@ export function HierarchyItemMenu({
                             aria-pressed={promptLeave}
                           >
                             <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                              Leave
+                              Sair
                             </Text>
                           </MenuItem>
                           {promptLeave &&

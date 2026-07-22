@@ -26,7 +26,6 @@ export function PrescreenControls({ canJoin }: PrescreenControlsProps) {
   const { microphone, video, sound, toggleMicrophone, toggleVideo, toggleSound } =
     useCallPreferences();
 
-
   const handleMicrophoneToggle = useCallback(async () => toggleMicrophone(), [toggleMicrophone]);
   const handleVideoToggle = useCallback(async () => toggleVideo(), [toggleVideo]);
 
@@ -63,7 +62,7 @@ export function PrescreenControls({ canJoin }: PrescreenControlsProps) {
             )
           }
         >
-          <Text size="B400">Join</Text>
+          <Text size="B400">Entrar</Text>
         </Button>
       </Box>
     </SequenceCard>

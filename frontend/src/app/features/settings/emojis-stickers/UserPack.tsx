@@ -31,7 +31,7 @@ export function UserPack({ onViewPack }: UserPackProps) {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Default Pack</Text>
+      <Text size="L400">Pacote padrão</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
@@ -39,7 +39,7 @@ export function UserPack({ onViewPack }: UserPackProps) {
         gap="400"
       >
         <SettingTile
-          title={userPack?.meta.name ?? 'Unknown'}
+          title={userPack?.meta.name ?? 'Desconhecido'}
           description={userPack?.meta.attribution}
           before={
             <Avatar size="300" radii="300">
@@ -61,7 +61,7 @@ export function UserPack({ onViewPack }: UserPackProps) {
               outlined
               onClick={handleView}
             >
-              <Text size="B300">View</Text>
+              <Text size="B300">Ver</Text>
             </Button>
           }
         />

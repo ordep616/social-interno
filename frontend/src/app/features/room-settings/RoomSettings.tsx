@@ -29,27 +29,27 @@ const useRoomSettingsMenuItems = (): RoomSettingsMenuItem[] =>
     () => [
       {
         page: RoomSettingsPage.GeneralPage,
-        name: 'General',
+        name: 'Geral',
         icon: Icons.Setting,
       },
       {
         page: RoomSettingsPage.MembersPage,
-        name: 'Members',
+        name: 'Membros',
         icon: Icons.User,
       },
       {
         page: RoomSettingsPage.PermissionsPage,
-        name: 'Permissions',
+        name: 'Permissões',
         icon: Icons.Lock,
       },
       {
         page: RoomSettingsPage.EmojisStickersPage,
-        name: 'Emojis & Stickers',
+        name: 'Emojis e figurinhas',
         icon: Icons.Smile,
       },
       {
         page: RoomSettingsPage.DeveloperToolsPage,
-        name: 'Developer Tools',
+        name: 'Ferramentas de desenvolvedor',
         icon: Icons.Terminal,
       },
     ],

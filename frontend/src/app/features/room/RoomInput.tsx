@@ -278,7 +278,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
     const handleSendUpload = async (uploads: UploadSuccess[]) => {
       const contentsPromises = uploads.map(async (upload) => {
         const fileItem = selectedFiles.find((f) => f.file === upload.file);
-        if (!fileItem) throw new Error('Broken upload');
+        if (!fileItem) throw new Error('Upload inválido');
 
         if (fileItem.file.type.startsWith('image')) {
           return getImageMsgContent(mx, fileItem, upload.mxc);
@@ -497,9 +497,11 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
               >
                 <Icon size="600" src={Icons.File} />
                 <Text size="H4" align="Center">
-                  {`Drop Files in "${room?.name || 'Room'}"`}
+                  {`Solte arquivos em "${room?.name || 'Conversa'}"`}
                 </Text>
-                <Text align="Center">Drag and drop files here or click for selection dialog</Text>
+                <Text align="Center">
+                  Arraste e solte arquivos aqui ou clique para abrir o seletor
+                </Text>
               </Box>
             </Dialog>
           </OverlayCenter>
@@ -539,7 +541,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
         <CustomEditor
           editableName="RoomInput"
           editor={editor}
-          placeholder="Send a message..."
+          placeholder="Enviar uma mensagem..."
           onKeyDown={handleKeyDown}
           onKeyUp={handleKeyUp}
           onPaste={handlePaste}

@@ -23,19 +23,19 @@ export const useMemberSortMenu = (): MemberSortItem[] =>
   useMemo(
     () => [
       {
-        name: 'A to Z',
+        name: 'A a Z',
         sortFn: MemberSort.Ascending,
       },
       {
-        name: 'Z to A',
+        name: 'Z a A',
         sortFn: MemberSort.Descending,
       },
       {
-        name: 'Newest',
+        name: 'Mais recentes',
         sortFn: MemberSort.NewestFirst,
       },
       {
-        name: 'Oldest',
+        name: 'Mais antigos',
         sortFn: MemberSort.Oldest,
       },
     ],

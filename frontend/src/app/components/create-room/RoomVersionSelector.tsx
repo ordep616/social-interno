@@ -47,7 +47,7 @@ export function RoomVersionSelector({
       gap="500"
     >
       <SettingTile
-        title="Version"
+        title="Versão"
         after={
           <PopOut
             anchor={menuCords}
@@ -73,7 +73,7 @@ export function RoomVersionSelector({
                     gap="200"
                     style={{ padding: config.space.S200, maxWidth: toRem(300) }}
                   >
-                    <Text size="L400">Versions</Text>
+                    <Text size="L400">Versões</Text>
                     <Box wrap="Wrap" gap="100">
                       {versions.map((version) => (
                         <Chip

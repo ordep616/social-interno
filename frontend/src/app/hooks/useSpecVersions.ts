@@ -7,6 +7,6 @@ export const SpecVersionsProvider = SpecVersionsContext.Provider;
 
 export function useSpecVersions(): SpecVersions {
   const versions = useContext(SpecVersionsContext);
-  if (!versions) throw new Error('Server versions are not provided!');
+  if (!versions) throw new Error('Versões do servidor não informadas.');
   return versions;
 }

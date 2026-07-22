@@ -38,7 +38,7 @@ function RegistrationTokenErrorDialog({
           <Text size="H4">{title}</Text>
           <Text>{message}</Text>
           <Text as="label" size="L400" style={{ paddingTop: config.space.S400 }}>
-            Registration Token
+            Token de cadastro
           </Text>
           <Input
             name="retryTokenInput"
@@ -51,12 +51,12 @@ function RegistrationTokenErrorDialog({
         </Box>
         <Button variant="Critical" type="submit">
           <Text as="span" size="B400">
-            Retry
+            Tentar novamente
           </Text>
         </Button>
         <Button variant="Critical" fill="None" outlined type="button" onClick={onCancel}>
           <Text as="span" size="B400">
-            Cancel
+            Cancelar
           </Text>
         </Button>
       </Box>
@@ -94,7 +94,7 @@ export function RegistrationTokenStageDialog({
       <RegistrationTokenErrorDialog
         defaultToken={token}
         title={errorCode}
-        message={error ?? 'Invalid registration token provided.'}
+        message={error ?? 'Token de cadastro inválido.'}
         onRetry={handleSubmit}
         onCancel={onCancel}
       />
@@ -105,8 +105,8 @@ export function RegistrationTokenStageDialog({
     return (
       <RegistrationTokenErrorDialog
         defaultToken={token}
-        title="Registration Token"
-        message="Please submit registration token provided by you homeserver admin."
+        title="Token de cadastro"
+        message="Informe o token de cadastro fornecido pelo administrador do homeserver."
         onRetry={handleSubmit}
         onCancel={onCancel}
       />

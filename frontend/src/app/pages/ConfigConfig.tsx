@@ -7,7 +7,7 @@ export function ConfigConfigLoading() {
     <SplashScreen>
       <Box grow="Yes" direction="Column" gap="400" alignItems="Center" justifyContent="Center">
         <Spinner variant="Secondary" size="600" />
-        <Text>Heating up</Text>
+        <Text>Preparando tudo</Text>
       </Box>
     </SplashScreen>
   );
@@ -25,7 +25,7 @@ export function ConfigConfigError({ error, retry, ignore }: ConfigConfigErrorPro
         <Dialog>
           <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
             <Box direction="Column" gap="100">
-              <Text>Failed to load client configuration file.</Text>
+              <Text>Falha ao carregar o arquivo de configuração do cliente.</Text>
               {typeof error === 'object' &&
                 error &&
                 'message' in error &&
@@ -37,12 +37,12 @@ export function ConfigConfigError({ error, retry, ignore }: ConfigConfigErrorPro
             </Box>
             <Button variant="Critical" onClick={retry}>
               <Text as="span" size="B400">
-                Retry
+                Tentar novamente
               </Text>
             </Button>
             <Button variant="Critical" onClick={ignore} fill="Soft">
               <Text as="span" size="B400">
-                Continue
+                Continuar
               </Text>
             </Button>
           </Box>

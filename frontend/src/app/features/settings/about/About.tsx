@@ -20,7 +20,7 @@ export function About({ requestClose }: AboutProps) {
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              About
+              Sobre
             </Text>
           </Box>
           <Box shrink="No">
@@ -52,7 +52,7 @@ export function About({ requestClose }: AboutProps) {
                     <Box gap="100" alignItems="End">
                       <Text size="H3">Exp</Text>
                     </Box>
-                    <Text>Yet another matrix client.</Text>
+                    <Text>Cliente Matrix corporativo para comunicação interna.</Text>
                   </Box>
 
                   <Box gap="200" wrap="Wrap">
@@ -67,7 +67,7 @@ export function About({ requestClose }: AboutProps) {
                       radii="300"
                       before={<Icon src={Icons.Code} size="100" filled />}
                     >
-                      <Text size="B300">Source Code</Text>
+                      <Text size="B300">Código-fonte</Text>
                     </Button>
                     <Button
                       as="a"
@@ -80,13 +80,13 @@ export function About({ requestClose }: AboutProps) {
                       radii="300"
                       before={<Icon src={Icons.Heart} size="100" filled />}
                     >
-                      <Text size="B300">Support</Text>
+                      <Text size="B300">Apoiar</Text>
                     </Button>
                   </Box>
                 </Box>
               </Box>
               <Box direction="Column" gap="100">
-                <Text size="L400">Options</Text>
+                <Text size="L400">Opções</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
@@ -94,8 +94,8 @@ export function About({ requestClose }: AboutProps) {
                   gap="400"
                 >
                   <SettingTile
-                    title="Clear Cache & Reload"
-                    description="Clear all your locally stored data and reload from server."
+                    title="Limpar cache e recarregar"
+                    description="Limpa todos os dados armazenados localmente e recarrega a partir do servidor."
                     after={
                       <Button
                         onClick={() => clearCacheAndReload(mx)}
@@ -105,14 +105,14 @@ export function About({ requestClose }: AboutProps) {
                         radii="300"
                         outlined
                       >
-                        <Text size="B300">Clear Cache</Text>
+                        <Text size="B300">Limpar cache</Text>
                       </Button>
                     }
                   />
                 </SequenceCard>
               </Box>
               <Box direction="Column" gap="100">
-                <Text size="L400">Credits</Text>
+                <Text size="L400">Créditos</Text>
                 <SequenceCard
                   className={SequenceCardStyle}
                   variant="SurfaceVariant"
@@ -192,7 +192,7 @@ export function About({ requestClose }: AboutProps) {
                         >
                           Twemoji
                         </a>{' '}
-                        emoji art is ©{' '}
+                        arte de emoji é ©{' '}
                         <a
                           href="https://twemoji.twitter.com"
                           target="_blank"

@@ -91,7 +91,7 @@ function MediaPreview({ fileItem, onSpoiler, children }: MediaPreviewProps) {
           before={<Icon src={Icons.EyeBlind} size="50" />}
           onClick={() => onSpoiler(!metadata.markedAsSpoiler)}
         >
-          <Text size="B300">Spoiler</Text>
+          <Text size="B300">Oculto</Text>
         </Chip>
       </Box>
     </Box>
@@ -151,17 +151,17 @@ export function UploadCardRenderer({
             <Chip
               as="button"
               onClick={startUpload}
-              aria-label="Retry Upload"
+              aria-label="Tentar enviar novamente"
               variant="Critical"
               radii="Pill"
               outlined
             >
-              <Text size="B300">Retry</Text>
+              <Text size="B300">Tentar novamente</Text>
             </Chip>
           )}
           <IconButton
             onClick={removeUpload}
-            aria-label="Cancel Upload"
+            aria-label="Cancelar envio"
             variant="SurfaceVariant"
             radii="Pill"
             size="300"
@@ -196,8 +196,8 @@ export function UploadCardRenderer({
           {upload.status === UploadStatus.Idle && fileSizeExceeded && (
             <UploadCardError>
               <Text size="T200">
-                The file size exceeds the limit. Maximum allowed size is{' '}
-                <b>{bytesToSize(allowSize)}</b>, but the uploaded file is{' '}
+                O tamanho do arquivo excede o limite. O tamanho máximo permitido é{' '}
+                <b>{bytesToSize(allowSize)}</b>, mas o arquivo enviado tem{' '}
                 <b>{bytesToSize(file.size)}</b>.
               </Text>
             </UploadCardError>

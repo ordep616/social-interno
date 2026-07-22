@@ -66,15 +66,15 @@ const useRoomTypeFilters = (): RoomTypeFilter[] =>
   useMemo(
     () => [
       {
-        title: 'All',
+        title: 'Tudo',
         value: undefined,
       },
       {
-        title: 'Spaces',
+        title: 'Espaços',
         value: RoomType.Space,
       },
       {
-        title: 'Rooms',
+        title: 'Salas',
         value: 'null',
       },
     ],
@@ -106,14 +106,14 @@ function Search({ active, loading, searchInputRef, onSearch, onReset }: SearchPr
   return (
     <Box as="form" direction="Column" gap="100" onSubmit={handleSearchSubmit}>
       <span data-spacing-node />
-      <Text size="L400">Search</Text>
+      <Text size="L400">Buscar</Text>
       <Input
         ref={searchInputRef}
         style={{ paddingRight: config.space.S300 }}
         name="searchInput"
         size="500"
         variant="Background"
-        placeholder="Search for keyword"
+        placeholder="Buscar por palavra-chave"
         before={
           active && loading ? (
             <Spinner variant="Secondary" size="200" />
@@ -132,11 +132,11 @@ function Search({ active, loading, searchInputRef, onSearch, onReset }: SearchPr
               after={<Icon size="50" src={Icons.Cross} />}
               onClick={onReset}
             >
-              <Text size="B300">Clear</Text>
+              <Text size="B300">Limpar</Text>
             </Chip>
           ) : (
             <Chip type="submit" variant="Primary" size="400" radii="Pill" outlined>
-              <Text size="B300">Enter</Text>
+              <Text size="B300">Entrar</Text>
             </Chip>
           )
         }
@@ -288,7 +288,7 @@ function LimitButton({ limit, onLimitChange }: LimitButtonProps) {
           <Menu variant="Surface">
             <Box direction="Column" gap="400" style={{ padding: config.space.S300 }}>
               <Box direction="Column" gap="100">
-                <Text size="L400">Presets</Text>
+                <Text size="L400">Predefinições</Text>
                 <Box gap="100" wrap="Wrap">
                   <Chip variant="SurfaceVariant" onClick={() => setLimit('24')} radii="Pill">
                     <Text size="T200">24</Text>
@@ -303,7 +303,7 @@ function LimitButton({ limit, onLimitChange }: LimitButtonProps) {
               </Box>
               <Box as="form" onSubmit={handleLimitSubmit} direction="Column" gap="300">
                 <Box direction="Column" gap="100">
-                  <Text size="L400">Custom Limit</Text>
+                  <Text size="L400">Limite personalizado</Text>
                   <Input
                     name="limitInput"
                     size="300"
@@ -314,11 +314,11 @@ function LimitButton({ limit, onLimitChange }: LimitButtonProps) {
                     outlined
                     type="number"
                     radii="400"
-                    aria-label="Per Page Item Limit"
+                    aria-label="Limite de itens por página"
                   />
                 </Box>
                 <Button type="submit" size="300" variant="Primary" radii="400">
-                  <Text size="B300">Change Limit</Text>
+                  <Text size="B300">Alterar limite</Text>
                 </Button>
               </Box>
             </Box>
@@ -488,7 +488,7 @@ export function PublicRooms() {
             <Box grow="No" justifyContent="Center" alignItems="Center" gap="200">
               {screenSize !== ScreenSize.Mobile && <Icon size="400" src={Icons.Search} />}
               <Text size="H3" truncate>
-                Search
+                Buscar
               </Text>
             </Box>
             <Box grow="Yes" basis="No" />
@@ -532,9 +532,9 @@ export function PublicRooms() {
                 <Box direction="Column" gap="400">
                   <Box direction="Column" gap="300">
                     {isSearch ? (
-                      <Text size="H4">{`Results for "${serverSearchParams.term}"`}</Text>
+                      <Text size="H4">{`Resultados para "${serverSearchParams.term}"`}</Text>
                     ) : (
-                      <Text size="H4">Popular Communities</Text>
+                      <Text size="H4">Comunidades populares</Text>
                     )}
                     <Box gap="200">
                       {roomTypeFilters.map((filter) => (
@@ -624,7 +624,7 @@ export function PublicRooms() {
                               disabled={!data.prev_batch}
                             >
                               <Text size="B300" truncate>
-                                Previous Page
+                                Página anterior
                               </Text>
                             </Button>
                             <Box data-spacing-node grow="Yes" />
@@ -635,7 +635,7 @@ export function PublicRooms() {
                               disabled={!data.next_batch}
                             >
                               <Text size="B300" truncate>
-                                Next Page
+                                Próxima página
                               </Text>
                             </Button>
                           </Box>
@@ -651,7 +651,7 @@ export function PublicRooms() {
                       >
                         <Icon size="400" src={Icons.Info} />
                         <Text size="T300" align="Center">
-                          No communities found!
+                          Nenhuma comunidade encontrada.
                         </Text>
                       </Box>
                     ))}

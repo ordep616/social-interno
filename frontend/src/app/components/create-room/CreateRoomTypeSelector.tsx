@@ -36,10 +36,10 @@ export function CreateRoomTypeSelector({
         >
           <Box gap="200" alignItems="Baseline">
             <Text size="H6" style={{ flexShrink: 0 }}>
-              Chat Room
+              Conversa
             </Text>
             <Text size="T300" priority="300" truncate>
-              - Messages, photos, and videos.
+              - Mensagens, fotos e vídeos.
             </Text>
           </Box>
         </SettingTile>
@@ -61,10 +61,10 @@ export function CreateRoomTypeSelector({
         >
           <Box gap="200" alignItems="Baseline">
             <Text size="H6" style={{ flexShrink: 0 }}>
-              Voice Room
+              Sala de voz
             </Text>
             <Text size="T300" priority="300" truncate>
-              - Live audio and video conversations.
+              - Conversas ao vivo com áudio e vídeo.
             </Text>
             <BetaNoticeBadge />
           </Box>

@@ -62,7 +62,7 @@ export const TimePicker = forwardRef<HTMLDivElement, TimePickerProps>(
     return (
       <Menu className={css.PickerMenu} ref={ref}>
         <Box direction="Row" gap="200" className={css.PickerContainer}>
-          <PickerColumn title="Hour">
+          <PickerColumn title="Hora">
             {hour24Clock
               ? Array.from(Array(24).keys()).map((hour) => (
                   <Chip
@@ -101,7 +101,7 @@ export const TimePicker = forwardRef<HTMLDivElement, TimePickerProps>(
                     </Chip>
                   ))}
           </PickerColumn>
-          <PickerColumn title="Minutes">
+          <PickerColumn title="Minutos">
             {Array.from(Array(60).keys()).map((minute) => (
               <Chip
                 key={minute}
@@ -121,7 +121,7 @@ export const TimePicker = forwardRef<HTMLDivElement, TimePickerProps>(
             ))}
           </PickerColumn>
           {!hour24Clock && (
-            <PickerColumn title="Period">
+            <PickerColumn title="Período">
               <Chip
                 size="500"
                 variant={!selectedPM ? 'Primary' : 'SurfaceVariant'}

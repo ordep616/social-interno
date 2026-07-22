@@ -43,7 +43,7 @@ function BackupStatus({ enabled }: BackupStatusProps) {
         size="L400"
         style={{ color: enabled ? color.Success.Main : color.Critical.Main }}
       >
-        {enabled ? 'Connected' : 'Disconnected'}
+        {enabled ? 'Conectado' : 'Desconectado'}
       </Text>
     </Box>
   );
@@ -56,7 +56,7 @@ function BackupSyncing({ count }: BackupSyncingProps) {
     <Box as="span" gap="100" alignItems="Center">
       <Spinner size="50" variant="Primary" fill="Soft" />
       <Text as="span" size="L400" style={{ color: color.Primary.Main }}>
-        Syncing ({count})
+        Sincronizando ({count})
       </Text>
     </Box>
   );
@@ -66,7 +66,7 @@ function BackupProgressFetching() {
   return (
     <Box grow="Yes" gap="200" alignItems="Center">
       <Badge variant="Secondary" fill="Solid" radii="300">
-        <Text size="L400">Restoring: 0%</Text>
+        <Text size="L400">Restaurando: 0%</Text>
       </Badge>
       <Box grow="Yes" direction="Column">
         <ProgressBar variant="Secondary" size="300" min={0} max={1} value={0} />
@@ -84,7 +84,7 @@ function BackupProgress({ total, downloaded }: BackupProgressProps) {
   return (
     <Box grow="Yes" gap="200" alignItems="Center">
       <Badge variant="Secondary" fill="Solid" radii="300">
-        <Text size="L400">Restoring: {`${Math.round(percent(0, total, downloaded))}%`}</Text>
+        <Text size="L400">Restaurando: {`${Math.round(percent(0, total, downloaded))}%`}</Text>
       </Badge>
       <Box grow="Yes" direction="Column">
         <ProgressBar variant="Secondary" size="300" min={0} max={total} value={downloaded} />
@@ -111,20 +111,20 @@ function BackupTrustInfo({ crypto, backupInfo }: BackupTrustInfoProps) {
     <Box direction="Column">
       {trust.matchesDecryptionKey ? (
         <Text size="T200" style={{ color: color.Success.Main }}>
-          <b>Backup has trusted decryption key.</b>
+          <b>O backup tem uma chave de descriptografia confiável.</b>
         </Text>
       ) : (
         <Text size="T200" style={{ color: color.Critical.Main }}>
-          <b>Backup does not have trusted decryption key!</b>
+          <b>O backup não tem uma chave de descriptografia confiável.</b>
         </Text>
       )}
       {trust.trusted ? (
         <Text size="T200" style={{ color: color.Success.Main }}>
-          <b>Backup has trusted by signature.</b>
+          <b>O backup é confiável por assinatura.</b>
         </Text>
       ) : (
         <Text size="T200" style={{ color: color.Critical.Main }}>
-          <b>Backup does not have trusted signature!</b>
+          <b>O backup não tem assinatura confiável.</b>
         </Text>
       )}
     </Box>
@@ -168,7 +168,7 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
   return (
     <InfoCard
       variant="Surface"
-      title="Encryption Backup"
+      title="Backup de criptografia"
       after={
         <Box alignItems="Center" gap="200">
           {remainingSession === 0 ? (
@@ -212,12 +212,12 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
                     <Box direction="Column" gap="200">
                       <InfoCard
                         variant="SurfaceVariant"
-                        title="Backup Details"
+                        title="Detalhes do backup"
                         description={
                           <>
-                            <span>Version: {backupInfo?.version ?? 'NIL'}</span>
+                            <span>Versão: {backupInfo?.version ?? 'NIL'}</span>
                             <br />
-                            <span>Keys: {backupInfo?.count ?? 'NIL'}</span>
+                            <span>Chaves: {backupInfo?.count ?? 'NIL'}</span>
                           </>
                         }
                       />
@@ -234,7 +234,7 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
                       }
                       before={<Icon size="100" src={Icons.Download} />}
                     >
-                      <Text size="B300">Restore Backup</Text>
+                      <Text size="B300">Restaurar backup</Text>
                     </Button>
                   </Box>
                 </Menu>
@@ -251,7 +251,7 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
       )}
       {!backupEnabled && backupInfo === null && (
         <Text size="T200" style={{ color: color.Critical.Main }}>
-          <b>No backup present on server!</b>
+          <b>Nenhum backup encontrado no servidor.</b>
         </Text>
       )}
       {!syncFailure && !backupEnabled && backupInfo && (

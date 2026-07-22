@@ -88,7 +88,7 @@ export function UserRoomProfile({ userId }: UserRoomProfileProps) {
                   before={<Icon size="50" src={Icons.Message} filled />}
                   onClick={handleMessage}
                 >
-                  <Text size="B300">Message</Text>
+                  <Text size="B300">Mensagem</Text>
                 </Button>
               </Box>
             )}

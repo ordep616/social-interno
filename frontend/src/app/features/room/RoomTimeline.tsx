@@ -917,7 +917,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
       evt.stopPropagation();
       const userId = evt.currentTarget.getAttribute('data-user-id');
       if (!userId) {
-        console.warn('Button should have "data-user-id" attribute!');
+        console.warn('O botão deve ter o atributo "data-user-id".');
         return;
       }
       openUserRoomProfile(
@@ -934,7 +934,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
       evt.preventDefault();
       const userId = evt.currentTarget.getAttribute('data-user-id');
       if (!userId) {
-        console.warn('Button should have "data-user-id" attribute!');
+        console.warn('O botão deve ter o atributo "data-user-id".');
         return;
       }
       const name = getMemberDisplayName(room, userId) ?? getMxIdLocalPart(userId) ?? userId;
@@ -955,7 +955,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
     (evt, startThread = false) => {
       const replyId = evt.currentTarget.getAttribute('data-event-id');
       if (!replyId) {
-        console.warn('Button should have "data-event-id" attribute!');
+        console.warn('O botão deve ter o atributo "data-event-id".');
         return;
       }
       const replyEvt = room.findEventById(replyId);
@@ -1835,7 +1835,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             before={<Icon size="50" src={Icons.ArrowBottom} />}
             onClick={handleJumpToLatest}
           >
-            <Text size="L400">Jump to Latest</Text>
+            <Text size="L400">Ir para a mais recente</Text>
           </Chip>
         </TimelineFloat>
       )}

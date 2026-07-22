@@ -97,8 +97,8 @@ function CreatePackTile({ packs, roomId }: CreatePackTileProps) {
       gap="400"
     >
       <SettingTile
-        title="New Pack"
-        description="Add your own emoji and sticker pack to use in room."
+        title="Novo pacote"
+        description="Adicione seu próprio pacote de emojis e figurinhas para usar na sala."
       >
         <Box
           style={{ marginTop: config.space.S200 }}
@@ -108,7 +108,7 @@ function CreatePackTile({ packs, roomId }: CreatePackTileProps) {
           alignItems="End"
         >
           <Box direction="Column" gap="100" grow="Yes">
-            <Text size="L400">Name</Text>
+            <Text size="L400">Nome</Text>
             <Input
               name="nameInput"
               required
@@ -130,7 +130,7 @@ function CreatePackTile({ packs, roomId }: CreatePackTileProps) {
             disabled={creating}
             before={creating && <Spinner size="200" variant="Success" fill="Solid" />}
           >
-            <Text size="B400">Create</Text>
+            <Text size="B400">Criar</Text>
           </Button>
         </Box>
       </SettingTile>
@@ -206,7 +206,7 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
         <SettingTile
           title={
             <span style={{ textDecoration: removed ? 'line-through' : undefined }}>
-              {pack.meta.name ?? 'Unknown'}
+              {pack.meta.name ?? 'Desconhecido'}
             </span>
           }
           description={<span className={LineClamp2}>{pack.meta.attribution}</span>}
@@ -255,7 +255,7 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
                 outlined
                 onClick={() => onViewPack(pack)}
               >
-                <Text size="B300">View</Text>
+                <Text size="B300">Ver</Text>
               </Button>
             )
           }
@@ -267,7 +267,7 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
   return (
     <>
       <Box direction="Column" gap="100">
-        <Text size="L400">Packs</Text>
+        <Text size="L400">Pacotes</Text>
         {canEdit && <CreatePackTile roomId={room.roomId} packs={packs} />}
         {packs.map(renderPack)}
         {packs.length === 0 && (
@@ -288,10 +288,10 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
               }}
             >
               <Text size="H5" align="Center">
-                No Packs
+                Nenhum pacote
               </Text>
               <Text size="T200" align="Center">
-                There are no emoji or sticker packs to display at the moment.
+                Não há pacotes de emojis ou figurinhas para exibir no momento.
               </Text>
             </Box>
           </SequenceCard>
@@ -315,11 +315,11 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
             <Box grow="Yes" direction="Column">
               {applyState.status === AsyncStatus.Error ? (
                 <Text size="T200">
-                  <b>Failed to remove packs! Please try again.</b>
+                  <b>Falha ao remover os pacotes. Tente novamente.</b>
                 </Text>
               ) : (
                 <Text size="T200">
-                  <b>Delete selected packs. ({removedPacks.length} selected)</b>
+                  <b>Excluir pacotes selecionados. ({removedPacks.length} selecionados)</b>
                 </Text>
               )}
             </Box>
@@ -332,7 +332,7 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
                 disabled={applyingChanges}
                 onClick={handleCancelChanges}
               >
-                <Text size="B300">Cancel</Text>
+                <Text size="B300">Cancelar</Text>
               </Button>
               <Button
                 size="300"
@@ -342,7 +342,7 @@ export function RoomPacks({ onViewPack }: RoomPacksProps) {
                 before={applyingChanges && <Spinner variant="Critical" fill="Solid" size="100" />}
                 onClick={handleApplyChanges}
               >
-                <Text size="B300">Delete</Text>
+                <Text size="B300">Excluir</Text>
               </Button>
             </Box>
           </Box>

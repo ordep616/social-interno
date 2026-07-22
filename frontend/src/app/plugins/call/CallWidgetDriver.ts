@@ -36,7 +36,8 @@ export class CallWidgetDriver extends WidgetDriver {
     this.mx = mx;
 
     const deviceId = mx.getDeviceId();
-    if (!deviceId) throw new Error('Failed to initialize CallWidgetDriver! Device ID not found.');
+    if (!deviceId)
+      throw new Error('Falha ao inicializar CallWidgetDriver. ID do dispositivo não encontrado.');
 
     this.allowedCapabilities = getCallCapabilities(inRoomId, mx.getSafeUserId(), deviceId);
   }
@@ -259,7 +260,7 @@ export class CallWidgetDriver extends WidgetDriver {
     const targetRoomId = roomId ?? this.inRoomId ?? undefined;
 
     if (typeof targetRoomId !== 'string') {
-      throw new Error('Error while reading the current room');
+      throw new Error('Erro ao ler a sala atual.');
     }
 
     const { events, nextBatch, prevBatch } = await this.mx.relations(
@@ -306,7 +307,7 @@ export class CallWidgetDriver extends WidgetDriver {
   public async downloadFile(contentUri: string): Promise<{ file: XMLHttpRequestBodyInit }> {
     const httpUrl = mxcUrlToHttp(this.mx, contentUri, true);
     if (!httpUrl) {
-      throw new Error('Call widget failed to download file! No http url!');
+      throw new Error('Falha ao baixar arquivo no widget de chamada. URL HTTP ausente.');
     }
     const blob = await downloadMedia(httpUrl);
     return { file: blob };

@@ -27,7 +27,7 @@ export function AccountData({ expand, onExpandToggle, onSelect }: AccountDataPro
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Account Data</Text>
+      <Text size="L400">Dados da conta</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
@@ -36,7 +36,7 @@ export function AccountData({ expand, onExpandToggle, onSelect }: AccountDataPro
       >
         <SettingTile
           title="Global"
-          description="Data stored in your global account data."
+          description="Dados armazenados nos dados globais da sua conta."
           after={
             <Button
               onClick={() => onExpandToggle(!expand)}
@@ -49,14 +49,14 @@ export function AccountData({ expand, onExpandToggle, onSelect }: AccountDataPro
                 <Icon src={expand ? Icons.ChevronTop : Icons.ChevronBottom} size="100" filled />
               }
             >
-              <Text size="B300">{expand ? 'Collapse' : 'Expand'}</Text>
+              <Text size="B300">{expand ? 'Recolher' : 'Expandir'}</Text>
             </Button>
           }
         />
         {expand && (
           <Box direction="Column" gap="100">
             <Box justifyContent="SpaceBetween">
-              <Text size="L400">Events</Text>
+              <Text size="L400">Eventos</Text>
               <Text size="L400">Total: {accountDataTypes.length}</Text>
             </Box>
             <CutoutCard>
@@ -70,7 +70,7 @@ export function AccountData({ expand, onExpandToggle, onSelect }: AccountDataPro
               >
                 <Box grow="Yes">
                   <Text size="T200" truncate>
-                    Add New
+                    Adicionar novo
                   </Text>
                 </Box>
               </MenuItem>

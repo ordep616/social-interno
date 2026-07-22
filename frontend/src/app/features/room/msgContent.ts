@@ -25,14 +25,14 @@ const generateThumbnailContent = async (
   encrypt: boolean
 ): Promise<IThumbnailContent> => {
   const thumbnail = await getThumbnail(img, ...dimensions);
-  if (!thumbnail) throw new Error('Can not create thumbnail!');
+  if (!thumbnail) throw new Error('Não foi possível criar a miniatura.');
   const encThumbData = encrypt ? await encryptFile(thumbnail) : undefined;
   const thumbnailFile = encThumbData?.file ?? thumbnail;
-  if (!thumbnailFile) throw new Error('Can not create thumbnail!');
+  if (!thumbnailFile) throw new Error('Não foi possível criar a miniatura.');
 
   const data = await mx.uploadContent(thumbnailFile);
   const thumbMxc = data?.content_uri;
-  if (!thumbMxc) throw new Error('Failed when uploading thumbnail!');
+  if (!thumbMxc) throw new Error('Falha ao enviar a miniatura.');
   const thumbnailContent = getThumbnailContent({
     thumbnail: thumbnailFile,
     encInfo: encThumbData?.encInfo,

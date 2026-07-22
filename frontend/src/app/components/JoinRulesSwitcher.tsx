@@ -40,12 +40,12 @@ type JoinRuleLabels = Record<ExtendedJoinRules, string>;
 export const useRoomJoinRuleLabel = (): JoinRuleLabels =>
   useMemo(
     () => ({
-      [JoinRule.Invite]: 'Invite Only',
-      [JoinRule.Knock]: 'Knock & Invite',
-      knock_restricted: 'Space Members or Knock',
-      [JoinRule.Restricted]: 'Space Members',
-      [JoinRule.Public]: 'Public',
-      [JoinRule.Private]: 'Invite Only',
+      [JoinRule.Invite]: 'Somente convidados',
+      [JoinRule.Knock]: 'Solicitar entrada e convite',
+      knock_restricted: 'Membros do espaço ou solicitação',
+      [JoinRule.Restricted]: 'Membros do espaço',
+      [JoinRule.Public]: 'Público',
+      [JoinRule.Private]: 'Somente convidados',
     }),
     []
   );

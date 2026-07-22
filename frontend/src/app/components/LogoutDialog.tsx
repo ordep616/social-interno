@@ -43,7 +43,7 @@ export const LogoutDialog = forwardRef<HTMLDivElement, LogoutDialogProps>(
           size="500"
         >
           <Box grow="Yes">
-            <Text size="H4">Logout</Text>
+            <Text size="H4">Sair</Text>
           </Box>
         </Header>
         <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
@@ -52,21 +52,21 @@ export const LogoutDialog = forwardRef<HTMLDivElement, LogoutDialogProps>(
               verificationStatus === VerificationStatus.Unverified && (
                 <InfoCard
                   variant="Critical"
-                  title="Unverified Device"
-                  description="Verify your device before logging out to save your encrypted messages."
+                  title="Dispositivo não verificado"
+                  description="Verifique seu dispositivo antes de sair para preservar suas mensagens criptografadas."
                 />
               )
             ) : (
               <InfoCard
                 variant="Critical"
-                title="Alert"
-                description="Enable device verification or export your encrypted data from settings to avoid losing access to your messages."
+                title="Alerta"
+                description="Ative a verificação do dispositivo ou exporte seus dados criptografados nas configurações para evitar perder acesso às mensagens."
               />
             ))}
-          <Text priority="400">You’re about to log out. Are you sure?</Text>
+          <Text priority="400">Você está prestes a sair. Tem certeza?</Text>
           {logoutState.status === AsyncStatus.Error && (
             <Text style={{ color: color.Critical.Main }} size="T300">
-              Failed to logout! {logoutState.error.message}
+              Falha ao sair. {logoutState.error.message}
             </Text>
           )}
           <Box direction="Column" gap="200">
@@ -76,10 +76,10 @@ export const LogoutDialog = forwardRef<HTMLDivElement, LogoutDialogProps>(
               disabled={ongoingLogout}
               before={ongoingLogout && <Spinner variant="Critical" fill="Solid" size="200" />}
             >
-              <Text size="B400">Logout</Text>
+              <Text size="B400">Sair</Text>
             </Button>
             <Button variant="Secondary" fill="Soft" onClick={handleClose} disabled={ongoingLogout}>
-              <Text size="B400">Cancel</Text>
+              <Text size="B400">Cancelar</Text>
             </Button>
           </Box>
         </Box>

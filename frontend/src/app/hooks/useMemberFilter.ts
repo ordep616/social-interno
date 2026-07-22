@@ -25,23 +25,23 @@ export const useMembershipFilterMenu = (): MembershipFilterItem[] =>
   useMemo(
     () => [
       {
-        name: 'Joined',
+        name: 'Entraram',
         filterFn: MembershipFilter.filterJoined,
       },
       {
-        name: 'Invited',
+        name: 'Convidados',
         filterFn: MembershipFilter.filterInvited,
       },
       {
-        name: 'Left',
+        name: 'Saíram',
         filterFn: MembershipFilter.filterLeaved,
       },
       {
-        name: 'Kicked',
+        name: 'Removidos',
         filterFn: MembershipFilter.filterKicked,
       },
       {
-        name: 'Banned',
+        name: 'Banidos',
         filterFn: MembershipFilter.filterBanned,
       },
     ],

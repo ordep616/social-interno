@@ -404,7 +404,7 @@ export function MLocation({ content }: MLocationProps) {
         radii="Pill"
         before={<Icon src={Icons.External} size="50" />}
       >
-        <Text size="B300">Open Location</Text>
+        <Text size="B300">Abrir localização</Text>
       </Chip>
     </Box>
   );

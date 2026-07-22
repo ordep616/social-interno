@@ -22,7 +22,7 @@ function ReCaptchaErrorDialog({
         </Box>
         <Button variant="Critical" fill="None" outlined onClick={onCancel}>
           <Text as="span" size="B400">
-            Cancel
+            Cancelar
           </Text>
         </Button>
       </Box>
@@ -46,8 +46,8 @@ export function ReCaptchaStageDialog({ stageData, submitAuthDict, onCancel }: St
   if (typeof publicKey !== 'string' || !session) {
     return (
       <ReCaptchaErrorDialog
-        title="Invalid Data"
-        message="No valid data found to proceed with ReCAPTCHA."
+        title="Dados inválidos"
+        message="Nenhum dado válido encontrado para continuar com o ReCAPTCHA."
         onCancel={onCancel}
       />
     );
@@ -56,7 +56,7 @@ export function ReCaptchaStageDialog({ stageData, submitAuthDict, onCancel }: St
   return (
     <Dialog>
       <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
-        <Text>Please check the box below to proceed.</Text>
+        <Text>Marque a caixa abaixo para continuar.</Text>
         <ReCAPTCHA sitekey={publicKey} onChange={handleChange} />
       </Box>
     </Dialog>

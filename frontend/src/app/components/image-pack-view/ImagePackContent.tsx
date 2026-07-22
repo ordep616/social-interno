@@ -256,11 +256,11 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
               <Box grow="Yes" direction="Column">
                 {applyState.status === AsyncStatus.Error ? (
                   <Text size="T200">
-                    <b>Failed to apply changes! Please try again.</b>
+                    <b>Falha ao aplicar as alterações. Tente novamente.</b>
                   </Text>
                 ) : (
                   <Text size="T200">
-                    <b>Changes saved! Apply when ready.</b>
+                    <b>Alterações salvas. Aplique quando estiver pronto.</b>
                   </Text>
                 )}
               </Box>
@@ -273,7 +273,7 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
                   disabled={!canApplyChanges || applying}
                   onClick={handleResetSavedChanges}
                 >
-                  <Text size="B300">Reset</Text>
+                  <Text size="B300">Redefinir</Text>
                 </Button>
                 <Button
                   size="300"
@@ -283,14 +283,14 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
                   before={applying && <Spinner variant="Success" fill="Solid" size="100" />}
                   onClick={applyChanges}
                 >
-                  <Text size="B300">Apply Changes</Text>
+                  <Text size="B300">Aplicar alterações</Text>
                 </Button>
               </Box>
             </Box>
           </Menu>
         )}
         <Box direction="Column" gap="100">
-          <Text size="L400">Pack</Text>
+          <Text size="L400">Pacote</Text>
           <SequenceCard
             style={{ padding: config.space.S300 }}
             variant="SurfaceVariant"
@@ -318,8 +318,8 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
             gap="400"
           >
             <SettingTile
-              title="Images Usage"
-              description="Select how the images are being used: as emojis, as stickers, or as both."
+              title="Uso das imagens"
+              description="Selecione como as imagens serão usadas: como emojis, figurinhas ou ambos."
               after={
                 <UsageSwitcher
                   usage={currentMeta.usage}
@@ -332,7 +332,7 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
         </Box>
         {images.length === 0 && !canEdit ? null : (
           <Box direction="Column" gap="100">
-            <Text size="L400">Images</Text>
+            <Text size="L400">Imagens</Text>
             {canEdit && (
               <SequenceCard
                 style={{ padding: config.space.S300 }}
@@ -341,8 +341,8 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
                 gap="400"
               >
                 <SettingTile
-                  title="Upload Images"
-                  description="Select images from your storage to upload them in pack."
+                  title="Enviar imagens"
+                  description="Selecione imagens do seu dispositivo para enviá-las ao pacote."
                   after={
                     <Button
                       variant="Secondary"
@@ -353,7 +353,7 @@ export const ImagePackContent = as<'div', ImagePackContentProps>(
                       outlined
                       onClick={() => pickFiles('image/*')}
                     >
-                      <Text size="B300">Select</Text>
+                      <Text size="B300">Selecionar</Text>
                     </Button>
                   }
                 />

@@ -107,7 +107,7 @@ function GlobalPackSelector({
       <Header size="400" variant="Surface" style={{ padding: `0 ${config.space.S300}` }}>
         <Box grow="Yes">
           <Text size="L400" truncate>
-            Room Packs
+            Pacotes de salas
           </Text>
         </Box>
         <Box shrink="No">
@@ -117,7 +117,7 @@ function GlobalPackSelector({
             outlined={hasSelected}
             onClick={() => onSelect(selected)}
           >
-            <Text size="B300">{hasSelected ? 'Save' : 'Close'}</Text>
+            <Text size="B300">{hasSelected ? 'Salvar' : 'Fechar'}</Text>
           </Chip>
         </Box>
       </Header>
@@ -162,7 +162,9 @@ function GlobalPackSelector({
                           addSelected(roomPackAddresses);
                         }}
                       >
-                        <Text size="B300">{allSelected ? 'Unselect All' : 'Select All'}</Text>
+                        <Text size="B300">
+                          {allSelected ? 'Desmarcar todos' : 'Selecionar todos'}
+                        </Text>
                       </Chip>
                     </Box>
                   </Box>
@@ -232,10 +234,10 @@ function GlobalPackSelector({
                   }}
                 >
                   <Text size="H5" align="Center">
-                    No Packs
+                    Nenhum pacote
                   </Text>
                   <Text size="T200" align="Center">
-                    Pack from rooms will appear here. You do not have any room with packs yet.
+                    Pacotes das salas aparecerão aqui. Você ainda não tem salas com pacotes.
                   </Text>
                 </Box>
               </SequenceCard>
@@ -408,7 +410,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
                 outlined
                 onClick={() => onViewPack(pack)}
               >
-                <Text size="B300">View</Text>
+                <Text size="B300">Ver</Text>
               </Button>
             )
           }
@@ -420,7 +422,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
   return (
     <>
       <Box direction="Column" gap="100">
-        <Text size="L400">Favorite Packs</Text>
+        <Text size="L400">Pacotes favoritos</Text>
         <SequenceCard
           className={SequenceCardStyle}
           variant="SurfaceVariant"
@@ -428,8 +430,8 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
           gap="400"
         >
           <SettingTile
-            title="Select Pack"
-            description="Pick emojis and stickers pack from rooms to use in all rooms."
+            title="Selecionar pacote"
+            description="Escolha pacotes de emojis e figurinhas das salas para usar em todas as salas."
             after={
               <>
                 <Button
@@ -440,7 +442,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
                   radii="300"
                   outlined
                 >
-                  <Text size="B300">Select</Text>
+                  <Text size="B300">Selecionar</Text>
                 </Button>
                 <PopOut
                   anchor={menuCords}
@@ -502,11 +504,11 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
             <Box grow="Yes" direction="Column">
               {applyState.status === AsyncStatus.Error ? (
                 <Text size="T200">
-                  <b>Failed to apply changes! Please try again.</b>
+                  <b>Falha ao aplicar as alterações. Tente novamente.</b>
                 </Text>
               ) : (
                 <Text size="T200">
-                  <b>Changes saved! Apply when ready.</b>
+                  <b>Alterações salvas. Aplique quando estiver pronto.</b>
                 </Text>
               )}
             </Box>
@@ -519,7 +521,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
                 disabled={applyingChanges}
                 onClick={resetChanges}
               >
-                <Text size="B300">Reset</Text>
+                <Text size="B300">Redefinir</Text>
               </Button>
               <Button
                 size="300"
@@ -529,7 +531,7 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
                 before={applyingChanges && <Spinner variant="Success" fill="Solid" size="100" />}
                 onClick={applyChanges}
               >
-                <Text size="B300">Apply Changes</Text>
+                <Text size="B300">Aplicar alterações</Text>
               </Button>
             </Box>
           </Box>

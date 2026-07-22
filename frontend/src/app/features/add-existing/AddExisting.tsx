@@ -198,7 +198,7 @@ export function AddExistingModal({ parentId, space, requestClose }: AddExistingM
                 }}
               >
                 <Box grow="Yes">
-                  <Text size="H4">Add Existing</Text>
+                  <Text size="H4">Adicionar existente</Text>
                 </Box>
                 <Box shrink="No">
                   <IconButton size="300" radii="300" onClick={requestClose}>
@@ -220,7 +220,7 @@ export function AddExistingModal({ parentId, space, requestClose }: AddExistingM
                       <Input
                         onChange={handleSearchChange}
                         before={<Icon size="200" src={Icons.Search} />}
-                        placeholder="Search"
+                        placeholder="Buscar"
                         size="400"
                         variant="Background"
                         outlined
@@ -236,12 +236,14 @@ export function AddExistingModal({ parentId, space, requestClose }: AddExistingM
                         gap="100"
                       >
                         <Text size="H6" align="Center">
-                          {searchResult ? 'No Match Found' : `No ${space ? 'Spaces' : 'Rooms'}`}
+                          {searchResult
+                            ? 'Nenhum resultado encontrado'
+                            : `Nenhum ${space ? 'espaço' : 'sala'}`}
                         </Text>
                         <Text size="T200" align="Center">
                           {searchResult
-                            ? `No match found for "${searchResult.query}".`
-                            : `You do not have any ${space ? 'Spaces' : 'Rooms'} to display yet.`}
+                            ? `Nenhum resultado encontrado para "${searchResult.query}".`
+                            : `Você ainda não tem ${space ? 'espaços' : 'salas'} para exibir.`}
                         </Text>
                       </Box>
                     )}
@@ -330,11 +332,13 @@ export function AddExistingModal({ parentId, space, requestClose }: AddExistingM
                           <Box grow="Yes" direction="Column">
                             {applyState.status === AsyncStatus.Error ? (
                               <Text size="T200">
-                                <b>Failed to apply changes! Please try again.</b>
+                                <b>Falha ao aplicar as alterações. Tente novamente.</b>
                               </Text>
                             ) : (
                               <Text size="T200">
-                                <b>Apply when ready. ({selected.length} Selected)</b>
+                                <b>
+                                  Aplique quando estiver pronto. ({selected.length} selecionados)
+                                </b>
                               </Text>
                             )}
                           </Box>
@@ -347,7 +351,7 @@ export function AddExistingModal({ parentId, space, requestClose }: AddExistingM
                               disabled={applyingChanges}
                               onClick={resetChanges}
                             >
-                              <Text size="B300">Reset</Text>
+                              <Text size="B300">Redefinir</Text>
                             </Button>
                             <Button
                               size="300"
@@ -361,7 +365,7 @@ export function AddExistingModal({ parentId, space, requestClose }: AddExistingM
                               }
                               onClick={handleApplyChanges}
                             >
-                              <Text size="B300">Apply Changes</Text>
+                              <Text size="B300">Aplicar alterações</Text>
                             </Button>
                           </Box>
                         </Box>

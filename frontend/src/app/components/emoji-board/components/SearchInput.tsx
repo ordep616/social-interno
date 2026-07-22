@@ -27,7 +27,7 @@ export function SearchInput({
       ref={inputRef}
       variant="SurfaceVariant"
       size="400"
-      placeholder={allowTextCustomEmoji ? 'Search or Text Reaction ' : 'Search'}
+      placeholder={allowTextCustomEmoji ? 'Buscar ou reação em texto' : 'Buscar'}
       maxLength={50}
       after={
         allowTextCustomEmoji && query ? (
@@ -38,7 +38,7 @@ export function SearchInput({
             outlined
             onClick={handleReact}
           >
-            <Text size="L400">React</Text>
+            <Text size="L400">Reagir</Text>
           </Chip>
         ) : (
           <Icon src={Icons.Search} size="50" />

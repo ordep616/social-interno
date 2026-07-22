@@ -103,7 +103,7 @@ export const ThemeContextProvider = ThemeContext.Provider;
 export const useTheme = (): Theme => {
   const theme = useContext(ThemeContext);
   if (!theme) {
-    throw new Error('No theme provided!');
+    throw new Error('Tema não informado.');
   }
 
   return theme;

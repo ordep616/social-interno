@@ -66,7 +66,7 @@ export const RoomViewTyping = as<'div', RoomViewTypingProps>(
               <>
                 <b>{typingNames[0]}</b>
                 <Text as="span" size="Inherit" priority="300">
-                  {' and '}
+                  {' e '}
                 </Text>
                 <b>{typingNames[1]}</b>
                 <Text as="span" size="Inherit" priority="300">
@@ -104,14 +104,19 @@ export const RoomViewTyping = as<'div', RoomViewTypingProps>(
                 <Text as="span" size="Inherit" priority="300">
                   {' and '}
                 </Text>
-                <b>{typingNames.length - 3} others</b>
+                <b>{typingNames.length - 3} outras pessoas</b>
                 <Text as="span" size="Inherit" priority="300">
-                  {' are typing...'}
+                  {' estão digitando...'}
                 </Text>
               </>
             )}
           </Text>
-          <IconButton title="Drop Typing Status" size="300" radii="Pill" onClick={handleDropAll}>
+          <IconButton
+            title="Limpar status de digitação"
+            size="300"
+            radii="Pill"
+            onClick={handleDropAll}
+          >
             <Icon size="50" src={Icons.Cross} />
           </IconButton>
         </Box>

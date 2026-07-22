@@ -80,7 +80,7 @@ export function JoinAddressPrompt({ onOpen, onCancel }: JoinAddressProps) {
               size="500"
             >
               <Box grow="Yes">
-                <Text size="H4">Join with Address</Text>
+                <Text size="H4">Entrar com endereço</Text>
               </Box>
               <IconButton size="300" onClick={onCancel} radii="300">
                 <Icon src={Icons.Cross} />
@@ -95,7 +95,7 @@ export function JoinAddressPrompt({ onOpen, onCancel }: JoinAddressProps) {
             >
               <Box direction="Column" gap="200">
                 <Text priority="400" size="T300">
-                  Enter public address to join the community. Addresses looks like:
+                  Informe o endereço público para entrar na comunidade. Endereços parecem com:
                 </Text>
                 <Text as="ul" size="T200" priority="300" style={{ paddingLeft: config.space.S400 }}>
                   <li>#community:server</li>
@@ -104,7 +104,7 @@ export function JoinAddressPrompt({ onOpen, onCancel }: JoinAddressProps) {
                 </Text>
               </Box>
               <Box direction="Column" gap="100">
-                <Text size="L400">Address</Text>
+                <Text size="L400">Endereço</Text>
                 <Input
                   size="500"
                   autoFocus
@@ -115,12 +115,12 @@ export function JoinAddressPrompt({ onOpen, onCancel }: JoinAddressProps) {
                 />
                 {invalid && (
                   <Text size="T200" style={{ color: color.Critical.Main }}>
-                    <b>Invalid Address</b>
+                    <b>Endereço inválido</b>
                   </Text>
                 )}
               </Box>
               <Button type="submit" variant="Primary">
-                <Text size="B400">Open</Text>
+                <Text size="B400">Abrir</Text>
               </Button>
             </Box>
           </Dialog>
