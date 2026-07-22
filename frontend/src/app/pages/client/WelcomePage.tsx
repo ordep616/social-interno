@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -11,16 +10,16 @@ import {
   Overlay,
   OverlayBackdrop,
   OverlayCenter,
+  Scroll,
   Text,
   config,
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { Page, PageHeroSection } from '../../components/page';
-import { getDirectCreatePath } from '../pathUtils';
 import { stopPropagation } from '../../utils/keyboard';
+import { CreateChat } from '../../features/create-chat';
 import {
   AddUserModal,
-  AddUserModalActions,
   AddUserModalBody,
   CenterContrast,
   NeonChatButton,
@@ -32,14 +31,9 @@ import WelcomeBackground from '../../../../public/res/background/betweenus-welco
 import AppLogo from '../../../../public/res/logo/company-logo.png';
 
 export function WelcomePage() {
-  const navigate = useNavigate();
   const [addUserModal, setAddUserModal] = useState(false);
 
   const closeAddUserModal = () => setAddUserModal(false);
-  const openAddUserArea = () => {
-    setAddUserModal(false);
-    navigate(getDirectCreatePath());
-  };
 
   return (
     <>
@@ -88,7 +82,7 @@ export function WelcomePage() {
                 escapeDeactivates: stopPropagation,
               }}
             >
-              <Modal className={AddUserModal} size="300" variant="Background">
+              <Modal className={AddUserModal} size="400" variant="Background" flexHeight>
                 <Box direction="Column">
                   <Header
                     size="500"
@@ -113,34 +107,14 @@ export function WelcomePage() {
                       </IconButton>
                     </Box>
                   </Header>
-                  <Box className={AddUserModalBody} direction="Column" gap="500">
-                    <Text size="T300" priority="400">
-                      Abra a área para informar o ID Matrix do colega e iniciar uma conversa direta.
-                    </Text>
-                    <Box className={AddUserModalActions} gap="200" justifyContent="End">
-                      <Button
-                        variant="Secondary"
-                        size="400"
-                        radii="300"
-                        onClick={closeAddUserModal}
-                      >
-                        <Text as="span" size="B400">
-                          Cancelar
-                        </Text>
-                      </Button>
-                      <Button
-                        variant="Primary"
-                        size="400"
-                        radii="300"
-                        onClick={openAddUserArea}
-                        before={<Icon size="100" src={Icons.UserPlus} />}
-                      >
-                        <Text as="span" size="B400">
-                          Adicionar usuário
-                        </Text>
-                      </Button>
+                  <Scroll size="300" hideTrack>
+                    <Box className={AddUserModalBody} direction="Column" gap="500">
+                      <Text size="T300" priority="400">
+                        Informe o ID Matrix do colega para iniciar uma conversa direta.
+                      </Text>
+                      <CreateChat />
                     </Box>
-                  </Box>
+                  </Scroll>
                 </Box>
               </Modal>
             </FocusTrap>
