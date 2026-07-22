@@ -1,20 +1,18 @@
-import React, {
-  KeyboardEventHandler,
-  MouseEventHandler,
-  PointerEventHandler,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
-import { Scroll } from 'folds';
+import React, { useRef, useState } from 'react';
+import { Icon, Icons, Scroll } from 'folds';
 
 import {
   Sidebar,
+  SidebarAvatar,
   SidebarContent,
-  SidebarResizeHandle,
+  SidebarItem,
+  SidebarItemAction,
+  SidebarItemLabel,
+  SidebarItemTooltip,
   SidebarStackSeparator,
   SidebarStack,
 } from '../../components/sidebar';
+import * as sidebarCss from '../../components/sidebar/Sidebar.css';
 import {
   DirectTab,
   HomeTab,
@@ -28,137 +26,44 @@ import { CreateTab } from './sidebar/CreateTab';
 
 const DEFAULT_SIDEBAR_WIDTH = 66;
 const MAX_SIDEBAR_WIDTH = 240;
-const EXPANDED_SIDEBAR_WIDTH = 128;
-const HOVER_EXPAND_DELAY_MS = 500;
 
-const clampSidebarWidth = (width: number): number =>
-  Math.min(MAX_SIDEBAR_WIDTH, Math.max(DEFAULT_SIDEBAR_WIDTH, width));
+type SidebarToggleTabProps = {
+  expanded: boolean;
+  onToggle: () => void;
+};
+
+function SidebarToggleTab({ expanded, onToggle }: SidebarToggleTabProps) {
+  const label = expanded ? 'Recolher barra lateral' : 'Expandir barra lateral';
+
+  return (
+    <SidebarItem>
+      <SidebarItemTooltip tooltip={label}>
+        {(triggerRef) => (
+          <SidebarItemAction
+            ref={triggerRef}
+            aria-label={label}
+            aria-expanded={expanded}
+            onClick={onToggle}
+          >
+            <SidebarAvatar as="span" outlined>
+              <Icon className={sidebarCss.SidebarToggleIcon} src={Icons.ChevronRight} />
+            </SidebarAvatar>
+            <SidebarItemLabel>{label}</SidebarItemLabel>
+          </SidebarItemAction>
+        )}
+      </SidebarItemTooltip>
+    </SidebarItem>
+  );
+}
 
 export function SidebarNav() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const hoverExpandTimerRef = useRef<number>();
-  const manuallyResizedRef = useRef(false);
-  const resizeStartRef = useRef({
-    pointerX: 0,
-    sidebarWidth: DEFAULT_SIDEBAR_WIDTH,
-  });
-  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
-  const [resizing, setResizing] = useState(false);
-
-  const clearHoverExpandTimer = () => {
-    if (hoverExpandTimerRef.current === undefined) return;
-    window.clearTimeout(hoverExpandTimerRef.current);
-    hoverExpandTimerRef.current = undefined;
-  };
-
-  useEffect(() => clearHoverExpandTimer, []);
-
-  useEffect(() => {
-    if (!resizing) return undefined;
-
-    const previousCursor = document.body.style.cursor;
-    const previousUserSelect = document.body.style.userSelect;
-
-    const handlePointerMove = (evt: PointerEvent) => {
-      const offset = evt.clientX - resizeStartRef.current.pointerX;
-      const nextWidth = clampSidebarWidth(resizeStartRef.current.sidebarWidth + offset);
-      manuallyResizedRef.current = nextWidth > DEFAULT_SIDEBAR_WIDTH;
-      setSidebarWidth(nextWidth);
-    };
-
-    const handlePointerEnd = () => setResizing(false);
-
-    document.body.style.cursor = 'col-resize';
-    document.body.style.userSelect = 'none';
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerEnd);
-    window.addEventListener('pointercancel', handlePointerEnd);
-
-    return () => {
-      document.body.style.cursor = previousCursor;
-      document.body.style.userSelect = previousUserSelect;
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerEnd);
-      window.removeEventListener('pointercancel', handlePointerEnd);
-    };
-  }, [resizing]);
-
-  const handleResizeStart: PointerEventHandler<HTMLDivElement> = (evt) => {
-    if (evt.button !== 0) return;
-    evt.preventDefault();
-    evt.stopPropagation();
-    clearHoverExpandTimer();
-    manuallyResizedRef.current = sidebarWidth > DEFAULT_SIDEBAR_WIDTH;
-    resizeStartRef.current = {
-      pointerX: evt.clientX,
-      sidebarWidth,
-    };
-    setResizing(true);
-  };
-
-  const handleResizeKeyDown: KeyboardEventHandler<HTMLDivElement> = (evt) => {
-    if (evt.key === 'ArrowLeft') {
-      evt.preventDefault();
-      clearHoverExpandTimer();
-      setSidebarWidth((currentWidth) => {
-        const nextWidth = clampSidebarWidth(currentWidth - 16);
-        manuallyResizedRef.current = nextWidth > DEFAULT_SIDEBAR_WIDTH;
-        return nextWidth;
-      });
-    }
-
-    if (evt.key === 'ArrowRight') {
-      evt.preventDefault();
-      clearHoverExpandTimer();
-      setSidebarWidth((currentWidth) => {
-        const nextWidth = clampSidebarWidth(currentWidth + 16);
-        manuallyResizedRef.current = nextWidth > DEFAULT_SIDEBAR_WIDTH;
-        return nextWidth;
-      });
-    }
-
-    if (evt.key === 'Home') {
-      evt.preventDefault();
-      clearHoverExpandTimer();
-      manuallyResizedRef.current = false;
-      setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
-    }
-
-    if (evt.key === 'End') {
-      evt.preventDefault();
-      clearHoverExpandTimer();
-      manuallyResizedRef.current = true;
-      setSidebarWidth(MAX_SIDEBAR_WIDTH);
-    }
-  };
-
-  const handleSidebarMouseEnter: MouseEventHandler<HTMLDivElement> = () => {
-    if (manuallyResizedRef.current || resizing) return;
-
-    clearHoverExpandTimer();
-    hoverExpandTimerRef.current = window.setTimeout(() => {
-      hoverExpandTimerRef.current = undefined;
-      setSidebarWidth(MAX_SIDEBAR_WIDTH);
-    }, HOVER_EXPAND_DELAY_MS);
-  };
-
-  const handleSidebarMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
-    clearHoverExpandTimer();
-
-    if (manuallyResizedRef.current || resizing) return;
-    setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
-  };
-
-  const expanded = sidebarWidth >= EXPANDED_SIDEBAR_WIDTH;
+  const [expanded, setExpanded] = useState(false);
+  const sidebarWidth = expanded ? MAX_SIDEBAR_WIDTH : DEFAULT_SIDEBAR_WIDTH;
+  const handleSidebarToggle = () => setExpanded((current) => !current);
 
   return (
-    <Sidebar
-      data-expanded={expanded}
-      data-resizing={resizing}
-      style={{ width: sidebarWidth }}
-      onMouseEnter={handleSidebarMouseEnter}
-      onMouseLeave={handleSidebarMouseLeave}
-    >
+    <Sidebar data-expanded={expanded} style={{ width: sidebarWidth }}>
       <SidebarContent
         scrollable={
           <Scroll ref={scrollRef} variant="Background" size="0">
@@ -177,6 +82,7 @@ export function SidebarNav() {
           <>
             <SidebarStackSeparator />
             <SidebarStack>
+              <SidebarToggleTab expanded={expanded} onToggle={handleSidebarToggle} />
               <SearchTab />
               <UnverifiedTab />
               <InboxTab />
@@ -184,18 +90,6 @@ export function SidebarNav() {
             </SidebarStack>
           </>
         }
-      />
-      <SidebarResizeHandle
-        role="slider"
-        aria-label="Redimensionar barra lateral"
-        aria-orientation="vertical"
-        aria-valuemin={DEFAULT_SIDEBAR_WIDTH}
-        aria-valuemax={MAX_SIDEBAR_WIDTH}
-        aria-valuenow={sidebarWidth}
-        data-active={resizing}
-        tabIndex={0}
-        onPointerDown={handleResizeStart}
-        onKeyDown={handleResizeKeyDown}
       />
     </Sidebar>
   );
