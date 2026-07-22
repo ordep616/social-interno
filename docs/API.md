@@ -40,6 +40,16 @@ Essa camada pertence ao frontend e não constitui uma API de servidor própria.
 
 `DEC-017` aprovou uma API FastAPI auxiliar exclusivamente para convites, provisionamento e ciclo de vida de contas. Ela não participa do envio, recebimento ou armazenamento de mensagens.
 
+### Estilo da API
+
+`DEC-018` define que as APIs próprias do serviço seguem REST sobre HTTP, com contrato versionado em `/v1`, recursos nomeados por substantivos, JSON e códigos HTTP consistentes. Operações nativas de chat continuam usando diretamente o contrato Matrix e não são encapsuladas pelo FastAPI.
+
+- `GET` consulta recursos sem alterar seu estado.
+- `POST` cria recursos.
+- `PATCH` será usado quando uma alteração parcial de recurso for aprovada.
+- `DELETE` torna um recurso indisponível; quando a auditoria exigir preservação, a remoção é lógica.
+- Endpoints administrativos e públicos permanecem separados e aplicam autenticação, autorização e limites próprios.
+
 ### Autenticação e autorização administrativa
 
 - Endpoints administrativos recebem o token Matrix do usuário autenticado em `Authorization: Bearer`.
@@ -53,7 +63,7 @@ Essa camada pertence ao frontend e não constitui uma API de servidor própria.
 
 O token deve possuir alta entropia e ser armazenado somente como hash SHA-256. O link completo é retornado uma única vez, expira em 24 horas e aceita um único uso. Token, senha e credenciais administrativas não podem aparecer em logs ou eventos de auditoria.
 
-Como o token aparece na rota de validação e aceitação, proxy, servidor HTTP, rastreamento e monitoramento devem omitir ou mascarar o caminho dessas requisições. As respostas usam `Cache-Control: no-store`.
+O token aparece na rota de validação e no corpo da criação do cadastro. Proxy, servidor HTTP, rastreamento e monitoramento devem omitir ou mascarar o caminho da validação e nunca registrar corpos dessas requisições. As respostas usam `Cache-Control: no-store`.
 
 Campos persistidos:
 
@@ -87,7 +97,8 @@ Os dados pertencem a um PostgreSQL próprio do serviço. O serviço não acessa 
 ```text
 POST /v1/admin/invitations
 GET  /v1/admin/invitations
-POST /v1/admin/invitations/{id}/revoke
+GET  /v1/admin/invitations/{id}
+DELETE /v1/admin/invitations/{id}
 ```
 
 Criação de convite:
@@ -98,23 +109,24 @@ Criação de convite:
 }
 ```
 
-`role` aceita somente `user` ou `group_admin`. A resposta inclui metadados e `invite_url`; essa é a única resposta que apresenta o token em texto aberto. Promoção a `platform_admin` usa procedimento administrativo separado.
+`role` aceita somente `user` ou `group_admin`. A resposta inclui metadados, o cabeçalho `Location` com o recurso administrativo criado e `invite_url`; essa é a única resposta que apresenta o token em texto aberto. Promoção a `platform_admin` usa procedimento administrativo separado.
 
-Respostas esperadas: criação `201`, listagem `200` e revogação idempotente `204`.
+Respostas esperadas: criação `201`, listagem e consulta `200` e revogação idempotente `204`.
 
-A listagem e a revogação usam o identificador público do convite e nunca retornam `token_hash` ou o token original. Revogar um convite já revogado é uma operação idempotente.
+A listagem, consulta e revogação usam o identificador público do convite e nunca retornam `token_hash` ou o token original. `DELETE` realiza revogação lógica: preenche `revoked_at`, muda o estado para `revoked` e preserva o registro para auditoria. Revogar um convite já revogado é uma operação idempotente. Identificador administrativo inexistente retorna `404`; convite em processamento ou já usado não pode ser revogado e retorna `409`.
 
 ### Endpoints do convidado
 
 ```text
 GET  /v1/invitations/{token}
-POST /v1/invitations/{token}/accept
+POST /v1/registrations
 ```
 
-Aceitação:
+Criação de cadastro usando convite:
 
 ```json
 {
+  "invitation_token": "token-secreto",
   "username": "pedro",
   "password": "senha-escolhida"
 }
@@ -128,9 +140,9 @@ Resposta após criação:
 }
 ```
 
-O serviço não retorna token de sessão. O usuário realiza login normal no cliente depois da criação. A senha é encaminhada somente à API administrativa do Synapse e nunca é persistida.
+O recurso criado representa o cadastro inicial da conta. O serviço não retorna token de sessão. O usuário realiza login normal no cliente depois da criação. Token de convite e senha são encaminhados somente ao processamento necessário, nunca são persistidos em texto aberto e não aparecem em logs.
 
-Respostas esperadas: validação `200` e aceitação `201`. Token inexistente retorna `404`; token expirado, usado ou revogado retorna a mesma resposta genérica `410`; nome indisponível retorna `409`; limite excedido retorna `429`. Endpoints administrativos retornam `401` sem autenticação válida e `403` sem o papel exigido.
+Respostas esperadas: validação `200` e criação do cadastro `201`. Token inexistente retorna `404`; token expirado, usado ou revogado retorna a mesma resposta genérica `410`; nome indisponível retorna `409`; limite excedido retorna `429`. Endpoints administrativos retornam `401` sem autenticação válida e `403` sem o papel exigido.
 
 ### Concorrência e falhas
 
