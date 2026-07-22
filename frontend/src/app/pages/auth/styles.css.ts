@@ -3,7 +3,10 @@ import { DefaultReset, color, config, toRem } from 'folds';
 
 export const AuthLayout = style({
   minHeight: '100%',
-  backgroundColor: color.Background.Container,
+  backgroundColor: '#050505',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundSize: 'cover',
   color: color.Background.OnContainer,
   padding: config.space.S400,
   paddingRight: config.space.S200,
@@ -16,9 +19,10 @@ export const AuthCard = style({
   maxWidth: toRem(460),
   width: '100%',
   backgroundColor: color.Surface.Container,
+  backdropFilter: 'blur(8px)',
   color: color.Surface.OnContainer,
   borderRadius: config.radii.R400,
-  boxShadow: config.shadow.E100,
+  boxShadow: '0 24px 70px rgba(0, 0, 0, 0.48)',
   border: `${config.borderWidth.B300} solid ${color.Surface.ContainerLine}`,
   overflow: 'hidden',
 });
@@ -50,4 +54,6 @@ export const AuthCardContent = style({
 
 export const AuthFooter = style({
   padding: config.space.S200,
+  color: '#f5f5f5',
+  textShadow: '0 2px 8px rgba(0, 0, 0, 0.82)',
 });

@@ -8,11 +8,9 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom';
-import classNames from 'classnames';
 
 import { AuthFooter } from './AuthFooter';
 import * as css from './styles.css';
-import * as PatternsCss from '../../styles/Patterns.css';
 import {
   clientAllowedServer,
   clientDefaultServer,
@@ -28,6 +26,7 @@ import { AuthFlowsLoader } from '../../components/AuthFlowsLoader';
 import { AuthFlowsProvider } from '../../hooks/useAuthFlows';
 import { AuthServerProvider } from '../../hooks/useAuthServer';
 import { tryDecodeURIComponent } from '../../utils/dom';
+import WelcomeBackground from '../../../../public/res/background/betweenus-welcome.jpeg';
 
 const currentAuthPath = (pathname: string): string => {
   if (matchPath(LOGIN_PATH, pathname)) {
@@ -106,7 +105,8 @@ export function AuthLayout() {
   return (
     <Scroll variant="Background" visibility="Hover" size="300" hideTrack>
       <Box
-        className={classNames(css.AuthLayout, PatternsCss.BackgroundDotPattern)}
+        className={css.AuthLayout}
+        style={{ backgroundImage: `url(${WelcomeBackground})` }}
         direction="Column"
         alignItems="Center"
         justifyContent="SpaceBetween"

@@ -68,3 +68,17 @@ export const NeonChatButtonText = style({
   color: '#fff',
   textShadow: '0 1px 4px rgba(0, 0, 0, 0.38)',
 });
+
+export const AddUserModal = style({
+  width: 'min(92vw, 420px)',
+  border: '1px solid rgba(255, 255, 255, 0.12)',
+  boxShadow: '0 24px 70px rgba(0, 0, 0, 0.48)',
+});
+
+export const AddUserModalBody = style({
+  padding: '0 24px 24px',
+});
+
+export const AddUserModalActions = style({
+  flexWrap: 'wrap',
+});
