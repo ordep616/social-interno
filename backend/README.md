@@ -17,7 +17,7 @@ O primeiro escopo do backend auxiliar é:
 - registrar auditoria sem guardar tokens, senhas ou credenciais administrativas;
 - apoiar posteriormente bloqueio, redefinição de senha e desligamento.
 
-O contrato está definido em `../docs/API.md`.
+O contrato está definido em `../docs/API.md` e segue o estilo REST aprovado em `DEC-018`. A revogação usa `DELETE` com remoção lógica para preservar auditoria, e o aceite do convite cria um cadastro por `POST /v1/registrations`.
 
 ## Limites
 

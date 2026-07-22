@@ -38,7 +38,7 @@ Serviço de convites (FastAPI)
 - Banco do Synapse: PostgreSQL.
 - Identidade inicial: conta local criada por convite administrativo de uso único; OIDC poderá ser avaliado posteriormente.
 - Ambiente: contêineres durante desenvolvimento e homologação.
-- Serviço complementar: FastAPI aprovado para convites, provisionamento e ciclo de vida de contas; novos usos exigem outra decisão.
+- Serviço complementar: API REST FastAPI aprovada para convites, provisionamento e ciclo de vida de contas; novos usos exigem outra decisão.
 
 ## Limites
 
@@ -58,6 +58,7 @@ Serviço de convites (FastAPI)
 - A administração deve usar APIs e módulos suportados, evitando alterações diretas no banco do Synapse.
 - FastAPI não duplicará mensagens, salas, presença ou sincronização.
 - O serviço FastAPI usa PostgreSQL próprio e mantém credenciais administrativas fora do navegador.
+- A API própria segue REST versionado; operações de chat continuam usando diretamente o contrato Matrix.
 
 ### Dados
 

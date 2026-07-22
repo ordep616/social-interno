@@ -122,6 +122,16 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Ciclo de vida: redefinição de senha, bloqueio e desligamento serão operações administrativas; seus procedimentos e a revogação de sessões ainda precisam ser implementados e testados.
 - Evolução: OIDC poderá ser avaliado posteriormente e não bloqueia o MVP baseado em convite.
 
+## DEC-018 — API própria orientada a REST
+
+- Status: aceita pelos dois colaboradores.
+- Decisão: APIs próprias do serviço FastAPI seguirão REST sobre HTTP, serão versionadas em `/v1`, usarão recursos nomeados por substantivos, JSON e códigos HTTP consistentes.
+- Contrato inicial: convites administrativos usam `POST`, `GET` e `DELETE` em `/v1/admin/invitations`; a revogação é uma remoção lógica e idempotente. O convidado valida o token em `GET /v1/invitations/{token}` e cria seu cadastro em `POST /v1/registrations`.
+- Motivo: manter o contrato simples, previsível, independente de linguagem e compatível com o frontend e ferramentas HTTP comuns.
+- Limite: Matrix continua sendo o contrato de salas, mensagens, mídia e sincronização. O FastAPI não encapsula nem redefine a Matrix Client-Server API.
+- Segurança: token administrativo do Synapse permanece no servidor; tokens de convite e senhas não são registrados; respostas relacionadas ao convite usam `Cache-Control: no-store`.
+- Consequência: mudanças incompatíveis exigem nova versão do contrato e aprovação conjunta antes da implementação no frontend ou backend.
+
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.
 - Aprovação das versões da prova de conceito para homologação e produção.
