@@ -37,4 +37,6 @@ O contrato está definido em `../docs/API.md` e segue o estilo REST aprovado em 
 - Relatórios ou exportações aprovados.
 - Fluxos administrativos específicos.
 
-FastAPI e PostgreSQL foram aprovados para o serviço de convites. ORM, ferramenta de migração, empacotamento Python e execução por ambiente ainda precisam ser escolhidos antes da implementação.
+A fundação aprovada em `DEC-019` usa CPython `>=3.14,<3.15`, FastAPI síncrono, Uvicorn, SQLAlchemy `2.0.x`, Psycopg 3 com extra `binary`, Alembic, `pydantic-settings` e HTTPX. O ambiente será gerenciado por `uv` com `uv.lock`; Ruff, mypy, pytest e pytest-cov formam a verificação inicial de qualidade.
+
+As versões exatas serão fixadas na primeira resolução do `uv.lock`. Dependências transitivas e bibliotecas incluídas pelo extra `binary` devem ser inventariadas antes da incorporação; as obrigações da `LGPL-3.0-only` do Psycopg exigem conferência antes de homologação ou produção.

@@ -132,6 +132,18 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Segurança: token administrativo do Synapse permanece no servidor; tokens de convite e senhas não são registrados; respostas relacionadas ao convite usam `Cache-Control: no-store`.
 - Consequência: mudanças incompatíveis exigem nova versão do contrato e aprovação conjunta antes da implementação no frontend ou backend.
 
+## DEC-019 — Fundação técnica do serviço de convites
+
+- Status: aceita pelos dois colaboradores.
+- Execução: CPython `>=3.14,<3.15`, FastAPI sem o extra `standard`, Uvicorn explícito e implementação inicialmente síncrona.
+- Persistência: PostgreSQL próprio, SQLAlchemy `2.0.x` estável, Psycopg 3 com extra `binary` e Alembic. SQLAlchemy `2.1` não será adotado enquanto estiver em pré-lançamento.
+- Configuração e integração: `pydantic-settings` para variáveis de ambiente, HTTPX para a API do Synapse e `secrets`/`hashlib` da biblioteca padrão para tokens.
+- Ambiente: `uv`, `pyproject.toml`, `.python-version`, ambiente virtual local ignorado e `uv.lock` versionado.
+- Qualidade: Ruff para lint e formatação, mypy para tipos, pytest para testes e pytest-cov para cobertura.
+- Motivo: usar uma base pequena, reproduzível, tipada e comum no ecossistema Python, reduzindo a complexidade inicial do serviço administrativo.
+- Licenças: dependências diretas serão registradas antes da incorporação. As transitivas serão identificadas na primeira resolução e registradas antes do merge da implementação. Psycopg 3 e o extra `binary` exigem atenção específica à `LGPL-3.0-only` e às bibliotecas empacotadas antes de homologação ou produção.
+- Limite: a fundação é exclusiva para convites, provisionamento e ciclo de vida de contas aprovados. Ela não implementa chat nem substitui Matrix ou Synapse.
+
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.
 - Aprovação das versões da prova de conceito para homologação e produção.

@@ -35,6 +35,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 
 - [x] Desabilitar cadastro público na configuração local.
 - [x] Retirar o listener de federação, configurar lista vazia e validar o bloqueio localmente e pela borda pública temporária.
+- [x] Aprovar contrato REST e fundação técnica reproduzível para o serviço FastAPI de convites.
 - [ ] Implementar o serviço FastAPI de convites administrativos de uso único, com validade de 24 horas.
 - [ ] Implementar provisionamento, bloqueio, redefinição de senha e desligamento de usuários pela API administrativa do Synapse.
 - [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
