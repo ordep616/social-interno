@@ -17,7 +17,7 @@ export const Sidebar = style([
     display: 'flex',
     flexDirection: 'column',
     color: color.Background.OnContainer,
-    transition: 'width 120ms ease',
+    transition: 'width 220ms ease',
 
     selectors: {
       '&[data-resizing=true]': {
