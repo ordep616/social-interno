@@ -1,5 +1,5 @@
 import React, { MouseEventHandler, forwardRef, useState } from 'react';
-import { Room } from 'matrix-js-sdk';
+import { MatrixEvent, MsgType, Room } from 'matrix-js-sdk';
 import {
   Avatar,
   Box,
@@ -23,7 +23,12 @@ import { useAtom, useAtomValue } from 'jotai';
 import { NavItem, NavItemContent, NavItemOptions, NavLink } from '../../components/nav';
 import { UnreadBadge, UnreadBadgeCenter } from '../../components/unread-badge';
 import { RoomAvatar, RoomIcon } from '../../components/room-avatar';
-import { getDirectRoomAvatarUrl, getRoomAvatarUrl, getStateEvent } from '../../utils/room';
+import {
+  getDirectRoomAvatarUrl,
+  getRoomAvatarUrl,
+  getStateEvent,
+  trimReplyFromBody,
+} from '../../utils/room';
 import { nameInitials } from '../../utils/common';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useRoomUnread } from '../../state/hooks/unread';
@@ -44,6 +49,7 @@ import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { useOpenRoomSettings } from '../../state/hooks/roomSettings';
 import { useSpaceOptionally } from '../../hooks/useSpace';
+import { useRoomLatestRenderedEvent } from '../../hooks/useRoomLatestRenderedEvent';
 import {
   getRoomNotificationModeIcon,
   RoomNotificationMode,
@@ -59,8 +65,82 @@ import { callChatAtom } from '../../state/callEmbed';
 import { useCallPreferencesAtom } from '../../state/hooks/callPreferences';
 import { useAutoDiscoveryInfo } from '../../hooks/useAutoDiscoveryInfo';
 import { livekitSupport } from '../../hooks/useLivekitSupport';
-import { StateEvent } from '../../../types/matrix/room';
+import { MessageEvent, StateEvent } from '../../../types/matrix/room';
 import { webRTCSupported } from '../../utils/rtc';
+import { timeDayMonYear, timeHourMinute, today, yesterday } from '../../utils/time';
+import * as css from './styles.css';
+
+const cleanPreviewBody = (body: string): string => {
+  const preview = trimReplyFromBody(body).replace(/\s+/g, ' ').trim();
+  return preview || 'Mensagem';
+};
+
+const formatConversationTime = (
+  ts: number,
+  hour24Clock: boolean,
+  dateFormatString: string
+): string => {
+  if (today(ts)) return timeHourMinute(ts, hour24Clock);
+  if (yesterday(ts)) return 'Ontem';
+  return timeDayMonYear(ts, dateFormatString || 'D MMM YYYY');
+};
+
+const getSenderDisplayName = (mxUserId: string | null, room: Room, event: MatrixEvent): string => {
+  const senderId = event.getSender();
+  if (!senderId) return '';
+  if (senderId === mxUserId) return 'Você';
+
+  return room.getMember(senderId)?.name ?? senderId;
+};
+
+const getBasePreview = (event: MatrixEvent): string => {
+  if (event.isRedacted()) return 'Mensagem apagada';
+
+  const eventType = event.getType();
+  const content = event.getContent<Record<string, unknown>>();
+
+  if (eventType === MessageEvent.RoomMessage) {
+    const { body, msgtype } = content;
+
+    if (msgtype === MsgType.Text || msgtype === MsgType.Notice) {
+      return typeof body === 'string' ? cleanPreviewBody(body) : 'Mensagem';
+    }
+    if (msgtype === MsgType.Emote) {
+      return typeof body === 'string' ? `* ${cleanPreviewBody(body)}` : 'Ação';
+    }
+    if (msgtype === MsgType.Image) return 'Imagem';
+    if (msgtype === MsgType.Video) return 'Vídeo';
+    if (msgtype === MsgType.Audio) return 'Áudio';
+    if (msgtype === MsgType.File) return 'Documento';
+    if (msgtype === MsgType.Location) return 'Localização';
+    if (msgtype === 'm.bad.encrypted') return 'Mensagem criptografada indisponível';
+
+    return typeof body === 'string' ? cleanPreviewBody(body) : 'Mensagem';
+  }
+
+  if (eventType === MessageEvent.RoomMessageEncrypted) return 'Mensagem criptografada';
+  if (eventType === MessageEvent.Sticker) return 'Figurinha';
+  if (eventType === StateEvent.RoomName) return 'Nome da conversa atualizado';
+  if (eventType === StateEvent.RoomTopic) return 'Descrição da conversa atualizada';
+  if (eventType === StateEvent.RoomAvatar) return 'Imagem da conversa atualizada';
+  if (eventType === StateEvent.RoomMember) return 'Atividade de participantes';
+
+  return 'Nova atividade';
+};
+
+const getConversationPreview = (
+  mxUserId: string | null,
+  room: Room,
+  event: MatrixEvent,
+  direct?: boolean
+): string => {
+  const preview = getBasePreview(event);
+  const senderId = event.getSender();
+  const senderName = getSenderDisplayName(mxUserId, room, event);
+  const shouldPrefix = senderName && (!direct || senderId === mxUserId);
+
+  return shouldPrefix ? `${senderName}: ${preview}` : preview;
+};
 
 type RoomNavItemMenuProps = {
   room: Room;
@@ -263,8 +343,20 @@ export function RoomNavItem({
   const typingMember = useRoomTypingMember(room.roomId).filter(
     (receipt) => receipt.userId !== mx.getUserId()
   );
+  const latestEvent = useRoomLatestRenderedEvent(room);
+  const [hour24Clock] = useSetting(settingsAtom, 'hour24Clock');
+  const [dateFormatString] = useSetting(settingsAtom, 'dateFormatString');
 
   const roomName = useRoomName(room);
+  const latestTs = latestEvent?.getTs();
+  const conversationTime =
+    typeof latestTs === 'number'
+      ? formatConversationTime(latestTs, hour24Clock, dateFormatString)
+      : undefined;
+  const conversationPreview = latestEvent
+    ? getConversationPreview(mx.getUserId(), room, latestEvent, direct)
+    : 'Sem mensagens ainda';
+  const typing = typingMember.length > 0;
 
   const handleContextMenu: MouseEventHandler<HTMLElement> = (evt) => {
     evt.preventDefault();
@@ -317,6 +409,7 @@ export function RoomNavItem({
 
   return (
     <NavItem
+      className={css.ConversationItem}
       variant="Background"
       radii="400"
       highlight={unread !== undefined}
@@ -327,9 +420,9 @@ export function RoomNavItem({
       {...focusWithinProps}
     >
       <NavLink to={linkPath} onClick={room.isCallRoom() ? handleStartCall : undefined}>
-        <NavItemContent>
-          <Box as="span" grow="Yes" alignItems="Center" gap="200">
-            <Avatar size="200" radii="400">
+        <NavItemContent className={css.ConversationContent}>
+          <Box as="span" grow="Yes" alignItems="Center" gap="300">
+            <Avatar className={css.ConversationAvatar} size="400" radii="Pill">
               {showAvatar ? (
                 <RoomAvatar
                   roomId={room.roomId}
@@ -351,41 +444,100 @@ export function RoomNavItem({
                     opacity: unread ? config.opacity.P500 : config.opacity.P300,
                   }}
                   filled={selected}
-                  size="100"
+                  size="200"
                   joinRule={room.getJoinRule()}
                   roomType={room.getType()}
                 />
               )}
             </Avatar>
-            <Box as="span" grow="Yes">
-              <Text priority={unread ? '500' : '300'} as="span" size="Inherit" truncate>
-                {roomName}
-              </Text>
-            </Box>
-            {!optionsVisible && !unread && !selected && typingMember.length > 0 && (
-              <Badge size="300" variant="Secondary" fill="Soft" radii="Pill" outlined>
-                <TypingIndicator size="300" disableAnimation />
-              </Badge>
-            )}
-            {!optionsVisible && unread && (
-              <UnreadBadgeCenter>
-                <UnreadBadge highlight={unread.highlight > 0} count={unread.total} />
-              </UnreadBadgeCenter>
-            )}
-            {!optionsVisible && notificationMode !== RoomNotificationMode.Unset && (
-              <Icon
-                size="50"
-                src={getRoomNotificationModeIcon(notificationMode)}
-                aria-label={notificationMode}
-              />
-            )}
-            {callMembers.length > 0 && (
-              <Badge variant="Critical" fill="Solid" size="400">
-                <Text as="span" size="L400" truncate>
-                  {callMembers.length} Live
+            <Box className={css.ConversationBody} as="span" grow="Yes" direction="Column">
+              <Box
+                className={css.ConversationHeader}
+                as="span"
+                alignItems="Center"
+                grow="Yes"
+                gap="100"
+              >
+                <Text
+                  className={css.ConversationName}
+                  priority={unread ? '500' : '400'}
+                  as="span"
+                  size="T300"
+                  truncate
+                >
+                  {roomName}
                 </Text>
-              </Badge>
-            )}
+                {conversationTime && (
+                  <Text
+                    className={css.ConversationTime}
+                    priority={unread ? '400' : '300'}
+                    as="span"
+                    size="T200"
+                  >
+                    {conversationTime}
+                  </Text>
+                )}
+              </Box>
+              <Box
+                className={css.ConversationPreviewRow}
+                as="span"
+                alignItems="Center"
+                grow="Yes"
+                gap="200"
+              >
+                {typing ? (
+                  <Box
+                    className={css.ConversationTypingPreview}
+                    as="span"
+                    alignItems="Center"
+                    gap="100"
+                    grow="Yes"
+                  >
+                    <Text className={css.ConversationPreview} as="span" size="T200" truncate>
+                      digitando
+                    </Text>
+                    <TypingIndicator size="300" />
+                  </Box>
+                ) : (
+                  <Text
+                    className={css.ConversationPreview}
+                    priority={unread ? '400' : '300'}
+                    as="span"
+                    size="T200"
+                    truncate
+                  >
+                    {conversationPreview}
+                  </Text>
+                )}
+                <Box
+                  className={css.ConversationMeta}
+                  as="span"
+                  shrink="No"
+                  alignItems="Center"
+                  gap="100"
+                >
+                  {unread && (
+                    <UnreadBadgeCenter>
+                      <UnreadBadge highlight={unread.highlight > 0} count={unread.total} />
+                    </UnreadBadgeCenter>
+                  )}
+                  {notificationMode !== RoomNotificationMode.Unset && (
+                    <Icon
+                      size="50"
+                      src={getRoomNotificationModeIcon(notificationMode)}
+                      aria-label={notificationMode}
+                    />
+                  )}
+                  {callMembers.length > 0 && (
+                    <Badge variant="Critical" fill="Solid" size="400">
+                      <Text as="span" size="L400" truncate>
+                        {callMembers.length} Live
+                      </Text>
+                    </Badge>
+                  )}
+                </Box>
+              </Box>
+            </Box>
           </Box>
         </NavItemContent>
       </NavLink>
