@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
 import { Icon, Icons, Scroll } from 'folds';
 
 import {
@@ -26,6 +26,7 @@ import { CreateTab } from './sidebar/CreateTab';
 
 const DEFAULT_SIDEBAR_WIDTH = 66;
 const MAX_SIDEBAR_WIDTH = 240;
+const HOVER_EXPAND_DELAY_MS = 1500;
 
 type SidebarToggleTabProps = {
   expanded: boolean;
@@ -58,12 +59,54 @@ function SidebarToggleTab({ expanded, onToggle }: SidebarToggleTabProps) {
 
 export function SidebarNav() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [expanded, setExpanded] = useState(false);
+  const hoverExpandTimerRef = useRef<number>();
+  const [pinnedExpanded, setPinnedExpanded] = useState(false);
+  const [hoverExpanded, setHoverExpanded] = useState(false);
+  const expanded = pinnedExpanded || hoverExpanded;
   const sidebarWidth = expanded ? MAX_SIDEBAR_WIDTH : DEFAULT_SIDEBAR_WIDTH;
-  const handleSidebarToggle = () => setExpanded((current) => !current);
+
+  const clearHoverExpandTimer = () => {
+    if (hoverExpandTimerRef.current === undefined) return;
+    window.clearTimeout(hoverExpandTimerRef.current);
+    hoverExpandTimerRef.current = undefined;
+  };
+
+  useEffect(() => clearHoverExpandTimer, []);
+
+  const handleSidebarToggle = () => {
+    clearHoverExpandTimer();
+
+    if (expanded) {
+      setPinnedExpanded(false);
+      setHoverExpanded(false);
+      return;
+    }
+
+    setPinnedExpanded(true);
+  };
+
+  const handleSidebarMouseEnter: MouseEventHandler<HTMLDivElement> = () => {
+    if (pinnedExpanded || hoverExpanded) return;
+
+    clearHoverExpandTimer();
+    hoverExpandTimerRef.current = window.setTimeout(() => {
+      hoverExpandTimerRef.current = undefined;
+      setHoverExpanded(true);
+    }, HOVER_EXPAND_DELAY_MS);
+  };
+
+  const handleSidebarMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
+    clearHoverExpandTimer();
+    setHoverExpanded(false);
+  };
 
   return (
-    <Sidebar data-expanded={expanded} style={{ width: sidebarWidth }}>
+    <Sidebar
+      data-expanded={expanded}
+      style={{ width: sidebarWidth }}
+      onMouseEnter={handleSidebarMouseEnter}
+      onMouseLeave={handleSidebarMouseLeave}
+    >
       <SidebarContent
         scrollable={
           <Scroll ref={scrollRef} variant="Background" size="0">
