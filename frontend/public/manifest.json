@@ -1,9 +1,9 @@
 {
-  "name": "Comunicação Interna",
-  "short_name": "Comunicação",
+  "name": "Betweenus",
+  "short_name": "Betweenus",
   "description": "Sistema interno de comunicação corporativa",
   "dir": "auto",
-  "lang": "en-US",
+  "lang": "pt-BR",
   "display": "standalone",
   "orientation": "portrait",
   "start_url": "./",
