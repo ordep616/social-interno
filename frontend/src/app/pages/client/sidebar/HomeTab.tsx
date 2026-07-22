@@ -9,7 +9,7 @@ import { mDirectAtom } from '../../../state/mDirectList';
 import { roomToParentsAtom } from '../../../state/room/roomToParents';
 import { allRoomsAtom } from '../../../state/room-list/roomList';
 import { roomToUnreadAtom } from '../../../state/room/roomToUnread';
-import { getHomePath, joinPathComponent } from '../../pathUtils';
+import { getHomePath } from '../../pathUtils';
 import { useRoomsUnread } from '../../../state/hooks/unread';
 import {
   SidebarAvatar,
@@ -21,8 +21,6 @@ import {
 } from '../../../components/sidebar';
 import { useHomeSelected } from '../../../hooks/router/useHomeSelected';
 import { UnreadBadge } from '../../../components/unread-badge';
-import { ScreenSize, useScreenSizeContext } from '../../../hooks/useScreenSize';
-import { useNavToActivePathAtom } from '../../../state/hooks/navToActivePath';
 import { useHomeRooms } from '../home/useHomeRooms';
 import { markAsRead } from '../../../utils/notifications';
 import { stopPropagation } from '../../../utils/keyboard';
@@ -66,8 +64,6 @@ const HomeMenu = forwardRef<HTMLDivElement, HomeMenuProps>(({ requestClose }, re
 export function HomeTab() {
   const navigate = useNavigate();
   const mx = useMatrixClient();
-  const screenSize = useScreenSizeContext();
-  const navToActivePath = useAtomValue(useNavToActivePathAtom());
 
   const mDirects = useAtomValue(mDirectAtom);
   const roomToParents = useAtomValue(roomToParentsAtom);
@@ -77,12 +73,6 @@ export function HomeTab() {
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
 
   const handleHomeClick = () => {
-    const activePath = navToActivePath.get('home');
-    if (activePath && screenSize !== ScreenSize.Mobile) {
-      navigate(joinPathComponent(activePath));
-      return;
-    }
-
     navigate(getHomePath());
   };
 
