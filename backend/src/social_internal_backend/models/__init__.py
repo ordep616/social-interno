@@ -5,5 +5,12 @@ from social_internal_backend.models.invitation import (
     InvitationRole,
     InvitationStatus,
 )
+from social_internal_backend.models.user_role_assignment import UserRole, UserRoleAssignment
 
-__all__ = ["Invitation", "InvitationRole", "InvitationStatus"]
+__all__ = [
+    "Invitation",
+    "InvitationRole",
+    "InvitationStatus",
+    "UserRole",
+    "UserRoleAssignment",
+]

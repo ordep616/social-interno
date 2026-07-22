@@ -18,6 +18,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from social_internal_backend.database import Base
+from social_internal_backend.models.enums import enum_values
 
 
 class InvitationRole(StrEnum):
@@ -35,12 +36,6 @@ class InvitationStatus(StrEnum):
     used = "used"
     revoked = "revoked"
     expired = "expired"
-
-
-def enum_values(enum_class: type[StrEnum]) -> list[str]:
-    """Persiste os valores públicos dos enums, não seus nomes Python."""
-
-    return [member.value for member in enum_class]
 
 
 class Invitation(Base):
