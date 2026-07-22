@@ -25,6 +25,8 @@ export const useRoomEventReaders = (room: Room, eventId?: string): string[] => {
   useEffect(() => {
     setReaders(getEventReaders(room, eventId));
 
+    if (!eventId) return undefined;
+
     const handleReceipt: RoomEventHandlerMap[RoomEvent.Receipt] = (event, r) => {
       if (r.roomId !== room.roomId) return;
       setReaders(getEventReaders(room, eventId));

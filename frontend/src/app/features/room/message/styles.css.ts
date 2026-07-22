@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { DefaultReset, config, toRem } from 'folds';
+import { DefaultReset, color, config, toRem } from 'folds';
 
 export const MessageBase = style({
   position: 'relative',
@@ -42,6 +42,36 @@ export const MessageMenuGroup = style({
 
 export const MessageMenuItemText = style({
   flexGrow: 1,
+});
+
+export const MessageDeliveryStatus = style([
+  DefaultReset,
+  {
+    alignSelf: 'flex-end',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: toRem(3),
+    minHeight: toRem(16),
+    marginTop: config.space.S100,
+    opacity: config.opacity.P500,
+    transition: 'color 160ms ease, opacity 160ms ease',
+
+    selectors: {
+      '&[data-status=seen]': {
+        color: '#7dd3fc',
+        opacity: 1,
+      },
+      '&[data-status=failed]': {
+        color: color.Critical.Main,
+        opacity: 1,
+      },
+    },
+  },
+]);
+
+export const MessageDeliveryIcon = style({
+  display: 'inline-flex',
+  lineHeight: 0,
 });
 
 export const ReactionsContainer = style({
