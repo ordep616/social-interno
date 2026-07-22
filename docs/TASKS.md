@@ -38,7 +38,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Aprovar contrato REST e fundação técnica reproduzível para o serviço FastAPI de convites.
 - [x] Implementar a fundação executável do FastAPI com saúde, configuração, PostgreSQL/Alembic e verificações de qualidade.
 - [x] Criar o modelo e a migração reversível de convites e validar suas restrições em PostgreSQL isolado.
-- [ ] Implementar o serviço FastAPI de convites administrativos de uso único, com validade de 24 horas.
+- [~] Implementar o serviço FastAPI de convites administrativos de uso único, com validade de 24 horas; geração segura, repositório e ciclo de vida interno concluídos, endpoints, controle de acesso, limites e auditoria pendentes.
 - [ ] Implementar provisionamento, bloqueio, redefinição de senha e desligamento de usuários pela API administrativa do Synapse.
 - [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
 - [ ] Avaliar OIDC como evolução posterior, sem bloquear o MVP baseado em convite.

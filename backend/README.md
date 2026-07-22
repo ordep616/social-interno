@@ -4,7 +4,7 @@
 
 ## Situação
 
-O serviço FastAPI de convites e provisionamento foi autorizado em `DEC-017`. Nenhum código foi implementado ainda. A decisão anterior de usar FastAPI como servidor principal de mensagens continua substituída por `DEC-010`.
+O serviço FastAPI de convites e provisionamento foi autorizado em `DEC-017`. A fundação, o modelo persistente e a camada interna de emissão e ciclo de vida dos convites já estão implementados. A decisão anterior de usar FastAPI como servidor principal de mensagens continua substituída por `DEC-010`.
 
 ## Serviço autorizado
 
@@ -50,9 +50,14 @@ A fundação inicial contém apenas:
 - criação preguiçosa do engine e das sessões SQLAlchemy;
 - modelo `Invitation` que armazena apenas o hash SHA-256 do token;
 - Alembic com revisão-base e migração reversível da tabela `invitations`;
+- gerador de token URL-safe com 256 bits de entropia e hash SHA-256;
+- repositório SQLAlchemy com paginação e transições atômicas;
+- serviço interno para emissão, validação, revogação, reserva, conclusão e liberação;
 - testes de saúde, configuração, banco, convite e ponto de entrada ASGI.
 
-Endpoints de convite, geração de tokens, regras de transição e chamadas administrativas ao Synapse ainda não foram implementados.
+O token aberto existe apenas no retorno da emissão e não aparece no `repr` do resultado. A emissão fixa validade de 24 horas. A reserva usa uma atualização condicional de `pending` para `processing`, impedindo que duas tentativas processem o mesmo convite; a conclusão e a liberação também usam transições condicionais.
+
+Endpoints REST, autenticação e autorização administrativas, limites de tentativa, auditoria e chamadas administrativas ao Synapse ainda não foram implementados.
 
 ## Desenvolvimento local
 
@@ -81,5 +86,7 @@ uv run alembic check
 ```
 
 A migração de convites foi validada com upgrade, downgrade e reaplicação em PostgreSQL `17.6-alpine`. O banco rejeitou papéis fora do contrato, hashes inválidos e estados `used` ou `revoked` sem seus campos obrigatórios.
+
+O serviço interno também foi validado em PostgreSQL `17.6-alpine`: emissão, validade de 24 horas, validação sem mutação, revogação idempotente, expiração, liberação após falha e conclusão funcionaram. Em duas reservas simultâneas do mesmo token, apenas uma avançou para `processing`.
 
 O arquivo `.env` é local e não deve ser versionado. `.env.example` contém apenas valores fictícios.
