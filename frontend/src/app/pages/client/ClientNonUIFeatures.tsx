@@ -3,7 +3,7 @@ import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { RoomEvent, RoomEventHandlerMap } from 'matrix-js-sdk';
 import { unreadEqual, unreadInfoToUnread } from '../../state/room/roomToUnread';
-import AppLogo from '../../../../public/res/logo/company-logo.png';
+import AppLogo from '../../../../public/res/logo/welcome-logo.png';
 import NotificationSound from '../../../../public/sound/notification.ogg';
 import InviteSound from '../../../../public/sound/invite.ogg';
 import { notificationPermission, setFavicon } from '../../utils/dom';
