@@ -48,10 +48,11 @@ A fundação inicial contém apenas:
 - aplicação FastAPI com `GET /health`;
 - configuração validada por variáveis `BACKEND_*`;
 - criação preguiçosa do engine e das sessões SQLAlchemy;
-- Alembic com revisão-base, sem tabelas de negócio;
-- testes de saúde, configuração, banco e ponto de entrada ASGI.
+- modelo `Invitation` que armazena apenas o hash SHA-256 do token;
+- Alembic com revisão-base e migração reversível da tabela `invitations`;
+- testes de saúde, configuração, banco, convite e ponto de entrada ASGI.
 
-Endpoints de convite, modelos de negócio e chamadas administrativas ao Synapse ainda não foram implementados.
+Endpoints de convite, geração de tokens, regras de transição e chamadas administrativas ao Synapse ainda não foram implementados.
 
 ## Desenvolvimento local
 
@@ -71,5 +72,14 @@ uv run ruff check .
 uv run mypy
 uv run pytest
 ```
+
+Com um PostgreSQL próprio disponível pela `BACKEND_DATABASE_URL`:
+
+```bash
+uv run alembic upgrade head
+uv run alembic check
+```
+
+A migração de convites foi validada com upgrade, downgrade e reaplicação em PostgreSQL `17.6-alpine`. O banco rejeitou papéis fora do contrato, hashes inválidos e estados `used` ou `revoked` sem seus campos obrigatórios.
 
 O arquivo `.env` é local e não deve ser versionado. `.env.example` contém apenas valores fictícios.

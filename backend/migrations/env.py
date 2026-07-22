@@ -5,7 +5,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import Connection
 
-from social_internal_backend.database import Base, build_engine
+from social_internal_backend import models
+from social_internal_backend.database import build_engine
 from social_internal_backend.settings import get_settings
 
 config = context.config
@@ -13,7 +14,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
-target_metadata = Base.metadata
+target_metadata = models.Invitation.metadata
 
 
 def run_migrations_offline() -> None:
