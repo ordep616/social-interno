@@ -135,7 +135,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
           disabled={!unread}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Mark as Read
+            Marcar como lida
           </Text>
         </MenuItem>
         <RoomNotificationModeSwitcher roomId={room.roomId} value={notificationMode}>
@@ -154,7 +154,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
               onClick={handleOpen}
             >
               <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                Notifications
+                Notificações
               </Text>
             </MenuItem>
           )}
@@ -173,7 +173,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
           disabled={!canInvite}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Invite
+            Convidar
           </Text>
         </MenuItem>
         <MenuItem
@@ -183,7 +183,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
           radii="300"
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Copy Link
+            Copiar link
           </Text>
         </MenuItem>
         <MenuItem
@@ -193,7 +193,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
           radii="300"
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Room Settings
+            Configurações da conversa
           </Text>
         </MenuItem>
         <UseStateProvider initial={false}>
@@ -207,7 +207,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
                 aria-pressed={promptJump}
               >
                 <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                  Jump to Time
+                  Ir para uma data
                 </Text>
               </MenuItem>
               {promptJump && (
@@ -239,7 +239,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
                 aria-pressed={promptLeave}
               >
                 <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-                  Leave Room
+                  Sair da conversa
                 </Text>
               </MenuItem>
               {promptLeave && (
@@ -276,7 +276,7 @@ const CallMenu = forwardRef<HTMLDivElement, CallMenuProps>(
     return (
       <Menu ref={ref} style={{ padding: config.space.S200, minWidth: toRem(150) }}>
         <Box direction="Column" gap="200">
-          <Text size="L400">Start Call</Text>
+          <Text size="L400">Iniciar chamada</Text>
           <Box direction="Column" gap="200">
             <Button
               size="300"
@@ -287,7 +287,7 @@ const CallMenu = forwardRef<HTMLDivElement, CallMenuProps>(
               before={<Icon size="100" src={Icons.Phone} filled />}
               onClick={handleVoice}
             >
-              <Text size="B300">Voice</Text>
+              <Text size="B300">Voz</Text>
             </Button>
             <Button
               size="300"
@@ -296,7 +296,7 @@ const CallMenu = forwardRef<HTMLDivElement, CallMenuProps>(
               before={<Icon size="100" src={Icons.VideoCamera} filled />}
               onClick={handleVideo}
             >
-              <Text size="B300">Video</Text>
+              <Text size="B300">Vídeo</Text>
             </Button>
           </Box>
         </Box>
@@ -327,9 +327,9 @@ function CallButton() {
         tooltip={
           <Tooltip>
             {inAnotherCall ? (
-              <Text size="L400">Already in another call — End the current call to join!</Text>
+              <Text size="L400">Você já está em outra chamada. Encerre a atual para entrar.</Text>
             ) : (
-              <Text>Call</Text>
+              <Text>Chamada</Text>
             )}
           </Tooltip>
         }
@@ -526,7 +526,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               offset={4}
               tooltip={
                 <Tooltip>
-                  <Text>Search</Text>
+                  <Text>Buscar</Text>
                 </Tooltip>
               }
             >
@@ -542,7 +542,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
             offset={4}
             tooltip={
               <Tooltip>
-                <Text>Pinned Messages</Text>
+                <Text>Mensagens fixadas</Text>
               </Tooltip>
             }
           >
@@ -604,9 +604,9 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               tooltip={
                 <Tooltip>
                   {callView ? (
-                    <Text>Members</Text>
+                    <Text>Membros</Text>
                   ) : (
-                    <Text>{peopleDrawer ? 'Hide Members' : 'Show Members'}</Text>
+                    <Text>{peopleDrawer ? 'Ocultar membros' : 'Mostrar membros'}</Text>
                   )}
                 </Tooltip>
               }
@@ -625,7 +625,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
             offset={4}
             tooltip={
               <Tooltip>
-                <Text>More Options</Text>
+                <Text>Mais opções</Text>
               </Tooltip>
             }
           >

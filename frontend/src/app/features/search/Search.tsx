@@ -269,7 +269,7 @@ export function Search({ requestClose }: SearchProps) {
                 variant="Background"
                 radii="400"
                 outlined
-                placeholder="Search"
+                placeholder="Buscar"
                 before={<Icon size="200" src={Icons.Search} />}
                 onChange={handleInputChange}
                 onKeyDown={handleInputKeyDown}
@@ -286,12 +286,12 @@ export function Search({ requestClose }: SearchProps) {
                   gap="100"
                 >
                   <Text size="H6" align="Center">
-                    {result ? 'No Match Found' : 'No Rooms'}
+                    {result ? 'Nenhum resultado encontrado' : 'Sem conversas'}
                   </Text>
                   <Text size="T200" align="Center">
                     {result
-                      ? `No match found for "${result.query}".`
-                      : `You do not have any Rooms to display yet.`}
+                      ? `Nenhum resultado encontrado para "${result.query}".`
+                      : `Você ainda não tem conversas para exibir.`}
                   </Text>
                 </Box>
               )}
@@ -409,8 +409,8 @@ export function Search({ requestClose }: SearchProps) {
             <Line size="300" />
             <Box shrink="No" justifyContent="Center" style={{ padding: config.space.S200 }}>
               <Text size="T200" priority="300">
-                Type <b>#</b> for rooms, <b>@</b> for DMs and <b>*</b> for spaces. Hotkey:{' '}
-                <b>{isMacOS() ? KeySymbol.Command : 'Ctrl'} + k</b>
+                Use <b>#</b> para conversas, <b>@</b> para mensagens diretas e <b>*</b> para
+                espaços. Atalho: <b>{isMacOS() ? KeySymbol.Command : 'Ctrl'} + k</b>
               </Text>
             </Box>
           </Modal>
