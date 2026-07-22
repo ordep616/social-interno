@@ -148,9 +148,6 @@ function MessageDeliveryIndicator({
       title={statusContent.label}
       aria-label={statusContent.label}
     >
-      <Text as="span" size="T200">
-        {statusContent.label}
-      </Text>
       <span className={css.MessageDeliveryIcon}>
         <Icon size="50" src={statusContent.icon} />
       </span>
