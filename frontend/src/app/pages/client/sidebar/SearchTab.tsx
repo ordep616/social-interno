@@ -1,7 +1,13 @@
 import React from 'react';
 import { Icon, Icons } from 'folds';
 import { useAtom } from 'jotai';
-import { SidebarAvatar, SidebarItem, SidebarItemTooltip } from '../../../components/sidebar';
+import {
+  SidebarAvatar,
+  SidebarItem,
+  SidebarItemAction,
+  SidebarItemLabel,
+  SidebarItemTooltip,
+} from '../../../components/sidebar';
 import { searchModalAtom } from '../../../state/searchModal';
 
 export function SearchTab() {
@@ -13,9 +19,12 @@ export function SearchTab() {
     <SidebarItem active={opened}>
       <SidebarItemTooltip tooltip="Buscar">
         {(triggerRef) => (
-          <SidebarAvatar as="button" ref={triggerRef} outlined onClick={open}>
-            <Icon src={Icons.Search} filled={opened} />
-          </SidebarAvatar>
+          <SidebarItemAction ref={triggerRef} onClick={open}>
+            <SidebarAvatar as="span" outlined>
+              <Icon src={Icons.Search} filled={opened} />
+            </SidebarAvatar>
+            <SidebarItemLabel>Buscar</SidebarItemLabel>
+          </SidebarItemAction>
         )}
       </SidebarItemTooltip>
     </SidebarItem>

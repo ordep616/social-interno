@@ -51,7 +51,9 @@ import { getSpaceLobbyPath, getSpacePath, joinPathComponent } from '../../pathUt
 import {
   SidebarAvatar,
   SidebarItem,
+  SidebarItemAction,
   SidebarItemBadge,
+  SidebarItemLabel,
   SidebarItemTooltip,
   SidebarStack,
   SidebarStackSeparator,
@@ -444,23 +446,24 @@ function SpaceTab({
         >
           <SidebarItemTooltip tooltip={disabled ? undefined : space.name}>
             {(triggerRef) => (
-              <SidebarAvatar
-                as="button"
+              <SidebarItemAction
                 data-id={space.roomId}
                 ref={triggerRef}
-                size={folder ? '300' : '400'}
                 onClick={onClick}
                 onContextMenu={handleContextMenu}
               >
-                <RoomAvatar
-                  roomId={space.roomId}
-                  src={getRoomAvatarUrl(mx, space, 96, useAuthentication) ?? undefined}
-                  alt={space.name}
-                  renderFallback={() => (
-                    <Text size={folder ? 'H6' : 'H4'}>{nameInitials(space.name, 2)}</Text>
-                  )}
-                />
-              </SidebarAvatar>
+                <SidebarAvatar as="span" size={folder ? '300' : '400'}>
+                  <RoomAvatar
+                    roomId={space.roomId}
+                    src={getRoomAvatarUrl(mx, space, 96, useAuthentication) ?? undefined}
+                    alt={space.name}
+                    renderFallback={() => (
+                      <Text size={folder ? 'H6' : 'H4'}>{nameInitials(space.name, 2)}</Text>
+                    )}
+                  />
+                </SidebarAvatar>
+                <SidebarItemLabel>{space.name}</SidebarItemLabel>
+              </SidebarItemAction>
             )}
           </SidebarItemTooltip>
           {unread && (
@@ -571,27 +574,30 @@ function ClosedSpaceFolder({
         >
           <SidebarItemTooltip tooltip={disabled ? undefined : tooltipName}>
             {(tooltipRef) => (
-              <SidebarFolder data-id={folder.id} as="button" ref={tooltipRef} onClick={onOpen}>
-                {folder.content.map((sId) => {
-                  const space = mx.getRoom(sId);
-                  if (!space) return null;
+              <SidebarItemAction data-id={folder.id} ref={tooltipRef} onClick={onOpen}>
+                <SidebarFolder as="span">
+                  {folder.content.map((sId) => {
+                    const space = mx.getRoom(sId);
+                    if (!space) return null;
 
-                  return (
-                    <SidebarAvatar key={sId} size="200" radii="300">
-                      <RoomAvatar
-                        roomId={space.roomId}
-                        src={getRoomAvatarUrl(mx, space, 96, useAuthentication) ?? undefined}
-                        alt={space.name}
-                        renderFallback={() => (
-                          <Text size="Inherit">
-                            <b>{nameInitials(space.name, 2)}</b>
-                          </Text>
-                        )}
-                      />
-                    </SidebarAvatar>
-                  );
-                })}
-              </SidebarFolder>
+                    return (
+                      <SidebarAvatar as="span" key={sId} size="200" radii="300">
+                        <RoomAvatar
+                          roomId={space.roomId}
+                          src={getRoomAvatarUrl(mx, space, 96, useAuthentication) ?? undefined}
+                          alt={space.name}
+                          renderFallback={() => (
+                            <Text size="Inherit">
+                              <b>{nameInitials(space.name, 2)}</b>
+                            </Text>
+                          )}
+                        />
+                      </SidebarAvatar>
+                    );
+                  })}
+                </SidebarFolder>
+                <SidebarItemLabel>{tooltipName}</SidebarItemLabel>
+              </SidebarItemAction>
             )}
           </SidebarItemTooltip>
           {unread && (

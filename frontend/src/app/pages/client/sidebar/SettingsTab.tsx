@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { Text } from 'folds';
-import { SidebarItem, SidebarItemTooltip, SidebarAvatar } from '../../../components/sidebar';
+import {
+  SidebarItem,
+  SidebarItemAction,
+  SidebarItemLabel,
+  SidebarItemTooltip,
+  SidebarAvatar,
+} from '../../../components/sidebar';
 import { UserAvatar } from '../../../components/user-avatar';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { getMxIdLocalPart, mxcUrlToHttp } from '../../../utils/matrix';
@@ -30,13 +36,16 @@ export function SettingsTab() {
     <SidebarItem active={settings}>
       <SidebarItemTooltip tooltip="Configurações do usuário">
         {(triggerRef) => (
-          <SidebarAvatar as="button" ref={triggerRef} onClick={openSettings}>
-            <UserAvatar
-              userId={userId}
-              src={avatarUrl}
-              renderFallback={() => <Text size="H4">{nameInitials(displayName)}</Text>}
-            />
-          </SidebarAvatar>
+          <SidebarItemAction ref={triggerRef} onClick={openSettings}>
+            <SidebarAvatar as="span">
+              <UserAvatar
+                userId={userId}
+                src={avatarUrl}
+                renderFallback={() => <Text size="H4">{nameInitials(displayName)}</Text>}
+              />
+            </SidebarAvatar>
+            <SidebarItemLabel>Configurações</SidebarItemLabel>
+          </SidebarItemAction>
         )}
       </SidebarItemTooltip>
       {settings && (

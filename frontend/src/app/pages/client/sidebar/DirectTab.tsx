@@ -12,8 +12,10 @@ import { getDirectPath, joinPathComponent } from '../../pathUtils';
 import { useRoomsUnread } from '../../../state/hooks/unread';
 import {
   SidebarAvatar,
+  SidebarItemAction,
   SidebarItem,
   SidebarItemBadge,
+  SidebarItemLabel,
   SidebarItemTooltip,
 } from '../../../components/sidebar';
 import { useDirectSelected } from '../../../hooks/router/useDirectSelected';
@@ -95,15 +97,16 @@ export function DirectTab() {
     <SidebarItem active={directSelected}>
       <SidebarItemTooltip tooltip="Mensagens diretas">
         {(triggerRef) => (
-          <SidebarAvatar
-            as="button"
+          <SidebarItemAction
             ref={triggerRef}
-            outlined
             onClick={handleDirectClick}
             onContextMenu={handleContextMenu}
           >
-            <Icon src={Icons.User} filled={directSelected} />
-          </SidebarAvatar>
+            <SidebarAvatar as="span" outlined>
+              <Icon src={Icons.User} filled={directSelected} />
+            </SidebarAvatar>
+            <SidebarItemLabel>Mensagens diretas</SidebarItemLabel>
+          </SidebarItemAction>
         )}
       </SidebarItemTooltip>
       {directUnread && (

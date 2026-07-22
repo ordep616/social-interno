@@ -2,7 +2,13 @@ import React from 'react';
 import { Icon, Icons } from 'folds';
 import { useNavigate } from 'react-router-dom';
 import { useAtomValue } from 'jotai';
-import { SidebarAvatar, SidebarItem, SidebarItemTooltip } from '../../../components/sidebar';
+import {
+  SidebarAvatar,
+  SidebarItem,
+  SidebarItemAction,
+  SidebarItemLabel,
+  SidebarItemTooltip,
+} from '../../../components/sidebar';
 import { useExploreSelected } from '../../../hooks/router/useExploreSelected';
 import {
   getExploreFeaturedPath,
@@ -54,9 +60,12 @@ export function ExploreTab() {
     <SidebarItem active={exploreSelected}>
       <SidebarItemTooltip tooltip="Explorar comunidade">
         {(triggerRef) => (
-          <SidebarAvatar as="button" ref={triggerRef} outlined onClick={handleExploreClick}>
-            <Icon src={Icons.Explore} filled={exploreSelected} />
-          </SidebarAvatar>
+          <SidebarItemAction ref={triggerRef} onClick={handleExploreClick}>
+            <SidebarAvatar as="span" outlined>
+              <Icon src={Icons.Explore} filled={exploreSelected} />
+            </SidebarAvatar>
+            <SidebarItemLabel>Explorar comunidade</SidebarItemLabel>
+          </SidebarItemAction>
         )}
       </SidebarItemTooltip>
     </SidebarItem>

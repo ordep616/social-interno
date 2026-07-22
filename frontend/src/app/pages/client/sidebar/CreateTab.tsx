@@ -2,7 +2,13 @@ import React, { MouseEventHandler, useState } from 'react';
 import { Box, config, Icon, Icons, Menu, PopOut, RectCords, Text } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { useNavigate } from 'react-router-dom';
-import { SidebarAvatar, SidebarItem, SidebarItemTooltip } from '../../../components/sidebar';
+import {
+  SidebarAvatar,
+  SidebarItem,
+  SidebarItemAction,
+  SidebarItemLabel,
+  SidebarItemTooltip,
+} from '../../../components/sidebar';
 import { stopPropagation } from '../../../utils/keyboard';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SettingTile } from '../../../components/setting-tile';
@@ -71,15 +77,16 @@ export function CreateTab() {
               </FocusTrap>
             }
           >
-            <SidebarAvatar
-              className={menuCords ? ContainerColor({ variant: 'Surface' }) : undefined}
-              as="button"
-              ref={triggerRef}
-              outlined
-              onClick={handleMenu}
-            >
-              <Icon src={Icons.Plus} />
-            </SidebarAvatar>
+            <SidebarItemAction ref={triggerRef} onClick={handleMenu}>
+              <SidebarAvatar
+                className={menuCords ? ContainerColor({ variant: 'Surface' }) : undefined}
+                as="span"
+                outlined
+              >
+                <Icon src={Icons.Plus} />
+              </SidebarAvatar>
+              <SidebarItemLabel>Adicionar espaço</SidebarItemLabel>
+            </SidebarItemAction>
           </PopOut>
         )}
       </SidebarItemTooltip>

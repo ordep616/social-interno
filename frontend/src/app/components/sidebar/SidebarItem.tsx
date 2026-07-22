@@ -13,6 +13,30 @@ export const SidebarItem = as<'div', css.SidebarItemVariants>(
   )
 );
 
+export const SidebarItemAction = as<'button'>(
+  ({ as: AsSidebarItemAction = 'button', className, type = 'button', ...props }, ref) => (
+    <AsSidebarItemAction
+      className={classNames(css.SidebarItemAction, className)}
+      type={type}
+      {...props}
+      ref={ref}
+    />
+  )
+);
+
+export const SidebarItemLabel = as<'span'>(
+  ({ as: AsSidebarItemLabel = 'span', className, ...props }, ref) => (
+    <Text
+      as={AsSidebarItemLabel}
+      size="T300"
+      truncate
+      className={classNames(css.SidebarItemLabel, className)}
+      {...props}
+      ref={ref}
+    />
+  )
+);
+
 export const SidebarItemBadge = as<'div', css.SidebarItemBadgeVariants>(
   ({ as: AsSidebarBadgeBox = 'div', className, hasCount, ...props }, ref) => (
     <AsSidebarBadgeBox

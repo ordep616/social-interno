@@ -7,14 +7,55 @@ export const Sidebar = style([
   DefaultReset,
   {
     width: toRem(66),
+    minWidth: toRem(66),
+    maxWidth: toRem(240),
+    flexShrink: 0,
     backgroundColor: color.Background.Container,
     borderRight: `${config.borderWidth.B300} solid ${color.Background.ContainerLine}`,
+    position: 'relative',
 
     display: 'flex',
     flexDirection: 'column',
     color: color.Background.OnContainer,
+    transition: 'width 120ms ease',
+
+    selectors: {
+      '&[data-resizing=true]': {
+        transition: 'none',
+      },
+    },
   },
 ]);
+
+export const SidebarResizeHandle = style({
+  position: 'absolute',
+  top: 0,
+  right: toRem(-4),
+  bottom: 0,
+  zIndex: 2,
+  width: toRem(8),
+  padding: 0,
+  border: 0,
+  background: 'transparent',
+  cursor: 'col-resize',
+  touchAction: 'none',
+
+  selectors: {
+    '&::after': {
+      content: '',
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      left: '50%',
+      width: config.borderWidth.B300,
+      backgroundColor: 'transparent',
+      transform: 'translateX(-50%)',
+    },
+    '&:hover::after, &[data-active=true]::after': {
+      backgroundColor: color.Primary.Main,
+    },
+  },
+});
 
 export const SidebarStack = style([
   DefaultReset,
@@ -26,6 +67,14 @@ export const SidebarStack = style([
     alignItems: 'center',
     gap: config.space.S300,
     padding: `${config.space.S300} 0`,
+
+    selectors: {
+      [`${Sidebar}[data-expanded=true] &`]: {
+        alignItems: 'stretch',
+        paddingLeft: config.space.S300,
+        paddingRight: config.space.S300,
+      },
+    },
   },
 ]);
 
@@ -94,6 +143,13 @@ export const SidebarItem = recipe({
           display: 'block',
           width: toRem(3),
         },
+        [`${Sidebar}[data-expanded=true] &`]: {
+          width: '100%',
+          minWidth: 0,
+        },
+        [`${Sidebar}[data-expanded=true] &:hover`]: {
+          transform: 'none',
+        },
       },
     },
     Disabled,
@@ -116,6 +172,53 @@ export const SidebarItem = recipe({
   },
 });
 export type SidebarItemVariants = RecipeVariants<typeof SidebarItem>;
+
+export const SidebarItemAction = style([
+  DefaultReset,
+  {
+    width: toRem(42),
+    minHeight: toRem(42),
+    border: 0,
+    padding: 0,
+    background: 'transparent',
+    color: 'inherit',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: config.radii.R400,
+    cursor: 'pointer',
+    textAlign: 'start',
+
+    selectors: {
+      '&:hover': {
+        textDecoration: 'none',
+      },
+      [`${Sidebar}[data-expanded=true] &`]: {
+        width: '100%',
+        minWidth: 0,
+        justifyContent: 'flex-start',
+        gap: config.space.S300,
+      },
+    },
+  },
+  FocusOutline,
+]);
+
+export const SidebarItemLabel = style([
+  DefaultReset,
+  {
+    display: 'none',
+    minWidth: 0,
+    flex: '1 1 auto',
+    color: color.Background.OnContainer,
+
+    selectors: {
+      [`${Sidebar}[data-expanded=true] &`]: {
+        display: 'block',
+      },
+    },
+  },
+]);
 
 export const SidebarItemBadge = recipe({
   base: [
@@ -148,6 +251,8 @@ export type SidebarItemBadgeVariants = RecipeVariants<typeof SidebarItemBadge>;
 export const SidebarAvatar = recipe({
   base: [
     {
+      flexShrink: 0,
+
       selectors: {
         'button&': {
           cursor: 'pointer',
@@ -219,6 +324,12 @@ export const SidebarFolder = recipe({
         alignItems: 'center',
         gap: config.space.S200,
         borderRadius: config.radii.R500,
+        selectors: {
+          [`${Sidebar}[data-expanded=true] &`]: {
+            width: '100%',
+            alignItems: 'stretch',
+          },
+        },
       },
     },
   },

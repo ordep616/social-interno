@@ -13,8 +13,10 @@ import { getHomePath, joinPathComponent } from '../../pathUtils';
 import { useRoomsUnread } from '../../../state/hooks/unread';
 import {
   SidebarAvatar,
+  SidebarItemAction,
   SidebarItem,
   SidebarItemBadge,
+  SidebarItemLabel,
   SidebarItemTooltip,
 } from '../../../components/sidebar';
 import { useHomeSelected } from '../../../hooks/router/useHomeSelected';
@@ -97,15 +99,16 @@ export function HomeTab() {
     <SidebarItem active={homeSelected}>
       <SidebarItemTooltip tooltip="Início">
         {(triggerRef) => (
-          <SidebarAvatar
-            as="button"
+          <SidebarItemAction
             ref={triggerRef}
-            outlined
             onClick={handleHomeClick}
             onContextMenu={handleContextMenu}
           >
-            <Icon src={Icons.Home} filled={homeSelected} />
-          </SidebarAvatar>
+            <SidebarAvatar as="span" outlined>
+              <Icon src={Icons.Home} filled={homeSelected} />
+            </SidebarAvatar>
+            <SidebarItemLabel>Início</SidebarItemLabel>
+          </SidebarItemAction>
         )}
       </SidebarItemTooltip>
       {homeUnread && (
