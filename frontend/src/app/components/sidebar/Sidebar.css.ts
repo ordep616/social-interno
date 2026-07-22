@@ -18,44 +18,8 @@ export const Sidebar = style([
     flexDirection: 'column',
     color: color.Background.OnContainer,
     transition: 'width 220ms ease',
-
-    selectors: {
-      '&[data-resizing=true]': {
-        transition: 'none',
-      },
-    },
   },
 ]);
-
-export const SidebarResizeHandle = style({
-  position: 'absolute',
-  top: 0,
-  right: toRem(-4),
-  bottom: 0,
-  zIndex: 2,
-  width: toRem(8),
-  padding: 0,
-  border: 0,
-  background: 'transparent',
-  cursor: 'col-resize',
-  touchAction: 'none',
-
-  selectors: {
-    '&::after': {
-      content: '',
-      position: 'absolute',
-      top: 0,
-      bottom: 0,
-      left: '50%',
-      width: config.borderWidth.B300,
-      backgroundColor: 'transparent',
-      transform: 'translateX(-50%)',
-    },
-    '&:hover::after, &[data-active=true]::after': {
-      backgroundColor: color.Primary.Main,
-    },
-  },
-});
 
 export const SidebarStack = style([
   DefaultReset,
@@ -77,6 +41,17 @@ export const SidebarStack = style([
     },
   },
 ]);
+
+export const SidebarToggleIcon = style({
+  transformOrigin: 'center',
+  transition: 'transform 180ms ease',
+
+  selectors: {
+    [`${Sidebar}[data-expanded=true] &`]: {
+      transform: 'rotate(180deg)',
+    },
+  },
+});
 
 const DropLineDist = createVar();
 export const DropTarget = style({
