@@ -39,6 +39,8 @@ Serviço de convites (FastAPI)
 - Identidade inicial: conta local criada por convite administrativo de uso único; OIDC poderá ser avaliado posteriormente.
 - Ambiente: contêineres durante desenvolvimento e homologação.
 - Serviço complementar: API REST FastAPI aprovada para convites, provisionamento e ciclo de vida de contas; novos usos exigem outra decisão.
+- Fundação do serviço: CPython `>=3.14,<3.15`, FastAPI síncrono, Uvicorn, SQLAlchemy `2.0.x`, Psycopg 3, Alembic, `pydantic-settings` e HTTPX.
+- Dependências e qualidade: `uv` com `uv.lock`, Ruff, mypy, pytest e pytest-cov.
 
 ## Limites
 
@@ -59,6 +61,7 @@ Serviço de convites (FastAPI)
 - FastAPI não duplicará mensagens, salas, presença ou sincronização.
 - O serviço FastAPI usa PostgreSQL próprio e mantém credenciais administrativas fora do navegador.
 - A API própria segue REST versionado; operações de chat continuam usando diretamente o contrato Matrix.
+- O ambiente e o banco do serviço são independentes dos processos e do banco lógico do Synapse.
 
 ### Dados
 
