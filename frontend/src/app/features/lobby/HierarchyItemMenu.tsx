@@ -67,7 +67,7 @@ function SuggestMenuItem({
       disabled={toggleState.status === AsyncStatus.Loading}
     >
       <Text as="span" size="T300" truncate>
-        {content.suggested ? 'Unset Suggested' : 'Set Suggested'}
+        {content.suggested ? 'Remover sugestão' : 'Marcar como sugerido'}
       </Text>
     </MenuItem>
   );
@@ -111,7 +111,7 @@ function RemoveMenuItem({
       disabled={removeState.status === AsyncStatus.Loading}
     >
       <Text as="span" size="T300" truncate>
-        Remove
+        Remover
       </Text>
     </MenuItem>
   );
@@ -146,7 +146,7 @@ function InviteMenuItem({
         disabled={disabled || !room}
       >
         <Text as="span" size="T300" truncate>
-          Invite
+          Convidar
         </Text>
       </MenuItem>
       {invitePrompt && room && (
@@ -187,7 +187,7 @@ function SettingsMenuItem({
   return (
     <MenuItem onClick={handleSettings} size="300" radii="300" disabled={disabled}>
       <Text as="span" size="T300" truncate>
-        Settings
+        Configurações
       </Text>
     </MenuItem>
   );

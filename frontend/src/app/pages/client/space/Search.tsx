@@ -44,7 +44,7 @@ export function SpaceSearch() {
           <Box justifyContent="Center" alignItems="Center" gap="200">
             {screenSize !== ScreenSize.Mobile && <Icon size="400" src={Icons.Search} />}
             <Text size="H3" truncate>
-              Message Search
+              Buscar mensagens
             </Text>
           </Box>
           <Box grow="Yes" basis="No" />

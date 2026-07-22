@@ -82,7 +82,7 @@ const HomeMenu = forwardRef<HTMLDivElement, HomeMenuProps>(({ requestClose }, re
           aria-disabled={!unread}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Mark as Read
+            Marcar como lidas
           </Text>
         </MenuItem>
       </Box>
@@ -107,7 +107,7 @@ function HomeHeader() {
         <Box alignItems="Center" grow="Yes" gap="300">
           <Box grow="Yes">
             <Text size="H4" truncate>
-              Home
+              Início
             </Text>
           </Box>
           <Box>
@@ -151,18 +151,18 @@ function HomeEmpty() {
         icon={<Icon size="600" src={Icons.Hash} />}
         title={
           <Text size="H5" align="Center">
-            No Rooms
+            Sem conversas
           </Text>
         }
         content={
           <Text size="T300" align="Center">
-            You do not have any rooms yet.
+            Você ainda não tem conversas.
           </Text>
         }
         options={
           <Button onClick={() => navigate(getHomeCreatePath())} variant="Secondary" size="300">
             <Text size="B300" truncate>
-              Create Room
+              Criar conversa
             </Text>
           </Button>
         }
@@ -228,7 +228,7 @@ export function Home() {
                       </Avatar>
                       <Box as="span" grow="Yes">
                         <Text as="span" size="Inherit" truncate>
-                          Create Room
+                          Criar conversa
                         </Text>
                       </Box>
                     </Box>
@@ -244,7 +244,7 @@ export function Home() {
                       </Avatar>
                       <Box as="span" grow="Yes">
                         <Text as="span" size="Inherit" truncate>
-                          Message Search
+                          Buscar mensagens
                         </Text>
                       </Box>
                     </Box>
@@ -259,7 +259,7 @@ export function Home() {
                   data-category-id={DEFAULT_CATEGORY_ID}
                   onClick={handleCategoryClick}
                 >
-                  Rooms
+                  Conversas
                 </RoomNavCategoryButton>
               </NavCategoryHeader>
               <div

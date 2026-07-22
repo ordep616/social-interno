@@ -165,7 +165,7 @@ export function SearchResultGroup({
         return (
           <Box grow="Yes" direction="Column">
             <Text size="T400" priority="300">
-              Room Tombstone. {content.body}
+              Sala substituída. {content.body}
             </Text>
           </Box>
         );

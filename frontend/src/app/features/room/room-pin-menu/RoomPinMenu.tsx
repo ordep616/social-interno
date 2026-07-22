@@ -168,7 +168,7 @@ function PinnedMessage({
     return (
       <Box gap="300" justifyContent="SpaceBetween" alignItems="Center">
         <Box>
-          <Text style={{ color: color.Critical.Main }}>Failed to load message!</Text>
+          <Text style={{ color: color.Critical.Main }}>Falha ao carregar a mensagem.</Text>
         </Box>
         {renderOptions()}
       </Box>
@@ -454,7 +454,7 @@ export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
         <Box grow="Yes" direction="Column">
           <Header className={css.PinMenuHeader} size="500">
             <Box grow="Yes">
-              <Text size="H5">Pinned Messages</Text>
+              <Text size="H5">Mensagens fixadas</Text>
             </Box>
             <Box shrink="No">
               <IconButton size="300" onClick={requestClose} radii="300">
@@ -527,10 +527,11 @@ export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
                       alignItems="Center"
                     >
                       <Text size="H4" align="Center">
-                        No Pinned Messages
+                        Sem mensagens fixadas
                       </Text>
                       <Text size="T400" align="Center">
-                        Users with sufficient power level can pin a messages from its context menu.
+                        Usuários com permissão suficiente podem fixar mensagens pelo menu de
+                        contexto.
                       </Text>
                     </Box>
                   </Box>

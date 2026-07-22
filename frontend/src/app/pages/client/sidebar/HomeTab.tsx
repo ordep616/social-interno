@@ -53,7 +53,7 @@ const HomeMenu = forwardRef<HTMLDivElement, HomeMenuProps>(({ requestClose }, re
           aria-disabled={!unread}
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
-            Mark as Read
+            Marcar como lidas
           </Text>
         </MenuItem>
       </Box>
@@ -95,7 +95,7 @@ export function HomeTab() {
 
   return (
     <SidebarItem active={homeSelected}>
-      <SidebarItemTooltip tooltip="Home">
+      <SidebarItemTooltip tooltip="Início">
         {(triggerRef) => (
           <SidebarAvatar
             as="button"

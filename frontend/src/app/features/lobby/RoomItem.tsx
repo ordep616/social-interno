@@ -91,7 +91,7 @@ function RoomJoinButton({ roomId, via }: RoomJoinButtonProps) {
         onClick={join}
         disabled={!canJoin}
       >
-        <Text size="B300">Join</Text>
+        <Text size="B300">Entrar</Text>
       </Chip>
     </Box>
   );
@@ -146,12 +146,12 @@ function RoomProfileError({ roomId, suggested, inaccessibleRoom, via }: RoomProf
       <Box grow="Yes" direction="Column" className={css.ErrorNameContainer}>
         <Box gap="200" alignItems="Center">
           <Text size="H5" truncate>
-            Unknown
+            Desconhecido
           </Text>
           {suggested && (
             <Box shrink="No" alignItems="Center">
               <Badge variant="Success" fill="Soft" radii="Pill" outlined>
-                <Text size="L400">Suggested</Text>
+                <Text size="L400">Sugerido</Text>
               </Badge>
             </Box>
           )}
@@ -159,7 +159,7 @@ function RoomProfileError({ roomId, suggested, inaccessibleRoom, via }: RoomProf
         <Box gap="200" alignItems="Center">
           {inaccessibleRoom ? (
             <Badge variant="Secondary" fill="Soft" radii="300" size="500">
-              <Text size="L400">Inaccessible</Text>
+              <Text size="L400">Inacessível</Text>
             </Badge>
           ) : (
             <Text size="T200" truncate>
@@ -213,7 +213,7 @@ function RoomProfile({
           {suggested && (
             <Box shrink="No" alignItems="Center">
               <Badge variant="Success" fill="Soft" radii="Pill" outlined>
-                <Text size="L400">Suggested</Text>
+                <Text size="L400">Sugerido</Text>
               </Badge>
             </Box>
           )}
@@ -221,7 +221,7 @@ function RoomProfile({
         <Box gap="200" alignItems="Center">
           {memberCount && (
             <Box shrink="No" gap="200">
-              <Text size="T200" priority="300">{`${millify(memberCount)} Members`}</Text>
+              <Text size="T200" priority="300">{`${millify(memberCount)} membros`}</Text>
             </Box>
           )}
           {memberCount && topic && (
@@ -359,7 +359,7 @@ export const RoomItemCard = as<'div', RoomItemCardProps>(
                           fill="None"
                           size="400"
                           radii="Pill"
-                          aria-label="Open Room"
+                          aria-label="Abrir conversa"
                         >
                           <Icon size="50" src={Icons.ArrowRight} />
                         </Chip>

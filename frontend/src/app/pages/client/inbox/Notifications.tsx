@@ -376,7 +376,7 @@ function RoomNotificationsGroupComp({
         return (
           <Box grow="Yes" direction="Column">
             <Text size="T400" priority="300">
-              Room Tombstone. {content.body}
+              Sala substituída. {content.body}
             </Text>
           </Box>
         );
@@ -438,7 +438,7 @@ function RoomNotificationsGroupComp({
               onClick={handleMarkAsRead}
               before={<Icon size="100" src={Icons.CheckTwice} />}
             >
-              <Text size="T200">Mark as Read</Text>
+              <Text size="T200">Marcar como lida</Text>
             </Chip>
           )}
         </Box>
@@ -652,7 +652,7 @@ export function Notifications() {
           <Box alignItems="Center" gap="200">
             {screenSize !== ScreenSize.Mobile && <Icon size="400" src={Icons.Message} />}
             <Text size="H3" truncate>
-              Notification Messages
+              Mensagens de notificação
             </Text>
           </Box>
           <Box grow="Yes" basis="No" />
@@ -666,7 +666,7 @@ export function Notifications() {
               <Box direction="Column" gap="200">
                 <Box ref={scrollTopAnchorRef} direction="Column" gap="100">
                   <span data-spacing-node />
-                  <Text size="L400">Filter</Text>
+                  <Text size="L400">Filtro</Text>
                   <Box gap="200">
                     <Chip
                       onClick={() => setOnlyHighlighted(false)}
@@ -675,7 +675,7 @@ export function Notifications() {
                       before={!onlyHighlight && <Icon size="100" src={Icons.Check} />}
                       outlined
                     >
-                      <Text size="T200">All Notifications</Text>
+                      <Text size="T200">Todas as notificações</Text>
                     </Chip>
                     <Chip
                       onClick={() => setOnlyHighlighted(true)}
@@ -684,7 +684,7 @@ export function Notifications() {
                       before={onlyHighlight && <Icon size="100" src={Icons.Check} />}
                       outlined
                     >
-                      <Text size="T200">Highlighted</Text>
+                      <Text size="T200">Destaques</Text>
                     </Chip>
                   </Box>
                 </Box>
@@ -699,7 +699,7 @@ export function Notifications() {
                     radii="Pill"
                     outlined
                     size="300"
-                    aria-label="Scroll to Top"
+                    aria-label="Voltar ao topo"
                   >
                     <Icon src={Icons.ChevronTop} size="300" />
                   </IconButton>
@@ -752,10 +752,8 @@ export function Notifications() {
                       direction="Column"
                       gap="200"
                     >
-                      <Text>No Notifications</Text>
-                      <Text size="T200">
-                        You don&apos;t have any new notifications to display yet.
-                      </Text>
+                      <Text>Sem notificações</Text>
+                      <Text size="T200">Você ainda não tem novas notificações para exibir.</Text>
                     </Box>
                   )}
 

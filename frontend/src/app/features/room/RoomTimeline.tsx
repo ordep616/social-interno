@@ -1675,7 +1675,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
         <MessageBase space={messageSpacing}>
           <TimelineDivider style={{ color: color.Success.Main }} variant="Inherit">
             <Badge as="span" size="500" variant="Success" fill="Solid" radii="300">
-              <Text size="L400">New Messages</Text>
+              <Text size="L400">Novas mensagens</Text>
             </Badge>
           </TimelineDivider>
         </MessageBase>
@@ -1725,7 +1725,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             before={<Icon size="50" src={Icons.MessageUnread} />}
             onClick={handleJumpToUnread}
           >
-            <Text size="L400">Jump to Unread</Text>
+            <Text size="L400">Ir para não lidas</Text>
           </Chip>
 
           <Chip
@@ -1735,7 +1735,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             before={<Icon size="50" src={Icons.CheckTwice} />}
             onClick={handleMarkAsRead}
           >
-            <Text size="L400">Mark as Read</Text>
+            <Text size="L400">Marcar como lida</Text>
           </Chip>
         </TimelineFloat>
       )}
