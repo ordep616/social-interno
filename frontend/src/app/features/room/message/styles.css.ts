@@ -50,11 +50,14 @@ export const MessageDeliveryStatus = style([
     alignSelf: 'flex-end',
     display: 'inline-flex',
     alignItems: 'center',
-    gap: toRem(3),
-    minHeight: toRem(16),
-    marginTop: config.space.S100,
-    opacity: config.opacity.P500,
-    transition: 'color 160ms ease, opacity 160ms ease',
+    justifyContent: 'center',
+    minWidth: toRem(18),
+    minHeight: toRem(14),
+    marginTop: toRem(2),
+    marginBottom: toRem(-2),
+    color: 'currentColor',
+    opacity: config.opacity.P400,
+    transition: 'color 160ms ease, opacity 160ms ease, transform 160ms ease',
 
     selectors: {
       '&[data-status=seen]': {
@@ -72,6 +75,7 @@ export const MessageDeliveryStatus = style([
 export const MessageDeliveryIcon = style({
   display: 'inline-flex',
   lineHeight: 0,
+  transform: 'translateY(1px)',
 });
 
 export const ReactionsContainer = style({
