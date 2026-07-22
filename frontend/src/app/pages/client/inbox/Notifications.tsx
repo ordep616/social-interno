@@ -524,7 +524,7 @@ function RoomNotificationsGroupComp({
                       variant="Secondary"
                       radii="400"
                     >
-                      <Text size="T200">Open</Text>
+                      <Text size="T200">Abrir</Text>
                     </Chip>
                   </Box>
                 </Box>

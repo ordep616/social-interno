@@ -45,7 +45,7 @@ export function HexColorPickerPopOut({ picker, onRemove, children }: HexColorPic
                   radii="400"
                   onClick={() => onRemove()}
                 >
-                  <Text size="B300">Remove</Text>
+                  <Text size="B300">Remover</Text>
                 </Button>
               )}
             </Box>

@@ -259,7 +259,7 @@ export function PasswordRegisterForm({
       <Box as="form" onSubmit={handleSubmit} direction="Inherit" gap="400">
         <Box direction="Column" gap="100">
           <Text as="label" size="L400" priority="300">
-            Username
+            Usuário
           </Text>
           <Input
             variant="Background"
@@ -270,13 +270,13 @@ export function PasswordRegisterForm({
             required
           />
           {registerError?.errcode === RegisterError.UserTaken && (
-            <FieldError message="This username is already taken." />
+            <FieldError message="Este usuário já está em uso." />
           )}
           {registerError?.errcode === RegisterError.UserInvalid && (
-            <FieldError message="This username contains invalid characters." />
+            <FieldError message="Este usuário contém caracteres inválidos." />
           )}
           {registerError?.errcode === RegisterError.UserExclusive && (
-            <FieldError message="This username is reserved." />
+            <FieldError message="Este usuário está reservado." />
           )}
         </Box>
         <ConfirmPasswordMatch initialValue>
@@ -284,7 +284,7 @@ export function PasswordRegisterForm({
             <>
               <Box direction="Column" gap="100">
                 <Text as="label" size="L400" priority="300">
-                  Password
+                  Senha
                 </Text>
                 <PasswordInput
                   ref={passRef}
@@ -299,7 +299,7 @@ export function PasswordRegisterForm({
                   <FieldError
                     message={
                       registerError.data.error ??
-                      'Weak Password. Password rejected by server please choosing more strong Password.'
+                      'Senha fraca. O servidor rejeitou a senha; escolha uma senha mais forte.'
                     }
                   />
                 )}
@@ -307,14 +307,14 @@ export function PasswordRegisterForm({
                   <FieldError
                     message={
                       registerError.data.error ??
-                      'Short Password. Password rejected by server please choosing more long Password.'
+                      'Senha curta. O servidor rejeitou a senha; escolha uma senha mais longa.'
                     }
                   />
                 )}
               </Box>
               <Box direction="Column" gap="100">
                 <Text as="label" size="L400" priority="300">
-                  Confirm Password
+                  Confirmar senha
                 </Text>
                 <PasswordInput
                   ref={confPassRef}
@@ -334,8 +334,8 @@ export function PasswordRegisterForm({
           <Box direction="Column" gap="100">
             <Text as="label" size="L400" priority="300">
               {requiredStageInFlows(uiaFlows, AuthType.RegistrationToken)
-                ? 'Registration Token'
-                : 'Registration Token (Optional)'}
+                ? 'Token de cadastro'
+                : 'Token de cadastro (opcional)'}
             </Text>
             <Input
               variant="Background"
@@ -350,7 +350,7 @@ export function PasswordRegisterForm({
         {hasStageInFlows(uiaFlows, AuthType.Email) && (
           <Box direction="Column" gap="100">
             <Text as="label" size="L400" priority="300">
-              {requiredStageInFlows(uiaFlows, AuthType.Email) ? 'Email' : 'Email (Optional)'}
+              {requiredStageInFlows(uiaFlows, AuthType.Email) ? 'Email' : 'Email (opcional)'}
             </Text>
             <Input
               variant="Background"
@@ -368,30 +368,32 @@ export function PasswordRegisterForm({
           <Box alignItems="Center" gap="200">
             <Checkbox name="termsInput" size="300" variant="Primary" required />
             <Text size="T300">
-              I accept server{' '}
+              Aceito os{' '}
               <a href={termUrl} target="_blank" rel="noreferrer">
-                Terms and Conditions
-              </a>
-              .
+                termos e condições
+              </a>{' '}
+              do servidor.
             </Text>
           </Box>
         )}
         {registerError?.errcode === RegisterError.RateLimited && (
-          <FieldError message="Failed to register. Your register request has been rate-limited by server, Please try after some time." />
+          <FieldError message="Falha ao criar conta. O servidor limitou suas tentativas; tente novamente mais tarde." />
         )}
         {registerError?.errcode === RegisterError.Forbidden && (
-          <FieldError message="Failed to register. The homeserver does not permit registration." />
+          <FieldError message="Falha ao criar conta. O homeserver não permite cadastro." />
         )}
         {registerError?.errcode === RegisterError.InvalidRequest && (
-          <FieldError message="Failed to register. Invalid request." />
+          <FieldError message="Falha ao criar conta. Solicitação inválida." />
         )}
         {registerError?.errcode === RegisterError.Unknown && (
-          <FieldError message={registerError.data.error ?? 'Failed to register. Unknown Reason.'} />
+          <FieldError
+            message={registerError.data.error ?? 'Falha ao criar conta por motivo desconhecido.'}
+          />
         )}
         <span data-spacing-node />
         <Button variant="Primary" size="500" type="submit">
           <Text as="span" size="B500">
-            Register
+            Criar conta
           </Text>
         </Button>
       </Box>

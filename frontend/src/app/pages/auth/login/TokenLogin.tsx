@@ -31,7 +31,7 @@ function LoginTokenError({ message }: { message: string }) {
     >
       <Icon size="300" filled src={Icons.Warning} />
       <Box direction="Column" gap="100">
-        <Text size="L400">Token Login</Text>
+        <Text size="L400">Login por token</Text>
         <Text size="T300">
           <b>{message}</b>
         </Text>
@@ -68,19 +68,19 @@ export function TokenLogin({ token }: TokenLoginProps) {
       {loginState.status === AsyncStatus.Error && (
         <>
           {loginState.error.errcode === LoginError.Forbidden && (
-            <LoginTokenError message="Invalid login token." />
+            <LoginTokenError message="Token de login inválido." />
           )}
           {loginState.error.errcode === LoginError.UserDeactivated && (
-            <LoginTokenError message="This account has been deactivated." />
+            <LoginTokenError message="Esta conta foi desativada." />
           )}
           {loginState.error.errcode === LoginError.InvalidRequest && (
-            <LoginTokenError message="Failed to login. Part of your request data is invalid." />
+            <LoginTokenError message="Falha ao entrar. Parte dos dados enviados é inválida." />
           )}
           {loginState.error.errcode === LoginError.RateLimited && (
-            <LoginTokenError message="Failed to login. Your login request has been rate-limited by server, Please try after some time." />
+            <LoginTokenError message="Falha ao entrar. O servidor limitou suas tentativas; tente novamente mais tarde." />
           )}
           {loginState.error.errcode === LoginError.Unknown && (
-            <LoginTokenError message="Failed to login. Unknown reason." />
+            <LoginTokenError message="Falha ao entrar por motivo desconhecido." />
           )}
         </>
       )}

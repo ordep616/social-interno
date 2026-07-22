@@ -53,7 +53,7 @@ function JoinMessage({
 
   return (
     <Text style={{ margin: 'auto' }} size="L400" align="Center">
-      Voice chat’s empty — Be the first to hop in!
+      O chat de voz está vazio. Seja o primeiro a entrar.
     </Text>
   );
 }
@@ -61,7 +61,7 @@ function JoinMessage({
 function NoPermissionMessage() {
   return (
     <Text style={{ margin: 'auto' }} size="L400" align="Center">
-      You don&#39;t have permission to join!
+      Você não tem permissão para entrar.
     </Text>
   );
 }
@@ -69,7 +69,7 @@ function NoPermissionMessage() {
 function AlreadyInCallMessage() {
   return (
     <Text style={{ margin: 'auto', color: color.Warning.Main }} size="L400" align="Center">
-      Already in another call — End the current call to join!
+      Você já está em outra chamada. Encerre a chamada atual para entrar.
     </Text>
   );
 }

@@ -87,7 +87,7 @@ export function ServerChip({ server }: { server: string }) {
                   close();
                 }}
               >
-                <Text size="B300">Copy Server</Text>
+                <Text size="B300">Copiar servidor</Text>
               </MenuItem>
             </div>
             <Line size="300" />
@@ -102,7 +102,7 @@ export function ServerChip({ server }: { server: string }) {
                   close();
                 }}
               >
-                <Text size="B300">Open in Browser</Text>
+                <Text size="B300">Abrir no navegador</Text>
               </MenuItem>
             </div>
           </Menu>
@@ -171,7 +171,7 @@ export function ShareChip({ userId }: { userId: string }) {
                   close();
                 }}
               >
-                <Text size="B300">Copy User ID</Text>
+                <Text size="B300">Copiar ID do usuário</Text>
               </MenuItem>
               <MenuItem
                 variant="Surface"
@@ -184,7 +184,7 @@ export function ShareChip({ userId }: { userId: string }) {
                   close();
                 }}
               >
-                <Text size="B300">Copy User Link</Text>
+                <Text size="B300">Copiar link do usuário</Text>
               </MenuItem>
             </div>
           </Menu>
@@ -205,7 +205,7 @@ export function ShareChip({ userId }: { userId: string }) {
         aria-pressed={!!cords}
       >
         <Text size="B300" truncate>
-          Share
+          Compartilhar
         </Text>
       </Chip>
     </PopOut>
@@ -360,7 +360,7 @@ export function MutualRoomsChip({ userId }: { userId: string }) {
                     {mutual.spaces.length > 0 && (
                       <Box direction="Column" gap="100">
                         <Text style={{ paddingLeft: config.space.S100 }} size="L400">
-                          Spaces
+                          Espaços
                         </Text>
                         {mutual.spaces.map(renderItem)}
                       </Box>
@@ -368,7 +368,7 @@ export function MutualRoomsChip({ userId }: { userId: string }) {
                     {mutual.rooms.length > 0 && (
                       <Box direction="Column" gap="100">
                         <Text style={{ paddingLeft: config.space.S100 }} size="L400">
-                          Rooms
+                          Salas
                         </Text>
                         {mutual.rooms.map(renderItem)}
                       </Box>
@@ -376,7 +376,7 @@ export function MutualRoomsChip({ userId }: { userId: string }) {
                     {mutual.directs.length > 0 && (
                       <Box direction="Column" gap="100">
                         <Text style={{ paddingLeft: config.space.S100 }} size="L400">
-                          Direct Messages
+                          Mensagens diretas
                         </Text>
                         {mutual.directs.map(renderItem)}
                       </Box>
@@ -401,8 +401,8 @@ export function MutualRoomsChip({ userId }: { userId: string }) {
       >
         <Text size="B300">
           {mutualRoomsState.status === AsyncStatus.Success &&
-            `${mutualRoomsState.data.length} Mutual Rooms`}
-          {mutualRoomsState.status === AsyncStatus.Loading && 'Mutual Rooms'}
+            `${mutualRoomsState.data.length} salas em comum`}
+          {mutualRoomsState.status === AsyncStatus.Loading && 'Salas em comum'}
         </Text>
       </Chip>
     </PopOut>
@@ -415,10 +415,10 @@ export function IgnoredUserAlert() {
       <SettingTile>
         <Box direction="Column" gap="200">
           <Box gap="200" justifyContent="SpaceBetween">
-            <Text size="L400">Blocked User</Text>
+            <Text size="L400">Usuário bloqueado</Text>
           </Box>
           <Box direction="Column">
-            <Text size="T200">You do not receive any messages or invites from this user.</Text>
+            <Text size="T200">Você não recebe mensagens nem convites deste usuário.</Text>
           </Box>
         </Box>
       </SettingTile>
@@ -485,7 +485,7 @@ export function OptionsChip({ userId }: { userId: string }) {
                 }
                 disabled={ignoring}
               >
-                <Text size="B300">{ignored ? 'Unblock User' : 'Block User'}</Text>
+                <Text size="B300">{ignored ? 'Desbloquear usuário' : 'Bloquear usuário'}</Text>
               </MenuItem>
             </div>
           </Menu>

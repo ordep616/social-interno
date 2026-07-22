@@ -65,7 +65,7 @@ export const useCallStart = (dm = false) => {
     (room: Room, pref?: CallPreferences) => {
       const container = callEmbedRef.current;
       if (!container) {
-        throw new Error('Failed to start call, No embed container element found!');
+        throw new Error('Falha ao iniciar a chamada. Nenhum elemento de incorporação encontrado.');
       }
       const callEmbed = createCallEmbed(mx, room, dm, theme.kind, container, pref);
 

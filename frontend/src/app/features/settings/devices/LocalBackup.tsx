@@ -20,7 +20,7 @@ function ExportKeys() {
     useCallback(
       async (password) => {
         const crypto = mx.getCrypto();
-        if (!crypto) throw new Error('Unexpected Error! Crypto module not found!');
+        if (!crypto) throw new Error('Erro inesperado. Módulo de criptografia não encontrado.');
         const keysJSON = await crypto.exportRoomKeysAsJson();
 
         const encKeys = await encryptMegolmKeyFile(keysJSON, password);
@@ -66,7 +66,7 @@ function ExportKeys() {
             {(match, doMatch, passRef, confPassRef) => (
               <>
                 <Box grow="Yes" direction="Column" gap="100">
-                  <Text size="L400">New Password</Text>
+                  <Text size="L400">Nova senha</Text>
                   <PasswordInput
                     ref={passRef}
                     name="passwordInput"
@@ -80,7 +80,7 @@ function ExportKeys() {
                   />
                 </Box>
                 <Box grow="Yes" direction="Column" gap="100">
-                  <Text size="L400">Confirm Password</Text>
+                  <Text size="L400">Confirmar senha</Text>
                   <PasswordInput
                     ref={confPassRef}
                     style={{ color: match ? undefined : color.Critical.Main }}
@@ -107,7 +107,7 @@ function ExportKeys() {
             before={exporting ? <Spinner size="200" variant="Secondary" fill="Soft" /> : undefined}
           >
             <Text as="span" size="B400">
-              Export
+              Exportar
             </Text>
           </Button>
         </Box>
@@ -127,8 +127,8 @@ function ExportKeysTile() {
   return (
     <>
       <SettingTile
-        title="Export Messages Data"
-        description="Save password protected copy of encryption data on your device to decrypt messages later."
+        title="Exportar dados de mensagens"
+        description="Salve no dispositivo uma cópia protegida por senha dos dados de criptografia para descriptografar mensagens depois."
         after={
           <Box>
             <Button
@@ -144,7 +144,7 @@ function ExportKeysTile() {
               }
             >
               <Text as="span" size="B300" truncate>
-                {expand ? 'Collapse' : 'Expand'}
+                {expand ? 'Recolher' : 'Expandir'}
               </Text>
             </Button>
           </Box>
@@ -167,7 +167,7 @@ function ImportKeys({ file, onDone }: ImportKeysProps) {
     useCallback(
       async (password) => {
         const crypto = mx.getCrypto();
-        if (!crypto) throw new Error('Unexpected Error! Crypto module not found!');
+        if (!crypto) throw new Error('Erro inesperado. Módulo de criptografia não encontrado.');
 
         const arrayBuffer = await file.arrayBuffer();
         const keys = await decryptMegolmKeyFile(arrayBuffer, password);
@@ -209,7 +209,7 @@ function ImportKeys({ file, onDone }: ImportKeysProps) {
       <Box as="form" onSubmit={handleSubmit} direction="Column" gap="100">
         <Box gap="200" alignItems="End">
           <Box grow="Yes" direction="Column" gap="100">
-            <Text size="L400">Password</Text>
+            <Text size="L400">Senha</Text>
             <PasswordInput
               name="passwordInput"
               size="400"
@@ -231,7 +231,7 @@ function ImportKeys({ file, onDone }: ImportKeysProps) {
             before={decrypting ? <Spinner size="200" variant="Secondary" fill="Soft" /> : undefined}
           >
             <Text as="span" size="B400">
-              Decrypt
+              Descriptografar
             </Text>
           </Button>
         </Box>
@@ -256,8 +256,8 @@ function ImportKeysTile() {
   return (
     <>
       <SettingTile
-        title="Import Messages Data"
-        description="Load password protected copy of encryption data from device to decrypt your messages."
+        title="Importar dados de mensagens"
+        description="Carregue do dispositivo uma cópia protegida por senha dos dados de criptografia para descriptografar suas mensagens."
         after={
           <Box>
             {file ? (
@@ -288,7 +288,7 @@ function ImportKeysTile() {
                 before={<Icon size="100" src={Icons.ArrowRight} />}
               >
                 <Text as="span" size="B300">
-                  Import
+                  Importar
                 </Text>
               </Button>
             )}
@@ -303,7 +303,7 @@ function ImportKeysTile() {
 export function LocalBackup() {
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">Local Backup</Text>
+      <Text size="L400">Backup local</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"

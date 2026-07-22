@@ -120,7 +120,7 @@ function ErrorDialog({
                   </Text>
                 </Box>
                 <Button size="400" variant="Secondary" fill="Soft" onClick={closeError}>
-                  <Text size="B400">Cancel</Text>
+                  <Text size="B400">Cancelar</Text>
                 </Button>
               </Box>
             </Dialog>
@@ -224,7 +224,7 @@ export const RoomCard = as<'div', RoomCardProps>(
           </Avatar>
           {(roomType === RoomType.Space || joinedRoom?.isSpaceRoom()) && (
             <Badge variant="Secondary" fill="Soft" outlined>
-              <Text size="L400">Space</Text>
+              <Text size="L400">Espaço</Text>
             </Badge>
           )}
         </Box>
@@ -252,7 +252,7 @@ export const RoomCard = as<'div', RoomCardProps>(
         {typeof joinedMemberCount === 'number' && (
           <Box gap="100">
             <Icon size="50" src={Icons.User} />
-            <Text size="T200">{`${millify(joinedMemberCount)} Members`}</Text>
+            <Text size="T200">{`${millify(joinedMemberCount)} membros`}</Text>
           </Box>
         )}
         {typeof joinedRoomId === 'string' && (
@@ -263,7 +263,7 @@ export const RoomCard = as<'div', RoomCardProps>(
             size="300"
           >
             <Text size="B300" truncate>
-              View
+              Ver
             </Text>
           </Button>
         )}
@@ -276,7 +276,7 @@ export const RoomCard = as<'div', RoomCardProps>(
             before={joining && <Spinner size="50" variant="Secondary" fill="Soft" />}
           >
             <Text size="B300" truncate>
-              {joining ? 'Joining' : 'Join'}
+              {joining ? 'Entrando' : 'Entrar'}
             </Text>
           </Button>
         )}
@@ -290,12 +290,12 @@ export const RoomCard = as<'div', RoomCardProps>(
               size="300"
             >
               <Text size="B300" truncate>
-                Retry
+                Tentar novamente
               </Text>
             </Button>
             <ErrorDialog
-              title="Join Error"
-              message={joinState.error.message || 'Failed to join. Unknown Error.'}
+              title="Erro ao entrar"
+              message={joinState.error.message || 'Falha ao entrar. Erro desconhecido.'}
             >
               {(openError) => (
                 <Button
@@ -307,7 +307,7 @@ export const RoomCard = as<'div', RoomCardProps>(
                   size="300"
                 >
                   <Text size="B300" truncate>
-                    View Error
+                    Ver erro
                   </Text>
                 </Button>
               )}

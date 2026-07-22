@@ -127,8 +127,8 @@ export function Powers({ powerLevels, permissionGroups, onEdit }: PowersProps) {
           gap="400"
         >
           <SettingTile
-            title="Founders"
-            description="Founding members has all permissions and can only be changed during upgrade."
+            title="Fundadores"
+            description="Membros fundadores têm todas as permissões e só podem ser alterados durante um upgrade."
           />
 
           <SettingTile>
@@ -155,8 +155,8 @@ export function Powers({ powerLevels, permissionGroups, onEdit }: PowersProps) {
         gap="400"
       >
         <SettingTile
-          title="Power Levels"
-          description="Manage and customize incremental power levels for users."
+          title="Níveis de permissão"
+          description="Gerencie e personalize níveis incrementais de permissão para usuários."
           after={
             onEdit && (
               <Box gap="200">
@@ -168,7 +168,7 @@ export function Powers({ powerLevels, permissionGroups, onEdit }: PowersProps) {
                   outlined
                   onClick={onEdit}
                 >
-                  <Text size="B300">Edit</Text>
+                  <Text size="B300">Editar</Text>
                 </Button>
               </Box>
             )

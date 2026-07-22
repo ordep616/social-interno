@@ -42,7 +42,7 @@ function ClientRootLoading() {
     <SplashScreen>
       <Box direction="Column" grow="Yes" alignItems="Center" justifyContent="Center" gap="400">
         <Spinner variant="Secondary" size="600" />
-        <Text>Heating up</Text>
+        <Text>Preparando tudo</Text>
       </Box>
     </SplashScreen>
   );
@@ -93,7 +93,7 @@ function ClientRootOptions({ mx }: { mx?: MatrixClient }) {
                 {mx && (
                   <MenuItem onClick={() => clearCacheAndReload(mx)} size="300" radii="300">
                     <Text as="span" size="T300" truncate>
-                      Clear Cache and Reload
+                      Limpar cache e recarregar
                     </Text>
                   </MenuItem>
                 )}
@@ -111,7 +111,7 @@ function ClientRootOptions({ mx }: { mx?: MatrixClient }) {
                   fill="None"
                 >
                   <Text as="span" size="T300" truncate>
-                    Logout
+                    Sair
                   </Text>
                 </MenuItem>
               </Box>
@@ -150,7 +150,7 @@ export function ClientRoot({ children }: ClientRootProps) {
     useCallback(() => {
       const session = getFallbackSession();
       if (!session) {
-        throw new Error('No session Found!');
+        throw new Error('Nenhuma sessão encontrada.');
       }
       return initClient(session);
     }, [])
@@ -200,14 +200,14 @@ export function ClientRoot({ children }: ClientRootProps) {
               <Dialog>
                 <Box direction="Column" gap="400" style={{ padding: config.space.S400 }}>
                   {loadState.status === AsyncStatus.Error && (
-                    <Text>{`Failed to load. ${loadState.error.message}`}</Text>
+                    <Text>{`Falha ao carregar. ${loadState.error.message}`}</Text>
                   )}
                   {startState.status === AsyncStatus.Error && (
-                    <Text>{`Failed to start. ${startState.error.message}`}</Text>
+                    <Text>{`Falha ao iniciar. ${startState.error.message}`}</Text>
                   )}
                   <Button variant="Critical" onClick={mx ? () => startMatrix(mx) : loadMatrix}>
                     <Text as="span" size="B400">
-                      Retry
+                      Tentar novamente
                     </Text>
                   </Button>
                 </Box>

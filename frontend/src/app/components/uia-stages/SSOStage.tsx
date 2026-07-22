@@ -54,7 +54,7 @@ export function SSOStage({
         size="500"
       >
         <Box grow="Yes">
-          <Text size="H4">SSO Login</Text>
+          <Text size="H4">Login SSO</Text>
         </Box>
         <IconButton size="300" onClick={onCancel} radii="300">
           <Icon src={Icons.Cross} />
@@ -65,9 +65,7 @@ export function SSOStage({
         direction="Column"
         gap="400"
       >
-        <Text size="T200">
-          To perform this action you need to authenticate yourself by SSO login.
-        </Text>
+        <Text size="T200">Para realizar esta ação, você precisa se autenticar por login SSO.</Text>
         {errorCode && (
           <Box alignItems="Center" gap="100" style={{ color: color.Critical.Main }}>
             <Icon size="50" src={Icons.Warning} filled />
@@ -80,13 +78,13 @@ export function SSOStage({
         {ssoWindow ? (
           <Button variant="Primary" onClick={handleSubmit}>
             <Text as="span" size="B400">
-              Continue
+              Continuar
             </Text>
           </Button>
         ) : (
           <Button variant="Primary" onClick={handleContinue}>
             <Text as="span" size="B400">
-              Continue with SSO
+              Continuar com SSO
             </Text>
           </Button>
         )}

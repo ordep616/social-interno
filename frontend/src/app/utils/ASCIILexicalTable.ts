@@ -11,14 +11,14 @@ export class ASCIILexicalTable {
 
   constructor(startCode: number, endCode: number, maxStrWidth: number) {
     if (startCode > endCode) {
-      throw new Error('Invalid ASCII code! startCode is greater than endCode.');
+      throw new Error('Código ASCII inválido. startCode é maior que endCode.');
     }
     if (startCode < 0 || endCode > 128) {
-      throw new Error('Invalid ASCII code range!');
+      throw new Error('Intervalo de código ASCII inválido.');
     }
 
     if (maxStrWidth <= 0) {
-      throw new Error('Invalid max string width!');
+      throw new Error('Largura máxima de string inválida.');
     }
 
     this.maxStrWidth = maxStrWidth;

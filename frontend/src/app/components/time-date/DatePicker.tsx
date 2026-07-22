@@ -59,7 +59,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
     return (
       <Menu className={css.PickerMenu} ref={ref}>
         <Box direction="Row" gap="200" className={css.PickerContainer}>
-          <PickerColumn title="Day">
+          <PickerColumn title="Dia">
             {Array.from(Array(daysInMonth(selectedMonth, selectedYear)).keys())
               .map((i) => i + 1)
               .map((day) => (
@@ -80,7 +80,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
                 </Chip>
               ))}
           </PickerColumn>
-          <PickerColumn title="Month">
+          <PickerColumn title="Mês">
             {Array.from(Array(12).keys())
               .map((i) => i + 1)
               .map((month) => (
@@ -105,7 +105,7 @@ export const DatePicker = forwardRef<HTMLDivElement, DatePickerProps>(
                 </Chip>
               ))}
           </PickerColumn>
-          <PickerColumn title="Year">
+          <PickerColumn title="Ano">
             {Array.from(Array(yearsRange).keys())
               .map((i) => minYear + i)
               .map((year) => (

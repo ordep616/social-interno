@@ -139,7 +139,7 @@ export const renderMatrixMention = (
       >
         {customProps.children
           ? customProps.children
-          : `Message: ${mentionRoom ? `#${mentionRoom.name}` : roomIdOrAlias}`}
+          : `Mensagem: ${mentionRoom ? `#${mentionRoom.name}` : roomIdOrAlias}`}
       </a>
     );
   }
@@ -263,7 +263,7 @@ export function CodeBlock({
       <Header variant="Surface" size="400" className={css.CodeBlockHeader}>
         <Box grow="Yes">
           <Text size="L400" truncate>
-            {customLabel ?? language ?? 'Code'}
+            {customLabel ?? language ?? 'Código'}
           </Text>
         </Box>
         <Box shrink="No" gap="200">
@@ -274,7 +274,7 @@ export function CodeBlock({
             onClick={handleCopy}
             before={copied && <Icon size="50" src={Icons.Check} />}
           >
-            <Text size="B300">{copied ? 'Copied' : 'Copy'}</Text>
+            <Text size="B300">{copied ? 'Copiado' : 'Copiar'}</Text>
           </Chip>
           {largeCodeBlock && (
             <IconButton

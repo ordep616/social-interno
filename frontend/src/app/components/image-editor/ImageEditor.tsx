@@ -28,12 +28,12 @@ export const ImageEditor = as<'div', ImageEditorProps>(
               <Icon size="50" src={Icons.ArrowLeft} />
             </IconButton>
             <Text size="T300" truncate>
-              Image Editor
+              Editor de imagem
             </Text>
           </Box>
           <Box shrink="No" alignItems="Center" gap="200">
             <Chip variant="Primary" radii="300" onClick={handleApply}>
-              <Text size="B300">Save</Text>
+              <Text size="B300">Salvar</Text>
             </Chip>
           </Box>
         </Header>

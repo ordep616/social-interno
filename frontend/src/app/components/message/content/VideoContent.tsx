@@ -82,7 +82,7 @@ export const VideoContent = as<'div', VideoContentProps>(
     const [srcState, loadSrc] = useAsyncCallback(
       useCallback(async () => {
         const mediaUrl = mxcUrlToHttp(mx, url, useAuthentication);
-        if (!mediaUrl) throw new Error('Invalid media URL');
+        if (!mediaUrl) throw new Error('URL de mídia inválida');
         const fileContent = encInfo
           ? await downloadEncryptedMedia(mediaUrl, (encBuf) =>
               decryptFile(encBuf, mimeType, encInfo)
@@ -139,7 +139,7 @@ export const VideoContent = as<'div', VideoContentProps>(
               onClick={loadSrc}
               before={<Icon size="Inherit" src={Icons.Play} filled />}
             >
-              <Text size="B300">Watch</Text>
+              <Text size="B300">Assistir</Text>
             </Button>
           </Box>
         )}
@@ -179,7 +179,7 @@ export const VideoContent = as<'div', VideoContentProps>(
                     setBlurred(false);
                   }}
                 >
-                  <Text size="B300">Spoiler</Text>
+                  <Text size="B300">Oculto</Text>
                 </Chip>
               )}
             </TooltipProvider>
@@ -197,7 +197,7 @@ export const VideoContent = as<'div', VideoContentProps>(
             <TooltipProvider
               tooltip={
                 <Tooltip variant="Critical">
-                  <Text>Failed to load video!</Text>
+                  <Text>Falha ao carregar o vídeo.</Text>
                 </Tooltip>
               }
               position="Top"
@@ -214,7 +214,7 @@ export const VideoContent = as<'div', VideoContentProps>(
                   onClick={handleRetry}
                   before={<Icon size="Inherit" src={Icons.Warning} filled />}
                 >
-                  <Text size="B300">Retry</Text>
+                  <Text size="B300">Tentar novamente</Text>
                 </Button>
               )}
             </TooltipProvider>

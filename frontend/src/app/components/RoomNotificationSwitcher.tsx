@@ -23,10 +23,10 @@ const useRoomNotificationModes = (): RoomNotificationMode[] =>
 const useRoomNotificationModeStr = (): Record<RoomNotificationMode, string> =>
   useMemo(
     () => ({
-      [RoomNotificationMode.Unset]: 'Default',
-      [RoomNotificationMode.AllMessages]: 'All Messages',
-      [RoomNotificationMode.SpecialMessages]: 'Mention & Keywords',
-      [RoomNotificationMode.Mute]: 'Mute',
+      [RoomNotificationMode.Unset]: 'Padrão',
+      [RoomNotificationMode.AllMessages]: 'Todas as mensagens',
+      [RoomNotificationMode.SpecialMessages]: 'Menções e palavras-chave',
+      [RoomNotificationMode.Mute]: 'Silenciar',
     }),
     []
   );

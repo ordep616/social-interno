@@ -138,7 +138,7 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
   return (
     <Box as="form" onSubmit={handleSubmit} grow="Yes" direction="Column" gap="500">
       <Box direction="Column" gap="100">
-        <Text size="L400">Access</Text>
+        <Text size="L400">Acesso</Text>
         <CreateRoomAccessSelector
           value={access}
           onSelect={setAccess}
@@ -148,7 +148,7 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
         />
       </Box>
       <Box shrink="No" direction="Column" gap="100">
-        <Text size="L400">Name</Text>
+        <Text size="L400">Nome</Text>
         <Input
           required
           before={<Icon size="100" src={getCreateSpaceAccessToIcon(access)} />}
@@ -162,7 +162,7 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
         />
       </Box>
       <Box shrink="No" direction="Column" gap="100">
-        <Text size="L400">Topic (Optional)</Text>
+        <Text size="L400">Tópico (opcional)</Text>
         <TextArea
           name="topicTextAria"
           size="500"
@@ -176,7 +176,7 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
 
       <Box shrink="No" direction="Column" gap="100">
         <Box gap="200" alignItems="End">
-          <Text size="L400">Options</Text>
+          <Text size="L400">Opções</Text>
           <Box grow="Yes" justifyContent="End">
             <Chip
               radii="Pill"
@@ -184,7 +184,7 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
               onClick={() => setAdvance(!advance)}
               type="button"
             >
-              <Text size="T200">Advanced Options</Text>
+              <Text size="T200">Opções avançadas</Text>
             </Chip>
           </Box>
         </Box>
@@ -210,8 +210,8 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
             gap="500"
           >
             <SettingTile
-              title="Knock to Join"
-              description="Anyone can send request to join this space."
+              title="Solicitar entrada"
+              description="Qualquer pessoa pode enviar uma solicitação para entrar neste espaço."
               after={
                 <Switch variant="Primary" value={knock} onChange={setKnock} disabled={disabled} />
               }
@@ -226,8 +226,8 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
           gap="500"
         >
           <SettingTile
-            title="Allow Federation"
-            description="Users from other servers can join."
+            title="Permitir federação"
+            description="Usuários de outros servidores podem entrar."
             after={
               <Switch
                 variant="Primary"
@@ -254,9 +254,9 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
           <Text size="T300" style={{ color: color.Critical.Main }}>
             <b>
               {error instanceof MatrixError && error.name === ErrorCode.M_LIMIT_EXCEEDED
-                ? `Server rate-limited your request for ${millisecondsToMinutes(
+                ? `O servidor limitou sua solicitação por ${millisecondsToMinutes(
                     (error.data.retry_after_ms as number | undefined) ?? 0
-                  )} minutes!`
+                  )} minutos.`
                 : error.message}
             </b>
           </Text>
@@ -271,7 +271,7 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
           disabled={disabled}
           before={loading && <Spinner variant="Primary" fill="Solid" size="200" />}
         >
-          <Text size="B500">Create</Text>
+          <Text size="B500">Criar</Text>
         </Button>
       </Box>
     </Box>

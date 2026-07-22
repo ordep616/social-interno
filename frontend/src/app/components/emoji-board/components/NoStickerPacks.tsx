@@ -12,9 +12,9 @@ export function NoStickerPacks() {
     >
       <Icon size="600" src={Icons.Sticker} />
       <Box direction="Inherit">
-        <Text align="Center">No Sticker Packs!</Text>
+        <Text align="Center">Nenhum pacote de figurinhas</Text>
         <Text priority="300" align="Center" size="T200">
-          Add stickers from user, room or space settings.
+          Adicione figurinhas pelas configurações de usuário, sala ou espaço.
         </Text>
       </Box>
     </Box>

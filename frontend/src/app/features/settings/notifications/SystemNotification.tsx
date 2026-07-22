@@ -23,7 +23,7 @@ function EmailNotification() {
             kind: 'email',
             app_id: 'm.email',
             pushkey: email,
-            app_display_name: 'Email Notifications',
+            app_display_name: 'Notificações por email',
             device_display_name: email,
             lang: 'en',
             data: {
@@ -53,21 +53,23 @@ function EmailNotification() {
 
   return (
     <SettingTile
-      title="Email Notification"
+      title="Notificação por email"
       description={
         <>
           {result && !result.email && (
             <Text as="span" style={{ color: color.Critical.Main }} size="T200">
-              Your account does not have any email attached.
+              Sua conta não tem nenhum email vinculado.
             </Text>
           )}
-          {result && result.email && <>Send notification to your email. {`("${result.email}")`}</>}
+          {result && result.email && (
+            <>Enviar notificação para seu email. {`("${result.email}")`}</>
+          )}
           {result === null && (
             <Text as="span" style={{ color: color.Critical.Main }} size="T200">
-              Unexpected Error!
+              Erro inesperado.
             </Text>
           )}
-          {result === undefined && 'Send notification to your email.'}
+          {result === undefined && 'Enviar notificação para seu email.'}
         </>
       }
       after={
@@ -98,7 +100,7 @@ export function SystemNotification() {
 
   return (
     <Box direction="Column" gap="100">
-      <Text size="L400">System</Text>
+      <Text size="L400">Sistema</Text>
       <SequenceCard
         className={SequenceCardStyle}
         variant="SurfaceVariant"
@@ -106,22 +108,22 @@ export function SystemNotification() {
         gap="400"
       >
         <SettingTile
-          title="Desktop Notifications"
+          title="Notificações na área de trabalho"
           description={
             notifPermission === 'denied' ? (
               <Text as="span" style={{ color: color.Critical.Main }} size="T200">
                 {'Notification' in window
-                  ? 'Notification permission is blocked. Please allow notification permission from browser address bar.'
-                  : 'Notifications are not supported by the system.'}
+                  ? 'A permissão de notificações está bloqueada. Libere a permissão na barra de endereço do navegador.'
+                  : 'Notificações não são suportadas pelo sistema.'}
               </Text>
             ) : (
-              <span>Show desktop notifications when message arrive.</span>
+              <span>Mostrar notificações na área de trabalho quando uma mensagem chegar.</span>
             )
           }
           after={
             notifPermission === 'prompt' ? (
               <Button size="300" radii="300" onClick={requestNotificationPermission}>
-                <Text size="B300">Enable</Text>
+                <Text size="B300">Ativar</Text>
               </Button>
             ) : (
               <Switch
@@ -140,8 +142,8 @@ export function SystemNotification() {
         gap="400"
       >
         <SettingTile
-          title="Notification Sound"
-          description="Play sound when new message arrive."
+          title="Som de notificação"
+          description="Tocar som quando uma nova mensagem chegar."
           after={<Switch value={isNotificationSounds} onChange={setIsNotificationSounds} />}
         />
       </SequenceCard>

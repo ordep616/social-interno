@@ -55,8 +55,8 @@ export function ManualVerificationMethodSwitcher({
         onClick={handleMenu}
       >
         <Text as="span" size="B300">
-          {value === ManualVerificationMethod.RecoveryPassphrase && 'Recovery Passphrase'}
-          {value === ManualVerificationMethod.RecoveryKey && 'Recovery Key'}
+          {value === ManualVerificationMethod.RecoveryPassphrase && 'Frase secreta de recuperação'}
+          {value === ManualVerificationMethod.RecoveryKey && 'Chave de recuperação'}
         </Text>
       </Chip>
       <PopOut
@@ -87,7 +87,7 @@ export function ManualVerificationMethodSwitcher({
                   onClick={() => handleSelect(ManualVerificationMethod.RecoveryPassphrase)}
                 >
                   <Box grow="Yes">
-                    <Text size="T300">Recovery Passphrase</Text>
+                    <Text size="T300">Frase secreta de recuperação</Text>
                   </Box>
                 </MenuItem>
                 <MenuItem
@@ -98,7 +98,7 @@ export function ManualVerificationMethodSwitcher({
                   onClick={() => handleSelect(ManualVerificationMethod.RecoveryKey)}
                 >
                   <Box grow="Yes">
-                    <Text size="T300">Recovery Key</Text>
+                    <Text size="T300">Chave de recuperação</Text>
                   </Box>
                 </MenuItem>
               </Box>
@@ -133,7 +133,7 @@ export function ManualVerificationTile({
     async (recoveryKey: Uint8Array) => {
       const crypto = mx.getCrypto();
       if (!crypto) {
-        throw new Error('Unexpected Error! Crypto object not found.');
+        throw new Error('Erro inesperado. Objeto de criptografia não encontrado.');
       }
 
       storePrivateKey(secretStorageKeyId, recoveryKey);
@@ -154,8 +154,10 @@ export function ManualVerificationTile({
   return (
     <Box direction="Column" gap="200">
       <SettingTile
-        title="Verify Manually"
-        description={hasPassphrase ? 'Select a verification method.' : 'Provide recovery key.'}
+        title="Verificar manualmente"
+        description={
+          hasPassphrase ? 'Selecione um método de verificação.' : 'Informe a chave de recuperação.'
+        }
         after={
           <Box alignItems="Center" gap="200">
             {hasPassphrase && (
@@ -167,7 +169,7 @@ export function ManualVerificationTile({
       />
       {verifyState.status === AsyncStatus.Success ? (
         <Text size="T200" style={{ color: color.Success.Main }}>
-          <b>Device verified!</b>
+          <b>Dispositivo verificado.</b>
         </Text>
       ) : (
         <Box direction="Column" gap="100">

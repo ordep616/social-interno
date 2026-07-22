@@ -69,16 +69,16 @@ export function RoomEncryption({ permissions }: RoomEncryptionProps) {
       gap="400"
     >
       <SettingTile
-        title="Room Encryption"
+        title="Criptografia da sala"
         description={
           enabled
-            ? 'Messages in this room are protected by end-to-end encryption.'
-            : 'Once enabled, encryption cannot be disabled!'
+            ? 'As mensagens nesta sala são protegidas por criptografia de ponta a ponta.'
+            : 'Depois de ativada, a criptografia não pode ser desativada.'
         }
         after={
           enabled ? (
             <Badge size="500" variant="Success" fill="Solid" radii="300">
-              <Text size="L400">Enabled</Text>
+              <Text size="L400">Ativada</Text>
             </Badge>
           ) : (
             <Button
@@ -90,7 +90,7 @@ export function RoomEncryption({ permissions }: RoomEncryptionProps) {
               onClick={() => setPrompt(true)}
               before={enabling && <Spinner size="100" variant="Primary" fill="Solid" />}
             >
-              <Text size="B300">Enable</Text>
+              <Text size="B300">Ativar</Text>
             </Button>
           )
         }
@@ -121,7 +121,7 @@ export function RoomEncryption({ permissions }: RoomEncryptionProps) {
                     size="500"
                   >
                     <Box grow="Yes">
-                      <Text size="H4">Enable Encryption</Text>
+                      <Text size="H4">Ativar criptografia</Text>
                     </Box>
                     <IconButton size="300" onClick={() => setPrompt(false)} radii="300">
                       <Icon src={Icons.Cross} />
@@ -129,10 +129,10 @@ export function RoomEncryption({ permissions }: RoomEncryptionProps) {
                   </Header>
                   <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
                     <Text priority="400">
-                      Are you sure? Once enabled, encryption cannot be disabled!
+                      Tem certeza? Depois de ativada, a criptografia não pode ser desativada.
                     </Text>
                     <Button type="submit" variant="Primary" onClick={handleEnable}>
-                      <Text size="B400">Enable E2E Encryption</Text>
+                      <Text size="B400">Ativar criptografia E2E</Text>
                     </Button>
                   </Box>
                 </Dialog>

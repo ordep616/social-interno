@@ -33,10 +33,10 @@ export function AuthFlowsLoader({ fallback, error, children }: AuthFlowsLoaderPr
       }
 
       if (!loginFlows) {
-        throw new Error('Missing auth flow!');
+        throw new Error('Fluxo de autenticação ausente.');
       }
       if ('errcode' in loginFlows) {
-        throw new Error('Failed to load auth flow!');
+        throw new Error('Falha ao carregar o fluxo de autenticação.');
       }
 
       const authFlows: AuthFlows = {

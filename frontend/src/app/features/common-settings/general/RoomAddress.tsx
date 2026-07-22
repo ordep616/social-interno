@@ -61,19 +61,20 @@ export function RoomPublishedAddresses({ permissions }: RoomPublishedAddressesPr
       gap="400"
     >
       <SettingTile
-        title="Published Addresses"
+        title="Endereços publicados"
         description={
           <span>
-            If access is <b>Public</b>, Published addresses will be used to join by anyone.
+            Se o acesso for <b>Público</b>, endereços publicados poderão ser usados por qualquer
+            pessoa para entrar.
           </span>
         }
       />
       <CutoutCard variant="Surface" style={{ padding: config.space.S300 }}>
         {publishedAliases.length === 0 ? (
           <Box direction="Column" gap="100">
-            <Text size="L400">No Addresses</Text>
+            <Text size="L400">Nenhum endereço</Text>
             <Text size="T200">
-              To publish an address, it needs to be set as a local address first
+              Para publicar um endereço, ele precisa ser definido primeiro como endereço local.
             </Text>
           </Box>
         ) : (
@@ -86,7 +87,7 @@ export function RoomPublishedAddresses({ permissions }: RoomPublishedAddressesPr
                   </Text>
                   {alias === canonicalAlias && (
                     <Badge variant="Success" fill="Solid" size="500">
-                      <Text size="L400">Main</Text>
+                      <Text size="L400">Principal</Text>
                     </Badge>
                   )}
                 </Box>
@@ -100,7 +101,7 @@ export function RoomPublishedAddresses({ permissions }: RoomPublishedAddressesPr
                         disabled={loading}
                         onClick={() => setMain(undefined)}
                       >
-                        <Text size="B300">Unset Main</Text>
+                        <Text size="B300">Remover principal</Text>
                       </Chip>
                     ) : (
                       <Chip
@@ -110,7 +111,7 @@ export function RoomPublishedAddresses({ permissions }: RoomPublishedAddressesPr
                         disabled={loading}
                         onClick={() => setMain(alias)}
                       >
-                        <Text size="B300">Set Main</Text>
+                        <Text size="B300">Definir principal</Text>
                       </Chip>
                     )}
                   </Box>
@@ -183,14 +184,14 @@ function LocalAddressInput({ addLocalAlias }: { addLocalAlias: (alias: string) =
             disabled={adding}
             before={adding && <Spinner size="100" variant="Success" fill="Solid" />}
           >
-            <Text size="B400">Save</Text>
+            <Text size="B400">Salvar</Text>
           </Button>
         </Box>
       </Box>
       {addState.status === AsyncStatus.Error && (
         <Text style={{ color: color.Critical.Main }} size="T200">
           {(addState.error as MatrixError).httpStatus === 409
-            ? 'Address is already in use!'
+            ? 'O endereço já está em uso.'
             : (addState.error as MatrixError).message}
         </Text>
       )}
@@ -301,7 +302,7 @@ function LocalAddressesList({
                     )
                   }
                 >
-                  <Text size="B300">Publish</Text>
+                  <Text size="B300">Publicar</Text>
                 </Chip>
               ))}
             <Chip
@@ -315,7 +316,7 @@ function LocalAddressesList({
                 )
               }
             >
-              <Text size="B300">Delete</Text>
+              <Text size="B300">Excluir</Text>
             </Chip>
           </Box>
         </Box>
@@ -343,7 +344,7 @@ function LocalAddressesList({
             <Box shrink="No" gap="100">
               {published && (
                 <Badge variant="Success" fill="Soft" size="500">
-                  <Text size="L400">Published</Text>
+                  <Text size="L400">Publicado</Text>
                 </Badge>
               )}
             </Box>
@@ -380,8 +381,8 @@ export function RoomLocalAddresses({ permissions }: { permissions: RoomPermissio
       gap="400"
     >
       <SettingTile
-        title="Local Addresses"
-        description="Set local address so users can join through your homeserver."
+        title="Endereços locais"
+        description="Defina um endereço local para que usuários entrem pelo seu homeserver."
         after={
           <Button
             type="button"
@@ -396,7 +397,7 @@ export function RoomLocalAddresses({ permissions }: { permissions: RoomPermissio
             }
           >
             <Text as="span" size="B300" truncate>
-              {expand ? 'Collapse' : 'Expand'}
+              {expand ? 'Recolher' : 'Expandir'}
             </Text>
           </Button>
         }

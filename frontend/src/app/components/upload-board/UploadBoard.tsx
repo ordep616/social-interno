@@ -88,7 +88,7 @@ export function UploadBoardHeader({
         gap="100"
       >
         <Icon src={open ? Icons.ChevronTop : Icons.ChevronRight} size="50" />
-        <Text size="H6">Files</Text>
+        <Text size="H6">Arquivos</Text>
       </Box>
       <Box className={css.UploadBoardHeaderContent} alignItems="Center" gap="100">
         {isSuccess && (
@@ -100,12 +100,12 @@ export function UploadBoardHeader({
             outlined
             after={<Icon src={Icons.Send} size="50" filled />}
           >
-            <Text size="B300">Send</Text>
+            <Text size="B300">Enviar</Text>
           </Chip>
         )}
         {isError && !open && (
           <Badge variant="Critical" fill="Solid" radii="300">
-            <Text size="L400">Upload Failed</Text>
+            <Text size="L400">Falha no envio</Text>
           </Badge>
         )}
         {!isSuccess && !isError && !open && (
@@ -124,7 +124,7 @@ export function UploadBoardHeader({
             radii="Pill"
             after={<Icon src={Icons.Cross} size="50" />}
           >
-            <Text size="B300">{uploads.length === 1 ? 'Remove' : 'Remove All'}</Text>
+            <Text size="B300">{uploads.length === 1 ? 'Remover' : 'Remover todos'}</Text>
           </Chip>
         )}
       </Box>

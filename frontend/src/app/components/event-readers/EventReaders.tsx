@@ -50,7 +50,7 @@ export const EventReaders = as<'div', EventReadersProps>(
       >
         <Header className={css.Header} variant="Surface" size="600">
           <Box grow="Yes">
-            <Text size="H3">Seen by</Text>
+            <Text size="H3">Vista por</Text>
           </Box>
           <IconButton size="300" onClick={requestClose}>
             <Icon src={Icons.Cross} />

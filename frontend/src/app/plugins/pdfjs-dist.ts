@@ -36,7 +36,7 @@ export const createPage = async (
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
 
-  if (!context) throw new Error('failed to render page.');
+  if (!context) throw new Error('Falha ao renderizar a página.');
 
   canvas.width = pageViewport.width;
   canvas.height = pageViewport.height;

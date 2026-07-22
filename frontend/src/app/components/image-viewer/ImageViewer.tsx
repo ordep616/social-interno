@@ -47,7 +47,7 @@ export const ImageViewer = as<'div', ImageViewerProps>(
               size="300"
               radii="Pill"
               onClick={zoomOut}
-              aria-label="Zoom Out"
+              aria-label="Diminuir zoom"
             >
               <Icon size="50" src={Icons.Minus} />
             </IconButton>
@@ -60,7 +60,7 @@ export const ImageViewer = as<'div', ImageViewerProps>(
               size="300"
               radii="Pill"
               onClick={zoomIn}
-              aria-label="Zoom In"
+              aria-label="Aumentar zoom"
             >
               <Icon size="50" src={Icons.Plus} />
             </IconButton>
@@ -70,7 +70,7 @@ export const ImageViewer = as<'div', ImageViewerProps>(
               radii="300"
               before={<Icon size="50" src={Icons.Download} />}
             >
-              <Text size="B300">Download</Text>
+              <Text size="B300">Baixar</Text>
             </Chip>
           </Box>
         </Header>

@@ -10,7 +10,7 @@ export const useTextAreaCodeEditor = (
 ) => {
   const getTarget: GetTarget = useCallback(() => {
     const target = textAreaRef.current;
-    if (!target) throw new Error('TextArea element not found!');
+    if (!target) throw new Error('Elemento TextArea não encontrado.');
     return target;
   }, [textAreaRef]);
 

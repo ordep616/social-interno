@@ -80,7 +80,7 @@ function SetupVerification({ onComplete }: SetupVerificationProps) {
   const handleAction = useCallback(
     async (authDict: AuthDict) => {
       if (!uiaAction) {
-        throw new Error('Unexpected Error! UIA action is perform without data.');
+        throw new Error('Erro inesperado. Ação UIA executada sem dados.');
       }
       if (alive()) {
         setNextAuthData(null);
@@ -123,7 +123,11 @@ function SetupVerification({ onComplete }: SetupVerificationProps) {
               if (alive()) {
                 setUIAAction(action);
               } else {
-                reject(new Error('Authentication failed! Failed to setup device verification.'));
+                reject(
+                  new Error(
+                    'Falha na autenticação. Não foi possível configurar a verificação do dispositivo.'
+                  )
+                );
               }
               return;
             }
@@ -137,11 +141,11 @@ function SetupVerification({ onComplete }: SetupVerificationProps) {
     useCallback(
       async (passphrase) => {
         const crypto = mx.getCrypto();
-        if (!crypto) throw new Error('Unexpected Error! Crypto module not found!');
+        if (!crypto) throw new Error('Erro inesperado. Módulo de criptografia não encontrado.');
 
         const recoveryKeyData = await crypto.createRecoveryKeyFromPassphrase(passphrase);
         if (!recoveryKeyData.encodedPrivateKey) {
-          throw new Error('Unexpected Error! Failed to create recovery key.');
+          throw new Error('Erro inesperado. Falha ao criar a chave de recuperação.');
         }
         clearSecretStorageKeys();
 
@@ -182,11 +186,12 @@ function SetupVerification({ onComplete }: SetupVerificationProps) {
   return (
     <Box as="form" onSubmit={handleSubmit} direction="Column" gap="400">
       <Text size="T300">
-        Generate a <b>Recovery Key</b> for verifying identity if you do not have access to other
-        devices. Additionally, setup a passphrase as a memorable alternative.
+        Gere uma <b>chave de recuperação</b> para verificar sua identidade caso você não tenha
+        acesso a outros dispositivos. Você também pode configurar uma frase secreta como alternativa
+        mais fácil de lembrar.
       </Text>
       <Box direction="Column" gap="100">
-        <Text size="L400">Passphrase (Optional)</Text>
+        <Text size="L400">Frase secreta (opcional)</Text>
         <PasswordInput name="passphraseInput" size="400" readOnly={loading} />
       </Box>
       <Button
@@ -194,11 +199,11 @@ function SetupVerification({ onComplete }: SetupVerificationProps) {
         disabled={loading}
         before={loading && <Spinner size="200" variant="Primary" fill="Solid" />}
       >
-        <Text size="B400">Continue</Text>
+        <Text size="B400">Continuar</Text>
       </Button>
       {setupState.status === AsyncStatus.Error && (
         <Text size="T200" style={{ color: color.Critical.Main }}>
-          <b>{setupState.error ? setupState.error.message : 'Unexpected Error!'}</b>
+          <b>{setupState.error ? setupState.error.message : 'Erro inesperado.'}</b>
         </Text>
       )}
       {nextAuthData !== null && uiaAction && (
@@ -206,7 +211,7 @@ function SetupVerification({ onComplete }: SetupVerificationProps) {
           authData={nextAuthData ?? uiaAction.authData}
           unsupported={() => (
             <Text size="T200">
-              Authentication steps to perform this action are not supported by client.
+              As etapas de autenticação para realizar esta ação não são suportadas pelo cliente.
             </Text>
           )}
         >
@@ -246,11 +251,11 @@ function RecoveryKeyDisplay({ recoveryKey }: RecoveryKeyDisplayProps) {
   return (
     <Box direction="Column" gap="400">
       <Text size="T300">
-        Store the Recovery Key in a safe place for future use, as you will need it to verify your
-        identity if you do not have access to other devices.
+        Guarde a chave de recuperação em um local seguro para uso futuro. Você precisará dela para
+        verificar sua identidade se não tiver acesso a outros dispositivos.
       </Text>
       <Box direction="Column" gap="100">
-        <Text size="L400">Recovery Key</Text>
+        <Text size="L400">Chave de recuperação</Text>
         <Box
           className={ContainerColor({ variant: 'SurfaceVariant' })}
           style={{
@@ -265,16 +270,16 @@ function RecoveryKeyDisplay({ recoveryKey }: RecoveryKeyDisplayProps) {
             {safeToDisplayKey}
           </Text>
           <Chip onClick={() => setShow(!show)} variant="Secondary" radii="Pill">
-            <Text size="B300">{show ? 'Hide' : 'Show'}</Text>
+            <Text size="B300">{show ? 'Ocultar' : 'Mostrar'}</Text>
           </Chip>
         </Box>
       </Box>
       <Box direction="Column" gap="200">
         <Button onClick={handleCopy}>
-          <Text size="B400">Copy</Text>
+          <Text size="B400">Copiar</Text>
         </Button>
         <Button onClick={handleDownload} fill="Soft">
-          <Text size="B400">Download</Text>
+          <Text size="B400">Baixar</Text>
         </Button>
       </Box>
     </Box>
@@ -299,7 +304,7 @@ export const DeviceVerificationSetup = forwardRef<HTMLDivElement, DeviceVerifica
           size="500"
         >
           <Box grow="Yes">
-            <Text size="H4">Setup Device Verification</Text>
+            <Text size="H4">Configurar verificação do dispositivo</Text>
           </Box>
           <IconButton size="300" radii="300" onClick={onCancel}>
             <Icon src={Icons.Cross} />
@@ -334,7 +339,7 @@ export const DeviceVerificationReset = forwardRef<HTMLDivElement, DeviceVerifica
           size="500"
         >
           <Box grow="Yes">
-            <Text size="H4">Reset Device Verification</Text>
+            <Text size="H4">Redefinir verificação do dispositivo</Text>
           </Box>
           <IconButton size="300" radii="300" onClick={onCancel}>
             <Icon src={Icons.Cross} />
@@ -356,16 +361,16 @@ export const DeviceVerificationReset = forwardRef<HTMLDivElement, DeviceVerifica
           <Box style={{ padding: config.space.S400 }} direction="Column" gap="400">
             <Box direction="Column" gap="200">
               <Text size="H1">✋🧑‍🚒🤚</Text>
-              <Text size="T300">Resetting device verification is permanent.</Text>
+              <Text size="T300">Redefinir a verificação do dispositivo é permanente.</Text>
               <Text size="T300">
-                Anyone you have verified with will see security alerts and your encryption backup
-                will be lost. You almost certainly do not want to do this, unless you have lost{' '}
-                <b>Recovery Key</b> or <b>Recovery Passphrase</b> and every device you can verify
-                from.
+                Qualquer pessoa verificada com você verá alertas de segurança e seu backup de
+                criptografia será perdido. Você provavelmente não quer fazer isso, a menos que tenha
+                perdido a <b>chave de recuperação</b> ou a <b>frase secreta de recuperação</b> e
+                todos os dispositivos que poderia usar para verificar.
               </Text>
             </Box>
             <Button variant="Critical" onClick={() => setReset(true)}>
-              <Text size="B400">Reset</Text>
+              <Text size="B400">Redefinir</Text>
             </Button>
           </Box>
         )}

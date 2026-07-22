@@ -11,19 +11,19 @@ export const useMessageSpacingItems = (): MessageSpacingItem[] =>
     () => [
       {
         spacing: '0',
-        name: 'None',
+        name: 'Nenhum',
       },
       {
         spacing: '100',
-        name: 'Ultra Small',
+        name: 'Muito pequeno',
       },
       {
         spacing: '200',
-        name: 'Extra Small',
+        name: 'Extra pequeno',
       },
       {
         spacing: '300',
-        name: 'Small',
+        name: 'Pequeno',
       },
       {
         spacing: '400',
@@ -31,7 +31,7 @@ export const useMessageSpacingItems = (): MessageSpacingItem[] =>
       },
       {
         spacing: '500',
-        name: 'Large',
+        name: 'Grande',
       },
     ],
     []

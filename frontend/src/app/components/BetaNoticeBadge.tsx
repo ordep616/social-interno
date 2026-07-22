@@ -9,8 +9,8 @@ export function BetaNoticeBadge() {
       tooltip={
         <Tooltip style={{ maxWidth: toRem(200) }}>
           <Box direction="Column">
-            <Text size="L400">Notice</Text>
-            <Text size="T200">This feature is under testing and may change over time.</Text>
+            <Text size="L400">Aviso</Text>
+            <Text size="T200">Este recurso está em teste e pode mudar com o tempo.</Text>
           </Box>
         </Tooltip>
       }

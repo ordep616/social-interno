@@ -221,7 +221,7 @@ export const MessageReadReceiptItem = as<
         aria-pressed={open}
       >
         <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-          Read Receipts
+          Confirmações de leitura
         </Text>
       </MenuItem>
     </>
@@ -285,7 +285,7 @@ export const MessageSourceCodeItem = as<
           >
             <Modal variant="Surface" size="500">
               <TextViewer
-                name="Source Code"
+                name="Código-fonte"
                 langName="json"
                 text={getText()}
                 requestClose={handleClose}
@@ -304,7 +304,7 @@ export const MessageSourceCodeItem = as<
         aria-pressed={open}
       >
         <Text className={css.MessageMenuItemText} as="span" size="T300" truncate>
-          View Source
+          Ver código-fonte
         </Text>
       </MenuItem>
     </>
@@ -457,13 +457,13 @@ export const MessageDeleteItem = as<
                 gap="400"
               >
                 <Text priority="400">
-                  This action is irreversible! Are you sure that you want to delete this message?
+                  Esta ação é irreversível. Tem certeza que deseja excluir esta mensagem?
                 </Text>
                 <Box direction="Column" gap="100">
                   <Text size="L400">
                     Motivo{' '}
                     <Text as="span" size="T200">
-                      (optional)
+                      (opcional)
                     </Text>
                   </Text>
                   <Input name="reasonInput" variant="Background" />
@@ -600,7 +600,7 @@ export const MessageReportItem = as<
                   )}
                   {reportState.status === AsyncStatus.Success && (
                     <Text style={{ color: color.Success.Main }} size="T300">
-                      Message has been reported to server.
+                      A mensagem foi denunciada ao servidor.
                     </Text>
                   )}
                 </Box>

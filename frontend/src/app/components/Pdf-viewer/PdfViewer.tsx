@@ -122,7 +122,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               size="300"
               radii="Pill"
               onClick={zoomOut}
-              aria-label="Zoom Out"
+              aria-label="Diminuir zoom"
             >
               <Icon size="50" src={Icons.Minus} />
             </IconButton>
@@ -135,7 +135,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               size="300"
               radii="Pill"
               onClick={zoomIn}
-              aria-label="Zoom In"
+              aria-label="Aumentar zoom"
             >
               <Icon size="50" src={Icons.Plus} />
             </IconButton>
@@ -145,7 +145,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               radii="300"
               before={<Icon size="50" src={Icons.Download} />}
             >
-              <Text size="B300">Download</Text>
+              <Text size="B300">Baixar</Text>
             </Chip>
           </Box>
         </Header>
@@ -153,7 +153,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
           {isLoading && <Spinner variant="Secondary" size="600" />}
           {isError && (
             <>
-              <Text>Failed to load PDF</Text>
+              <Text>Falha ao carregar o PDF</Text>
               <Button
                 variant="Critical"
                 fill="Soft"
@@ -162,7 +162,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
                 before={<Icon src={Icons.Warning} size="50" />}
                 onClick={loadPdfJS}
               >
-                <Text size="B300">Retry</Text>
+                <Text size="B300">Tentar novamente</Text>
               </Button>
             </>
           )}
@@ -189,7 +189,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               onClick={handlePrevPage}
               aria-disabled={pageNo <= 1}
             >
-              <Text size="B300">Previous</Text>
+              <Text size="B300">Anterior</Text>
             </Chip>
             <Box grow="Yes" justifyContent="Center" alignItems="Center" gap="200">
               <PopOut
@@ -224,10 +224,10 @@ export const PdfViewer = as<'div', PdfViewerProps>(
                           outlined
                           type="number"
                           radii="300"
-                          aria-label="Page Number"
+                          aria-label="Número da página"
                         />
                         <Button type="submit" size="300" variant="Primary" radii="300">
-                          <Text size="B300">Jump To Page</Text>
+                          <Text size="B300">Ir para página</Text>
                         </Button>
                       </Box>
                     </Menu>
@@ -251,7 +251,7 @@ export const PdfViewer = as<'div', PdfViewerProps>(
               onClick={handleNextPage}
               aria-disabled={pageNo >= docState.data.numPages}
             >
-              <Text size="B300">Next</Text>
+              <Text size="B300">Próxima</Text>
             </Chip>
           </Header>
         )}

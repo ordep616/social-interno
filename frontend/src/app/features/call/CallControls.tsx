@@ -71,7 +71,10 @@ export function CallControls({ callEmbed }: CallControlsProps) {
     setCords(undefined);
   };
 
-  const handleMicrophoneToggle = useCallback(() => callEmbed.control.toggleMicrophone(), [callEmbed]);
+  const handleMicrophoneToggle = useCallback(
+    () => callEmbed.control.toggleMicrophone(),
+    [callEmbed]
+  );
   const handleVideoToggle = useCallback(() => callEmbed.control.toggleVideo(), [callEmbed]);
 
   const [hangupState, hangup] = useAsyncCallback(
@@ -97,10 +100,7 @@ export function CallControls({ callEmbed }: CallControlsProps) {
       >
         <Box alignItems="Center" gap="Inherit" grow="Yes" direction={compact ? 'Column' : 'Row'}>
           <Box shrink="No" alignItems="Inherit" justifyContent="Inherit" gap="200">
-            <MicrophoneButton
-              enabled={microphone}
-              onToggle={handleMicrophoneToggle}
-            />
+            <MicrophoneButton enabled={microphone} onToggle={handleMicrophoneToggle} />
             <SoundButton enabled={sound} onToggle={() => callEmbed.control.toggleSound()} />
           </Box>
           {!compact && <ControlDivider />}
@@ -140,7 +140,7 @@ export function CallControls({ callEmbed }: CallControlsProps) {
                         onClick={handleSpotlightClick}
                       >
                         <Text size="B300" truncate>
-                          {spotlight ? 'Grid View' : 'Spotlight View'}
+                          {spotlight ? 'Visualização em grade' : 'Visualização em destaque'}
                         </Text>
                       </MenuItem>
                       <MenuItem
@@ -150,7 +150,7 @@ export function CallControls({ callEmbed }: CallControlsProps) {
                         onClick={handleReactionsClick}
                       >
                         <Text size="B300" truncate>
-                          Reactions
+                          Reações
                         </Text>
                       </MenuItem>
                       <MenuItem
@@ -160,7 +160,7 @@ export function CallControls({ callEmbed }: CallControlsProps) {
                         onClick={handleSettingsClick}
                       >
                         <Text size="B300" truncate>
-                          Settings
+                          Configurações
                         </Text>
                       </MenuItem>
                     </Box>

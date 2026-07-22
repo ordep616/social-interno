@@ -563,7 +563,7 @@ function SpamInvites({
     useCallback(async () => {
       const roomIds = invites.map((invite) => invite.roomId);
 
-      await rateLimitedActions(roomIds, (roomId) => mx.reportRoom(roomId, 'Spam Invite'));
+      await rateLimitedActions(roomIds, (roomId) => mx.reportRoom(roomId, 'Convite spam'));
     }, [mx, invites])
   );
 

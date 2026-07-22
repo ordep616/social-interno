@@ -7,7 +7,7 @@ export const SpaceProvider = SpaceContext.Provider;
 
 export function useSpace(): Room {
   const space = useContext(SpaceContext);
-  if (!space) throw new Error('Space not provided!');
+  if (!space) throw new Error('Espaço não informado.');
   return space;
 }
 

@@ -49,14 +49,14 @@ export function FeaturedRooms() {
                 <PageHeroSection>
                   <PageHero
                     icon={<Icon size="600" src={Icons.Bulb} />}
-                    title="Featured by Client"
-                    subTitle="Find and explore public rooms and spaces featured by client provider."
+                    title="Destaques do cliente"
+                    subTitle="Encontre e explore salas e espaços públicos destacados pelo provedor do cliente."
                   />
                 </PageHeroSection>
                 <Box direction="Column" gap="700">
                   {spaces && spaces.length > 0 && (
                     <Box direction="Column" gap="400">
-                      <Text size="H4">Featured Spaces</Text>
+                      <Text size="H4">Espaços em destaque</Text>
                       <RoomCardGrid>
                         {spaces.map((roomIdOrAlias) => (
                           <RoomSummaryLoader key={roomIdOrAlias} roomIdOrAlias={roomIdOrAlias}>
@@ -85,7 +85,7 @@ export function FeaturedRooms() {
                   )}
                   {rooms && rooms.length > 0 && (
                     <Box direction="Column" gap="400">
-                      <Text size="H4">Featured Rooms</Text>
+                      <Text size="H4">Conversas em destaque</Text>
                       <RoomCardGrid>
                         {rooms.map((roomIdOrAlias) => (
                           <RoomSummaryLoader key={roomIdOrAlias} roomIdOrAlias={roomIdOrAlias}>
@@ -123,7 +123,7 @@ export function FeaturedRooms() {
                     >
                       <Icon size="400" src={Icons.Info} />
                       <Text size="T300" align="Center">
-                        No rooms or spaces featured by client provider.
+                        Nenhuma sala ou espaço destacado pelo provedor do cliente.
                       </Text>
                     </Box>
                   )}

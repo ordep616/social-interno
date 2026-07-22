@@ -46,11 +46,11 @@ export function RoomPublish({ permissions }: RoomPublishProps) {
       gap="400"
     >
       <SettingTile
-        title="Publish to Directory"
+        title="Publicar no diretório"
         description={
           room.isSpaceRoom()
-            ? 'List the space in the public directory to make it discoverable by others.'
-            : 'List the room in the public directory to make it discoverable by others.'
+            ? 'Liste o espaço no diretório público para que outras pessoas possam encontrá-lo.'
+            : 'Liste a sala no diretório público para que outras pessoas possam encontrá-la.'
         }
         after={
           <Box gap="200" alignItems="Center">

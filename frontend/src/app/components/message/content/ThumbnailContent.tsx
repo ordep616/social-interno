@@ -20,11 +20,11 @@ export function ThumbnailContent({ info, renderImage }: ThumbnailContentProps) {
       const thumbMxcUrl = info.thumbnail_file?.url ?? info.thumbnail_url;
       const encInfo = info.thumbnail_file;
       if (typeof thumbMxcUrl !== 'string' || typeof thumbInfo?.mimetype !== 'string') {
-        throw new Error('Failed to load thumbnail');
+        throw new Error('Falha ao carregar a miniatura');
       }
 
       const mediaUrl = mxcUrlToHttp(mx, thumbMxcUrl, useAuthentication);
-      if (!mediaUrl) throw new Error('Invalid media URL');
+      if (!mediaUrl) throw new Error('URL de mídia inválida');
       if (encInfo) {
         const fileContent = await downloadEncryptedMedia(mediaUrl, (encBuf) =>
           decryptFile(encBuf, thumbInfo.mimetype ?? FALLBACK_MIMETYPE, encInfo)

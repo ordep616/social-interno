@@ -7,7 +7,7 @@ export const AuthServerProvider = AuthServerContext.Provider;
 export const useAuthServer = (): string => {
   const server = useContext(AuthServerContext);
   if (server === null) {
-    throw new Error('Auth server is not provided!');
+    throw new Error('Servidor de autenticação não foi informado.');
   }
 
   return server;

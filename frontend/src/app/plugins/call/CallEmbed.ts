@@ -291,7 +291,7 @@ export class CallEmbed {
     if (this.call === null) return;
     const raw = ev.getEffectiveEvent();
     this.call.feedStateUpdate(raw as IRoomEvent).catch((e) => {
-      console.error('Error sending state update to widget: ', e);
+      console.error('Erro ao enviar atualização de estado para o widget: ', e);
     });
   }
 
@@ -397,7 +397,7 @@ export class CallEmbed {
       } else {
         const raw = ev.getEffectiveEvent();
         this.call.feedEvent(raw as IRoomEvent).catch((e) => {
-          console.error('Error sending event to widget: ', e);
+          console.error('Erro ao enviar evento para o widget: ', e);
         });
       }
     }

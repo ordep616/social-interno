@@ -47,7 +47,7 @@ export const ThreadIndicator = as<'div'>(({ ...props }, ref) => (
     ref={ref}
   >
     <Icon size="50" src={Icons.Thread} />
-    <Text size="L400">Thread</Text>
+    <Text size="L400">Conversa encadeada</Text>
   </Box>
 ));
 

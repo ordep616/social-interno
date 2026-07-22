@@ -68,7 +68,7 @@ function SelfDemoteAlert({ power, onCancel, onChange }: SelfDemoteAlertProps) {
               size="500"
             >
               <Box grow="Yes">
-                <Text size="H4">Self Demotion</Text>
+                <Text size="H4">Redução do próprio cargo</Text>
               </Box>
               <IconButton size="300" onClick={onCancel} radii="300">
                 <Icon src={Icons.Cross} />
@@ -77,13 +77,13 @@ function SelfDemoteAlert({ power, onCancel, onChange }: SelfDemoteAlertProps) {
             <Box style={{ padding: config.space.S400, paddingTop: 0 }} direction="Column" gap="500">
               <Box direction="Column" gap="200">
                 <Text priority="400">
-                  You are about to demote yourself! You will not be able to regain this power
-                  yourself. Are you sure?
+                  Você está prestes a reduzir seu próprio nível de permissão. Você não poderá
+                  recuperar esse poder sozinho. Tem certeza?
                 </Text>
               </Box>
               <Box direction="Column" gap="200">
                 <Button type="submit" variant="Warning" onClick={() => onChange(power)}>
-                  <Text size="B400">Demote</Text>
+                  <Text size="B400">Reduzir</Text>
                 </Button>
               </Box>
             </Box>
@@ -118,7 +118,7 @@ function SharedPowerAlert({ power, onCancel, onChange }: SharedPowerAlertProps) 
               size="500"
             >
               <Box grow="Yes">
-                <Text size="H4">Shared Power</Text>
+                <Text size="H4">Mesmo nível de permissão</Text>
               </Box>
               <IconButton size="300" onClick={onCancel} radii="300">
                 <Icon src={Icons.Cross} />
@@ -127,13 +127,13 @@ function SharedPowerAlert({ power, onCancel, onChange }: SharedPowerAlertProps) 
             <Box style={{ padding: config.space.S400, paddingTop: 0 }} direction="Column" gap="500">
               <Box direction="Column" gap="200">
                 <Text priority="400">
-                  You are promoting the user to have the same power as yourself! You will not be
-                  able to change their power afterward. Are you sure?
+                  Você está promovendo este usuário ao mesmo nível de permissão que você. Depois
+                  disso, você não poderá alterar o poder dele. Tem certeza?
                 </Text>
               </Box>
               <Box direction="Column" gap="200">
                 <Button type="submit" variant="Warning" onClick={() => onChange(power)}>
-                  <Text size="B400">Promote</Text>
+                  <Text size="B400">Promover</Text>
                 </Button>
               </Box>
             </Box>
