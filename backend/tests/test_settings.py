@@ -13,9 +13,14 @@ def configure_environment(monkeypatch: pytest.MonkeyPatch) -> None:
         "BACKEND_DATABASE_URL",
         "postgresql+psycopg://test:test@127.0.0.1:5433/test",
     )
+    monkeypatch.setenv("BACKEND_MATRIX_SERVER_NAME", "localhost")
     monkeypatch.setenv(
         "BACKEND_SYNAPSE_BASE_URL",
         "http://127.0.0.1:8008",
+    )
+    monkeypatch.setenv(
+        "BACKEND_SYNAPSE_ADMIN_ACCESS_TOKEN",
+        "opaque-admin-value-for-tests",
     )
     monkeypatch.setenv(
         "BACKEND_INVITATION_PUBLIC_BASE_URL",
@@ -29,7 +34,12 @@ def test_settings_load_prefixed_environment(monkeypatch: pytest.MonkeyPatch) -> 
 
     assert settings.environment == "test"
     assert str(settings.database_url).startswith("postgresql+psycopg://")
+    assert settings.matrix_server_name == "localhost"
     assert settings.synapse_request_timeout_seconds == 5
+    assert settings.synapse_admin_access_token.get_secret_value() == (
+        "opaque-admin-value-for-tests"
+    )
+    assert "opaque-admin-value-for-tests" not in repr(settings)
     assert str(settings.invitation_public_base_url).endswith("/register")
 
 

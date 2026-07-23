@@ -16,7 +16,12 @@ def test_main_exposes_fastapi_app(monkeypatch: pytest.MonkeyPatch) -> None:
         "BACKEND_DATABASE_URL",
         "postgresql+psycopg://test:test@127.0.0.1:5433/test",
     )
+    monkeypatch.setenv("BACKEND_MATRIX_SERVER_NAME", "localhost")
     monkeypatch.setenv("BACKEND_SYNAPSE_BASE_URL", "http://127.0.0.1:8008")
+    monkeypatch.setenv(
+        "BACKEND_SYNAPSE_ADMIN_ACCESS_TOKEN",
+        "opaque-admin-value-for-tests",
+    )
     monkeypatch.setenv(
         "BACKEND_INVITATION_PUBLIC_BASE_URL",
         "http://127.0.0.1:8080/register",
