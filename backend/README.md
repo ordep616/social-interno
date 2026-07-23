@@ -55,6 +55,8 @@ A fundação inicial contém apenas:
   `user_role_assignments` e `registration_attempts`;
 - gerador de token URL-safe com 256 bits de entropia e hash SHA-256;
 - repositório SQLAlchemy com paginação e transições atômicas;
+- repositório de tentativas de cadastro com consultas ativas e transições
+  condicionais, sem controlar a transação externa;
 - serviço interno para emissão, validação, revogação, reserva, conclusão e liberação;
 - cliente Matrix `whoami` e autorização interna exclusiva de `platform_admin`;
 - cliente administrativo mínimo para consultar e criar contas locais no Synapse;
@@ -109,9 +111,12 @@ conclusão da tentativa serão gravados em uma nova transação atômica. Um
 resultado ambíguo depois do `PUT` nunca libera o convite nem repete a criação
 automaticamente.
 
-O modelo e a migração de `registration_attempts` já implementam os campos,
-estados, restrições e índices parciais aprovados. Ainda não existem repositório,
-serviço de orquestração, endpoint público ou procedimento de reconciliação.
+O modelo, a migração e o repositório de `registration_attempts` já implementam
+os campos, estados, restrições, índices parciais, consultas ativas e transições
+condicionais aprovados. O repositório não executa `commit` ou `rollback`; a
+futura unidade de trabalho continuará responsável por reservar o convite e
+criar a tentativa na mesma transação. Ainda não existem serviço de
+orquestração, endpoint público ou procedimento de reconciliação.
 
 ## Autorização administrativa interna
 
