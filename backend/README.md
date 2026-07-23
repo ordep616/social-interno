@@ -55,6 +55,7 @@ A fundação inicial contém apenas:
 - repositório SQLAlchemy com paginação e transições atômicas;
 - serviço interno para emissão, validação, revogação, reserva, conclusão e liberação;
 - cliente Matrix `whoami` e autorização interna exclusiva de `platform_admin`;
+- cliente administrativo mínimo para consultar e criar contas locais no Synapse;
 - endpoints REST administrativos para criar, listar, consultar e revogar convites;
 - testes de saúde, configuração, banco, convite e ponto de entrada ASGI.
 
@@ -67,8 +68,31 @@ Bearer`, consultam o papel próprio e permitem acesso somente a
 acrescentado como último segmento do endereço. Listagem, consulta e revogação
 não retornam o token nem seu hash.
 
-Endpoints públicos, limites de tentativa, auditoria e chamadas administrativas
-de provisionamento ao Synapse ainda não foram implementados.
+Endpoints públicos, limites de tentativa, auditoria e a orquestração do
+provisionamento ainda não foram implementados.
+
+## Cliente administrativo do Synapse
+
+O `SynapseAdminClient` implementa somente a fundação HTTP necessária para
+consultar uma conta local e criar uma conta comum pelos endpoints suportados
+`GET` e `PUT /_synapse/admin/v2/users/{user_id}`. Antes da criação, o cliente
+consulta a identidade; se ela já existir, ou se o `PUT` não confirmar uma nova
+conta com `201`, a operação é tratada como conflito para futura reconciliação.
+O corpo de criação fixa `admin`, `deactivated` e `locked` como falsos.
+
+O cliente aceita apenas identidades do domínio configurado em
+`BACKEND_MATRIX_SERVER_NAME`. A credencial de serviço vem de
+`BACKEND_SYNAPSE_ADMIN_ACCESS_TOKEN`, é mantida como segredo e enviada somente
+no cabeçalho `Authorization: Bearer`. Ela não aparece nos resultados ou erros e
+nunca deve ser entregue ao navegador. Em homologação e produção, a credencial
+deverá pertencer a uma conta técnica dedicada e ser fornecida por um mecanismo
+externo de segredos.
+
+Os testes dessa fundação usam `httpx.MockTransport`: nenhuma conta é criada e
+nenhuma requisição alcança o Synapse real. A integração com o fluxo público de
+cadastro, a serialização transacional por `user_id`, aplicação do papel,
+auditoria, limites, bloqueio, redefinição de senha e desligamento permanecem
+fora desta etapa.
 
 ## Autorização administrativa interna
 

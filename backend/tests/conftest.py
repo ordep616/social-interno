@@ -4,6 +4,7 @@ from collections.abc import AsyncIterator
 
 import httpx
 import pytest
+from pydantic import SecretStr
 
 from social_internal_backend.application import create_app
 from social_internal_backend.settings import Settings
@@ -17,7 +18,9 @@ def settings() -> Settings:
         _env_file=None,
         environment="test",
         database_url="postgresql+psycopg://test:test@127.0.0.1:5433/test",
+        matrix_server_name="localhost",
         synapse_base_url="http://127.0.0.1:8008",
+        synapse_admin_access_token=SecretStr("opaque-admin-value-for-tests"),
         invitation_public_base_url="http://127.0.0.1:8080/register",
     )
 
