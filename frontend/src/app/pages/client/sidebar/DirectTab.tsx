@@ -93,7 +93,7 @@ export function DirectTab() {
             onContextMenu={handleContextMenu}
           >
             <SidebarAvatar as="span" outlined>
-              <Icon src={Icons.User} filled={directSelected} />
+              <Icon src={Icons.Message} filled={directSelected} />
             </SidebarAvatar>
             <SidebarItemLabel>Mensagens diretas</SidebarItemLabel>
           </SidebarItemAction>

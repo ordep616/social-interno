@@ -19,6 +19,7 @@ import {
   SpaceTabs,
   InboxTab,
   SettingsTab,
+  StatusTab,
   UnverifiedTab,
   SearchTab,
 } from './sidebar';
@@ -125,6 +126,7 @@ export function SidebarNav() {
           <>
             <SidebarStackSeparator />
             <SidebarStack>
+              <StatusTab />
               <SidebarToggleTab expanded={expanded} onToggle={handleSidebarToggle} />
               <SearchTab />
               <UnverifiedTab />
