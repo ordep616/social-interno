@@ -44,6 +44,9 @@ files = ["src", "tests", "migrations"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+  "postgres: requires an isolated PostgreSQL database with current migrations",
+]
 addopts = [
   "--strict-config",
   "--strict-markers",
