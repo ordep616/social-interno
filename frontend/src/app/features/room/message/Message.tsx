@@ -132,7 +132,7 @@ function MessageDeliveryIndicator({
       label: 'Enviado',
     },
     seen: {
-      icon: Icons.Check,
+      icon: Icons.CheckTwice,
       label: 'Visto',
     },
     failed: {
@@ -151,7 +151,6 @@ function MessageDeliveryIndicator({
     >
       <span className={css.MessageDeliveryIcon}>
         <Icon size={iconSize} src={statusContent.icon} />
-        {status === 'seen' && <Icon size={iconSize} src={statusContent.icon} />}
       </span>
     </Box>
   );
@@ -796,11 +795,7 @@ export const Message = as<'div', MessageProps>(
     const senderId = mEvent.getSender() ?? '';
     const isOwnMessage = senderId === mx.getUserId();
     const deliveryIndicatorJSX = isOwnMessage && !edit && !mEvent.isRedacted() && (
-      <MessageDeliveryIndicator
-        room={room}
-        mEvent={mEvent}
-        hideReadReceipts={hideReadReceipts}
-      />
+      <MessageDeliveryIndicator room={room} mEvent={mEvent} hideReadReceipts={hideReadReceipts} />
     );
 
     const [hover, setHover] = useState(false);

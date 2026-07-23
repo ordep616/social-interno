@@ -62,7 +62,7 @@ export const MessageDeliveryStatus = style([
     selectors: {
       '&[data-status=seen]': {
         color: '#7dd3fc',
-        minWidth: toRem(34),
+        minWidth: toRem(22),
         minHeight: toRem(18),
         opacity: 1,
       },
@@ -83,7 +83,7 @@ export const MessageDeliveryIcon = style({
 
   selectors: {
     [`${MessageDeliveryStatus}[data-status=seen] &`]: {
-      gap: toRem(2),
+      gap: 0,
       transform: 'translateY(1px) scale(1.2)',
       transformOrigin: 'center',
     },
