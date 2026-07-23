@@ -273,6 +273,58 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Limite: esta decisão não autoriza código, conta real, segredo de produção,
   endpoint público, migração, alteração no Synapse ou interface.
 
+## DEC-023 — Evidência durável da revogação da sessão de provisionamento
+
+- Status: aceita pelos dois colaboradores em 2026-07-23. A decisão define o
+  contrato e as invariantes aprovadas, mas código e migração ainda exigem
+  autorização própria.
+- Problema: o registro por segredo compartilhado cria uma sessão Matrix. A
+  remoção do dispositivo ocorre no Synapse e a conclusão do convite ocorre no
+  PostgreSQL próprio; não existe transação ACID entre essas operações. O estado
+  `synapse_created`, isoladamente, não comprova que a sessão foi revogada.
+- Persistência: `registration_attempts` receberá
+  `provisioning_device_id` e `provisioning_session_revoked_at`, ambos
+  inicialmente nulos. O `access_token` retornado pelo Synapse nunca será
+  persistido.
+- Criação: após resposta `201`, a tentativa passará para
+  `synapse_created` e persistirá o `provisioning_device_id` antes de iniciar a
+  revogação. Falha ao registrar esse resultado será tratada como ambígua e
+  exigirá reconciliação.
+- Revogação: depois da exclusão confirmada do dispositivo, ou de sua
+  ausência verificada em uma retomada, o serviço preencherá
+  `provisioning_session_revoked_at` em uma transação local curta. Se a
+  tentativa estiver em `reconciliation_required`, a mesma transação deverá
+  movê-la condicionalmente para `synapse_created`, limpar `failure_code` e
+  atualizar `updated_at`. Timeout, indisponibilidade ou resultado inconclusivo
+  manterão o campo nulo e a tentativa em `reconciliation_required`.
+- Finalização: a unidade de trabalho somente poderá atribuir papel,
+  concluir o convite e marcar a tentativa como `completed` quando o estado for
+  `synapse_created`, `provisioning_device_id` estiver preenchido e
+  `provisioning_session_revoked_at` não for nulo. O chamador não poderá
+  contornar essa pré-condição.
+- Restrições: estados `synapse_created` e `completed` exigirão
+  `provisioning_device_id`; uma tentativa `completed` exigirá
+  `provisioning_session_revoked_at`; todo instante de revogação exigirá
+  `provisioning_device_id`, não poderá ser anterior a `created_at` e só poderá
+  existir em `synapse_created` ou `completed`. Estados `processing` e
+  `released` exigirão ambos os campos de provisionamento nulos.
+- Retomada: se o processo cair depois da revogação externa e antes do
+  registro local, a reconciliação verificará a ausência do dispositivo pelo
+  identificador persistido e só então executará atomicamente a transição para
+  `synapse_created`, gravará a evidência, limpará a falha e permitirá a
+  finalização. Uma atualização concorrente ou uma pré-condição divergente
+  manterá a tentativa bloqueada.
+- Compatibilidade futura: um mecanismo create-only que comprovadamente não
+  crie sessão exigirá ajuste explícito desse contrato antes de substituir o
+  registro por segredo compartilhado.
+- Segurança: `provisioning_device_id` é dado operacional interno, não aparece
+  em resposta pública ou log e segue a retenção das tentativas. Senha, token
+  de convite, hash do token e credenciais administrativas permanecem fora da
+  tabela.
+- Limite: esta decisão detalha somente a evidência de revogação. Ela não
+  cria endpoint, executa chamada ao Synapse, restaura o stash ou autoriza
+  implementação.
+
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.
 - Aprovação das versões da prova de conceito para homologação e produção.

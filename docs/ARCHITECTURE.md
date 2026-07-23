@@ -84,11 +84,19 @@ cadastro público desabilitado do Synapse.
 - Qualquer sessão criada incidentalmente pelo mecanismo de provisionamento será
   revogada antes de concluir a ativação; falha ou ambiguidade bloqueará o
   convite para reconciliação.
+- Conforme o refinamento aceito em `DEC-023`, a confirmação será persistida
+  em `provisioning_session_revoked_at`; a unidade de trabalho não finalizará a
+  ativação confiando somente na ordem das chamadas externas.
+- Uma reconciliação bem-sucedida retornará atomicamente a tentativa para
+  `synapse_created`, limpará a falha e registrará a revogação antes de liberar
+  a finalização.
 
 ### Dados
 
 - PostgreSQL guarda o estado persistente do homeserver.
 - O armazenamento de mídia segue a configuração suportada pelo Synapse.
+- Identificador e instante de revogação da sessão de provisionamento são dados
+  operacionais internos e não pertencem às respostas públicas.
 - Cache e filas adicionais só serão incluídos quando houver necessidade comprovada.
 - Backup, retenção, auditoria e restauração precisam considerar banco, mídia e configuração como um conjunto.
 

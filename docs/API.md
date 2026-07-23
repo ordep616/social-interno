@@ -299,6 +299,7 @@ matrix_user_id
 role
 status
 provisioning_device_id
+provisioning_session_revoked_at
 created_at
 updated_at
 completed_at
@@ -310,10 +311,36 @@ Os estados propostos são `processing`, `synapse_created`, `completed`,
 credencial administrativa, `access_token` e corpo de resposta do Synapse não
 pertencem a essa tabela. Se o mecanismo aprovado criar uma sessão,
 `provisioning_device_id` guardará somente o identificador necessário para sua
-revogação durável. Restrições únicas parciais impedem mais de uma tentativa
+revogação durável, e `provisioning_session_revoked_at` registrará a confirmação
+local dessa revogação. Restrições únicas parciais impedem mais de uma tentativa
 ativa para o mesmo convite ou `matrix_user_id`, sem impedir uma repetição
 controlada para a mesma identidade depois de uma liberação comprovadamente
 segura.
+
+O refinamento `DEC-023`, aceito pelos dois colaboradores, exige que a
+finalização encontre simultaneamente estado `synapse_created`,
+`provisioning_device_id` preenchido e
+`provisioning_session_revoked_at` não nulo. Uma tentativa `completed` sem essa
+evidência será inválida no serviço e no banco.
+
+As restrições de banco propostas são:
+
+```text
+status IN (synapse_created, completed)
+  => provisioning_device_id IS NOT NULL
+
+status = completed
+  => provisioning_session_revoked_at IS NOT NULL
+
+provisioning_session_revoked_at IS NOT NULL
+  => provisioning_device_id IS NOT NULL
+     AND status IN (synapse_created, completed)
+     AND provisioning_session_revoked_at >= created_at
+
+status IN (processing, released)
+  => provisioning_device_id IS NULL
+     AND provisioning_session_revoked_at IS NULL
+```
 
 O fluxo terá cinco fases:
 
@@ -329,12 +356,17 @@ O fluxo terá cinco fases:
 4. Revogar o dispositivo de provisionamento pela
    [API administrativa suportada](https://element-hq.github.io/synapse/latest/admin_api/user_admin_api.html#delete-a-device).
    Somente a invalidação confirmada, inclusive ausência verificada do
-   dispositivo em uma retomada, permite continuar. Falha, timeout ou resultado
-   ambíguo mantém o convite indisponível e move a tentativa para
-   `reconciliation_required`.
+   dispositivo em uma retomada, permite preencher
+   `provisioning_session_revoked_at` em uma transação local curta. Falha,
+   timeout ou resultado ambíguo mantém o campo nulo, conserva o convite
+   indisponível e move a tentativa para `reconciliation_required`. Quando uma
+   retomada confirmar a ausência, a mesma transação local muda
+   condicionalmente `reconciliation_required` para `synapse_created`, preenche
+   o instante, limpa `failure_code` e atualiza `updated_at`.
 5. Em outra transação local, criar
    `UserRoleAssignment`, marcar o convite como `used` e concluir a tentativa.
-   O campo `granted_by` recebe o `created_by` do convite.
+   O campo `granted_by` recebe o `created_by` do convite. Essa fase rejeita
+   qualquer tentativa sem a evidência persistida da revogação.
 
 O papel do convite será convertido diretamente: `user` para `user` e
 `group_admin` para `group_admin`. O cadastro nunca cria `platform_admin` nem
@@ -348,9 +380,13 @@ efeito:
   falha segura; liberar o convite e marcar a tentativa como `released`;
 - resposta `201`: registrar `synapse_created` e o identificador do dispositivo
   de provisionamento antes de tentar encerrar a sessão;
-- revogação confirmada do dispositivo: permitir a finalização local;
+- revogação confirmada do dispositivo: persistir
+  `provisioning_session_revoked_at` antes de permitir a finalização local;
 - falha ou resultado ambíguo na revogação: manter
   `reconciliation_required`, sem concluir o convite;
+- reconciliação bem-sucedida: transicionar atomicamente de
+  `reconciliation_required` para `synapse_created`, persistir a evidência,
+  limpar `failure_code` e somente então permitir a finalização;
 - timeout, queda de conexão ou resposta inesperada depois de iniciar a criação:
   não liberar o convite; marcar `reconciliation_required`;
 - falha local depois do `201`: conservar o estado suficiente para retomar a
@@ -378,12 +414,16 @@ sessão criada e compatibilidade com a configuração escolhida do Synapse.
 A orquestração não chamará métodos atuais que realizam `commit` internamente;
 as transições combinadas serão executadas por uma unidade de trabalho que
 possua os limites transacionais acima. Nenhuma transação PostgreSQL permanecerá
-aberta durante a requisição ao Synapse.
+aberta durante a requisição ao Synapse. A unidade de trabalho de finalização
+também validará a evidência de revogação; não confiará apenas na ordem de
+chamadas do orquestrador.
 
 Os testes da implementação deverão cobrir a matriz completa de falhas com
 clientes simulados, concorrência real no PostgreSQL, retomada após interrupção,
-idempotência da finalização e ausência de segredos em modelos, erros e
-representações. Nenhuma chamada real ao Synapse fará parte desses testes.
+idempotência da finalização, recusa de tentativa sem revogação confirmada e
+transição condicional da reconciliação, além da ausência de segredos em
+modelos, erros e representações. Nenhuma chamada real ao Synapse fará parte
+desses testes.
 
 ### Segurança da página de ativação
 
