@@ -132,7 +132,7 @@ function MessageDeliveryIndicator({
       label: 'Enviado',
     },
     seen: {
-      icon: Icons.CheckTwice,
+      icon: Icons.Check,
       label: 'Visto',
     },
     failed: {
@@ -140,6 +140,7 @@ function MessageDeliveryIndicator({
       label: 'Falhou',
     },
   }[status];
+  const iconSize = status === 'seen' ? '100' : '50';
 
   return (
     <Box
@@ -149,7 +150,8 @@ function MessageDeliveryIndicator({
       aria-label={statusContent.label}
     >
       <span className={css.MessageDeliveryIcon}>
-        <Icon size="50" src={statusContent.icon} />
+        <Icon size={iconSize} src={statusContent.icon} />
+        {status === 'seen' && <Icon size={iconSize} src={statusContent.icon} />}
       </span>
     </Box>
   );

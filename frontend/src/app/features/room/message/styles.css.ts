@@ -62,6 +62,8 @@ export const MessageDeliveryStatus = style([
     selectors: {
       '&[data-status=seen]': {
         color: '#7dd3fc',
+        minWidth: toRem(34),
+        minHeight: toRem(18),
         opacity: 1,
       },
       '&[data-status=failed]': {
@@ -74,8 +76,18 @@ export const MessageDeliveryStatus = style([
 
 export const MessageDeliveryIcon = style({
   display: 'inline-flex',
+  alignItems: 'center',
+  gap: toRem(2),
   lineHeight: 0,
   transform: 'translateY(1px)',
+
+  selectors: {
+    [`${MessageDeliveryStatus}[data-status=seen] &`]: {
+      gap: toRem(8),
+      transform: 'translateY(1px) scale(1.2)',
+      transformOrigin: 'center',
+    },
+  },
 });
 
 export const ReactionsContainer = style({
