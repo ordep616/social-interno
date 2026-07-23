@@ -42,7 +42,7 @@ import { useRoomTypingMember } from '../../hooks/useRoomTypingMembers';
 import { TypingIndicator } from '../../components/typing-indicator';
 import { stopPropagation } from '../../utils/keyboard';
 import { getMatrixToRoom } from '../../plugins/matrix-to';
-import { getCanonicalAliasOrRoomId, isRoomAlias } from '../../utils/matrix';
+import { getCanonicalAliasOrRoomId, guessDmRoomUserId, isRoomAlias } from '../../utils/matrix';
 import { getViaServers } from '../../plugins/via-servers';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import { useSetting } from '../../state/hooks/settings';
@@ -68,6 +68,7 @@ import { livekitSupport } from '../../hooks/useLivekitSupport';
 import { MessageEvent, StateEvent } from '../../../types/matrix/room';
 import { webRTCSupported } from '../../utils/rtc';
 import { timeDayMonYear, timeHourMinute, today, yesterday } from '../../utils/time';
+import { Presence, useUserPresence } from '../../hooks/useUserPresence';
 import * as css from './styles.css';
 
 const cleanPreviewBody = (body: string): string => {
@@ -317,6 +318,23 @@ function CallChatToggle() {
   );
 }
 
+type DirectPresenceIndicatorProps = {
+  userId: string;
+};
+function DirectPresenceIndicator({ userId }: DirectPresenceIndicatorProps) {
+  const presence = useUserPresence(userId);
+  const online = presence?.presence === Presence.Online;
+
+  return (
+    <span
+      className={css.ConversationPresenceStatus}
+      data-online={online}
+      role="img"
+      aria-label={online ? 'Online' : 'Offline'}
+    />
+  );
+}
+
 type RoomNavItemProps = {
   room: Room;
   selected: boolean;
@@ -334,6 +352,7 @@ export function RoomNavItem({
   linkPath,
 }: RoomNavItemProps) {
   const mx = useMatrixClient();
+  const myUserId = mx.getSafeUserId();
   const useAuthentication = useMediaAuthentication();
   const [hover, setHover] = useState(false);
   const { hoverProps } = useHover({ onHoverChange: setHover });
@@ -357,6 +376,9 @@ export function RoomNavItem({
     ? getConversationPreview(mx.getUserId(), room, latestEvent, direct)
     : 'Sem mensagens ainda';
   const typing = typingMember.length > 0;
+  const directUserId = direct ? guessDmRoomUserId(room, myUserId) : undefined;
+  const directPresenceUserId =
+    showAvatar && directUserId && directUserId !== myUserId ? directUserId : undefined;
 
   const handleContextMenu: MouseEventHandler<HTMLElement> = (evt) => {
     evt.preventDefault();
@@ -422,23 +444,28 @@ export function RoomNavItem({
       <NavLink to={linkPath} onClick={room.isCallRoom() ? handleStartCall : undefined}>
         <NavItemContent className={css.ConversationContent}>
           <Box as="span" grow="Yes" alignItems="Center" gap="300">
-            <Avatar className={css.ConversationAvatar} size="400" radii="Pill">
-              {showAvatar ? (
-                <RoomAvatar
-                  roomId={room.roomId}
-                  src={
-                    direct
-                      ? getDirectRoomAvatarUrl(mx, room, 96, useAuthentication)
-                      : getRoomAvatarUrl(mx, room, 96, useAuthentication)
-                  }
-                  alt={roomName}
-                  renderFallback={() => (
-                    <Text as="span" size="H6">
-                      {nameInitials(roomName)}
-                    </Text>
-                  )}
-                />
-              ) : (
+            {showAvatar ? (
+              <Box className={css.ConversationAvatarPresence} as="span">
+                <Avatar className={css.ConversationAvatar} size="400" radii="Pill">
+                  <RoomAvatar
+                    roomId={room.roomId}
+                    src={
+                      direct
+                        ? getDirectRoomAvatarUrl(mx, room, 96, useAuthentication)
+                        : getRoomAvatarUrl(mx, room, 96, useAuthentication)
+                    }
+                    alt={roomName}
+                    renderFallback={() => (
+                      <Text as="span" size="H6">
+                        {nameInitials(roomName)}
+                      </Text>
+                    )}
+                  />
+                </Avatar>
+                {directPresenceUserId && <DirectPresenceIndicator userId={directPresenceUserId} />}
+              </Box>
+            ) : (
+              <Avatar className={css.ConversationAvatar} size="400" radii="Pill">
                 <RoomIcon
                   style={{
                     opacity: unread ? config.opacity.P500 : config.opacity.P300,
@@ -448,8 +475,8 @@ export function RoomNavItem({
                   joinRule={room.getJoinRule()}
                   roomType={room.getType()}
                 />
-              )}
-            </Avatar>
+              </Avatar>
+            )}
             <Box className={css.ConversationBody} as="span" grow="Yes" direction="Column">
               <Box
                 className={css.ConversationHeader}

@@ -30,6 +30,44 @@ export const ConversationAvatar = style({
   flexShrink: 0,
 });
 
+export const ConversationAvatarPresence = style({
+  position: 'relative',
+  display: 'inline-flex',
+  flexShrink: 0,
+});
+
+export const ConversationPresenceStatus = style({
+  position: 'absolute',
+  right: toRem(-1),
+  bottom: toRem(-1),
+  zIndex: 1,
+
+  width: toRem(14),
+  height: toRem(14),
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+
+  borderRadius: config.radii.Pill,
+  backgroundColor: '#343941',
+  boxShadow: `0 0 0 ${toRem(1)} ${color.Background.Container}`,
+  pointerEvents: 'none',
+
+  selectors: {
+    '&::after': {
+      content: '',
+      width: toRem(8),
+      height: toRem(8),
+      borderRadius: config.radii.Pill,
+      backgroundColor: '#a7adb7',
+      transition: 'background-color 160ms ease',
+    },
+    '&[data-online=true]::after': {
+      backgroundColor: color.Success.Main,
+    },
+  },
+});
+
 export const ConversationBody = style({
   minWidth: 0,
   overflow: 'hidden',
