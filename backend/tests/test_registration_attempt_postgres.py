@@ -67,6 +67,7 @@ def insert_invitation(connection: Connection, invitation_id: UUID, token_charact
                 role,
                 status,
                 created_by,
+                target_user_id,
                 created_at,
                 expires_at
             )
@@ -76,6 +77,7 @@ def insert_invitation(connection: Connection, invitation_id: UUID, token_charact
                 'user',
                 'processing',
                 '@admin:localhost',
+                :target_user_id,
                 :created_at,
                 :expires_at
             )
@@ -84,6 +86,7 @@ def insert_invitation(connection: Connection, invitation_id: UUID, token_charact
         {
             "id": invitation_id,
             "token_hash": token_character * 64,
+            "target_user_id": f"@user-{token_character}:localhost",
             "created_at": now,
             "expires_at": now + timedelta(hours=24),
         },

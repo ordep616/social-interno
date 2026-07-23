@@ -16,6 +16,7 @@ def test_invitation_contains_only_approved_persistent_fields() -> None:
         "role",
         "status",
         "created_by",
+        "target_user_id",
         "created_at",
         "expires_at",
         "used_at",
@@ -40,6 +41,7 @@ def test_invitation_statuses_match_contract() -> None:
         "used",
         "revoked",
         "expired",
+        "conflicted",
     }
 
 
@@ -58,6 +60,8 @@ def test_invitation_has_named_constraints_and_indexes() -> None:
         "ck_invitations_revoked_at",
         "ck_invitations_role",
         "ck_invitations_status",
+        "ck_invitations_target_user_id_format",
+        "ck_invitations_target_user_id_required",
         "ck_invitations_token_hash_sha256",
         "ck_invitations_used_fields",
         "uq_invitations_token_hash",
@@ -65,7 +69,17 @@ def test_invitation_has_named_constraints_and_indexes() -> None:
     assert index_names == {
         "ix_invitations_created_by_created_at",
         "ix_invitations_status_expires_at",
+        "uq_invitations_active_target_user_id",
     }
+
+    target_index = next(
+        index for index in table.indexes if index.name == "uq_invitations_active_target_user_id"
+    )
+    assert target_index.unique
+    target_predicate = str(target_index.dialect_options["postgresql"]["where"])
+    assert "pending" in target_predicate
+    assert "processing" in target_predicate
+    assert "conflicted" not in target_predicate
 
 
 def test_invitation_accepts_hash_but_not_original_token_field() -> None:
@@ -76,10 +90,12 @@ def test_invitation_accepts_hash_but_not_original_token_field() -> None:
         role=InvitationRole.user,
         status=InvitationStatus.pending,
         created_by="@admin:localhost",
+        target_user_id="@employee:localhost",
         created_at=now,
         expires_at=now + timedelta(hours=24),
     )
 
     assert invitation.token_hash == "a" * 64
     assert invitation.role is InvitationRole.user
+    assert invitation.target_user_id == "@employee:localhost"
     assert not hasattr(invitation, "token")

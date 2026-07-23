@@ -48,7 +48,8 @@ A fundação inicial contém apenas:
 - aplicação FastAPI com `GET /health`;
 - configuração validada por variáveis `BACKEND_*`;
 - criação preguiçosa do engine e das sessões SQLAlchemy;
-- modelo `Invitation` que armazena apenas o hash SHA-256 do token;
+- modelo `Invitation` que armazena apenas o hash SHA-256 do token e a
+  identidade Matrix previamente definida em `target_user_id`;
 - modelo `UserRoleAssignment` que associa uma identidade Matrix a um papel próprio;
 - modelo `RegistrationAttempt` com estado operacional sem token ou senha;
 - Alembic com revisão-base e migrações reversíveis de `invitations`,
@@ -74,6 +75,18 @@ não retornam o token nem seu hash.
 
 Endpoints públicos, limites de tentativa, auditoria e a orquestração do
 provisionamento ainda não foram implementados.
+
+A revisão `20260723_0005` implementa somente a persistência aprovada em
+`DEC-022`: adiciona `target_user_id`, impede mais de um convite `pending` ou
+`processing` para a mesma identidade e introduz o estado terminal
+`conflicted`. Convites legados `pending` são revogados, convites `used` recebem
+a identidade de `accepted_user_id` e a implantação é bloqueada se houver
+convite legado em `processing`.
+
+A emissão administrativa e os endpoints ainda não foram adaptados para
+fornecer `target_user_id`. Portanto, esta revisão intermediária não deve ser
+usada para emitir novos convites até a tarefa específica de adaptação do
+serviço e do contrato ser concluída.
 
 ## Cliente administrativo do Synapse
 
@@ -165,7 +178,14 @@ uv run alembic upgrade head
 uv run alembic check
 ```
 
-A migração de convites foi validada com upgrade, downgrade e reaplicação em PostgreSQL `17.6-alpine`. O banco rejeitou papéis fora do contrato, hashes inválidos e estados `used` ou `revoked` sem seus campos obrigatórios.
+A migração de convites foi validada com upgrade, downgrade e reaplicação em
+PostgreSQL `17.6-alpine`. O banco rejeitou papéis fora do contrato, hashes
+inválidos, identidades Matrix malformadas, estados ativos sem
+`target_user_id`, duplicidade de identidade em convites ativos e estados
+`used` ou `revoked` sem seus campos obrigatórios. A migração também revogou
+convites legados `pending`, derivou a identidade de convites `used`, bloqueou
+corretamente registros `processing` e converteu `conflicted` em `revoked` no
+downgrade.
 
 O serviço interno também foi validado em PostgreSQL `17.6-alpine`: emissão, validade de 24 horas, validação sem mutação, revogação idempotente, expiração, liberação após falha e conclusão funcionaram. Em duas reservas simultâneas do mesmo token, apenas uma avançou para `processing`.
 
