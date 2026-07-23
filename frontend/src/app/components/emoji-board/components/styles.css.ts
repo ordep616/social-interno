@@ -22,6 +22,36 @@ export const Header = style({
   paddingBottom: 0,
 });
 
+export const EmojiBoardTabs = style({
+  alignSelf: 'flex-start',
+});
+
+export const EmojiBoardTabButton = style([
+  DefaultReset,
+  {
+    minHeight: toRem(30),
+    padding: `${config.space.S100} ${config.space.S300}`,
+    border: `${config.borderWidth.B300} solid ${color.Surface.ContainerLine}`,
+    borderRadius: config.radii.R400,
+    backgroundColor: color.Surface.Container,
+    color: color.Surface.OnContainer,
+    cursor: 'pointer',
+    transition: 'background-color 160ms ease, border-color 160ms ease, color 160ms ease',
+
+    selectors: {
+      '&:hover': {
+        backgroundColor: color.Surface.ContainerHover,
+      },
+      '&[data-active=true]': {
+        backgroundColor: '#ffffff',
+        borderColor: '#ffffff',
+        color: '#111827',
+      },
+    },
+  },
+  FocusOutline,
+]);
+
 /**
  * Sidebar
  */
