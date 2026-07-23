@@ -51,6 +51,8 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Implementar o modelo e a migração reversível de `registration_attempts`, com restrições e índices parciais validados em PostgreSQL isolado.
 - [x] Implementar o repositório de `registration_attempts`, com consultas ativas e transições condicionais validadas sem assumir os limites da futura unidade de trabalho.
 - [x] Revisar e aprovar conjuntamente a ativação de identidades em `DEC-022`.
+- [x] Revisar e aprovar conjuntamente a evidência durável de revogação em
+  `DEC-023`.
 - [ ] Migrar convites para `target_user_id`, unicidade
   parcial por identidade ativa e estado terminal `conflicted`.
 - [ ] Implementar `GET /v1/me/capabilities` sem conceder criação de usuários a
@@ -58,9 +60,11 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [ ] Executar prova de conceito create-only do registro administrativo por
   segredo compartilhado, revogar o dispositivo e o token de sessão retornados
   antes da conclusão e comprovar que conta existente nunca é modificada.
-- [ ] Adaptar `registration_attempts` para guardar somente o identificador do
-  dispositivo de provisionamento necessário à revogação e à reconciliação,
-  nunca o `access_token`.
+- [ ] Adaptar `registration_attempts` conforme `DEC-023` para
+  guardar `provisioning_device_id` e `provisioning_session_revoked_at`, com
+  restrições que impeçam conclusão sem revogação confirmada, transição atômica
+  de reconciliação para `synapse_created` e proibição de persistir
+  `access_token`.
 - [ ] Registrar o shared-secret registration como incompatível com MAS e exigir
   nova decisão conjunta de provisionamento antes de qualquer adoção futura do
   Matrix Authentication Service.
