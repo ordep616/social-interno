@@ -24,6 +24,7 @@ import {
   IVideoInfo,
   MATRIX_SPOILER_PROPERTY_NAME,
   MATRIX_SPOILER_REASON_PROPERTY_NAME,
+  MATRIX_VOICE_MESSAGE_PROPERTY_NAME,
 } from '../../../types/matrix/common';
 import { FALLBACK_MIMETYPE, getBlobSafeMimeType } from '../../utils/mimeTypes';
 import { parseGeoUri, scaleYDimension } from '../../utils/common';
@@ -289,14 +290,26 @@ type RenderAudioContentProps = {
   mimeType: string;
   url: string;
   encInfo?: IEncryptedFile;
+  displayName: string;
+  ts: number;
+  senderIsMe?: boolean;
 };
 type MAudioProps = {
   content: IAudioContent;
   renderAsFile: () => ReactNode;
   renderAudioContent: (props: RenderAudioContentProps) => ReactNode;
-  outlined?: boolean;
+  displayName: string;
+  ts: number;
+  senderIsMe?: boolean;
 };
-export function MAudio({ content, renderAsFile, renderAudioContent, outlined }: MAudioProps) {
+export function MAudio({
+  content,
+  renderAsFile,
+  renderAudioContent,
+  displayName,
+  ts,
+  senderIsMe,
+}: MAudioProps) {
   const audioInfo = content?.info;
   const mxcUrl = content.file?.url ?? content.url;
   const safeMimeType = getBlobSafeMimeType(audioInfo?.mimetype ?? '');
@@ -308,34 +321,24 @@ export function MAudio({ content, renderAsFile, renderAudioContent, outlined }: 
     return <BrokenContent />;
   }
 
-  const filename = content.filename ?? content.body ?? 'Audio';
+  const isVoiceMessage =
+    !!content[MATRIX_VOICE_MESSAGE_PROPERTY_NAME] || typeof audioInfo.duration === 'number';
+  if (!isVoiceMessage) {
+    return renderAsFile();
+  }
+
   return (
-    <Attachment outlined={outlined}>
-      <AttachmentHeader>
-        <FileHeader
-          body={filename}
-          mimeType={safeMimeType}
-          after={
-            <FileDownloadButton
-              filename={filename}
-              url={mxcUrl}
-              mimeType={safeMimeType}
-              encInfo={content.file}
-            />
-          }
-        />
-      </AttachmentHeader>
-      <AttachmentBox>
-        <AttachmentContent>
-          {renderAudioContent({
-            info: audioInfo,
-            mimeType: safeMimeType,
-            url: mxcUrl,
-            encInfo: content.file,
-          })}
-        </AttachmentContent>
-      </AttachmentBox>
-    </Attachment>
+    <>
+      {renderAudioContent({
+        info: audioInfo,
+        mimeType: safeMimeType,
+        url: mxcUrl,
+        encInfo: content.file,
+        displayName,
+        ts,
+        senderIsMe,
+      })}
+    </>
   );
 }
 

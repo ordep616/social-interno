@@ -4,6 +4,7 @@ import {
   IThumbnailContent,
   MATRIX_BLUR_HASH_PROPERTY_NAME,
   MATRIX_SPOILER_PROPERTY_NAME,
+  MATRIX_VOICE_MESSAGE_PROPERTY_NAME,
 } from '../../../types/matrix/common';
 import {
   getImageFileUrl,
@@ -138,6 +139,9 @@ export const getAudioMsgContent = (item: TUploadItem, mxc: string): IContent => 
       duration: metadata.duration,
     },
   };
+  if (metadata.voice) {
+    content[MATRIX_VOICE_MESSAGE_PROPERTY_NAME] = {};
+  }
   if (encInfo) {
     content.file = {
       ...encInfo,

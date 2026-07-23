@@ -10,6 +10,7 @@ import { createListAtom } from '../list';
 export type TUploadMetadata = {
   markedAsSpoiler: boolean;
   duration?: number;
+  voice?: boolean;
 };
 
 export type TUploadItem = {

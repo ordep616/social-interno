@@ -3,7 +3,9 @@ import { MsgType } from 'matrix-js-sdk';
 
 export const MATRIX_BLUR_HASH_PROPERTY_NAME = 'xyz.amorgan.blurhash';
 export const MATRIX_SPOILER_PROPERTY_NAME = 'page.codeberg.everypizza.msc4193.spoiler';
-export const MATRIX_SPOILER_REASON_PROPERTY_NAME = 'page.codeberg.everypizza.msc4193.spoiler.reason';
+export const MATRIX_SPOILER_REASON_PROPERTY_NAME =
+  'page.codeberg.everypizza.msc4193.spoiler.reason';
+export const MATRIX_VOICE_MESSAGE_PROPERTY_NAME = 'org.matrix.msc3245.voice';
 
 export type IImageInfo = {
   w?: number;
@@ -71,6 +73,7 @@ export type IAudioContent = {
   url?: string;
   info?: IAudioInfo;
   file?: IEncryptedFile;
+  [MATRIX_VOICE_MESSAGE_PROPERTY_NAME]?: Record<string, never>;
 };
 
 export type IFileContent = {

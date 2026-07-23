@@ -301,6 +301,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
         const metadata: TUploadMetadata = {
           markedAsSpoiler: false,
           duration: recording.duration,
+          voice: true,
         };
         const fileItem: TUploadItem = room.hasEncryptionStateEvent()
           ? {
