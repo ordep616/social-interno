@@ -151,7 +151,9 @@ function MessageDeliveryIndicator({
     >
       <span className={css.MessageDeliveryIcon}>
         <Icon size={iconSize} src={statusContent.icon} />
-        {status === 'seen' && <Icon size={iconSize} src={statusContent.icon} />}
+        {status === 'seen' && (
+          <Icon className={css.MessageDeliverySeenIcon} size={iconSize} src={statusContent.icon} />
+        )}
       </span>
     </Box>
   );
