@@ -53,7 +53,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Revisar e aprovar conjuntamente a ativação de identidades em `DEC-022`.
 - [x] Revisar e aprovar conjuntamente a evidência durável de revogação em
   `DEC-023`.
-- [ ] Migrar convites para `target_user_id`, unicidade
+- [x] Migrar convites para `target_user_id`, unicidade
   parcial por identidade ativa e estado terminal `conflicted`.
 - [ ] Implementar `GET /v1/me/capabilities` sem conceder criação de usuários a
   `user` ou `group_admin`.

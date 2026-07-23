@@ -14,6 +14,7 @@ from sqlalchemy import (
     UniqueConstraint,
     Uuid,
     func,
+    text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -36,6 +37,10 @@ class InvitationStatus(StrEnum):
     used = "used"
     revoked = "revoked"
     expired = "expired"
+    conflicted = "conflicted"
+
+
+ACTIVE_INVITATION_TARGET_PREDICATE = "status IN ('pending', 'processing')"
 
 
 class Invitation(Base):
@@ -61,8 +66,22 @@ class Invitation(Base):
             "status <> 'revoked' OR revoked_at IS NOT NULL",
             name="ck_invitations_revoked_at",
         ),
+        CheckConstraint(
+            "status IN ('revoked', 'expired') OR target_user_id IS NOT NULL",
+            name="ck_invitations_target_user_id_required",
+        ),
+        CheckConstraint(
+            "target_user_id IS NULL OR target_user_id ~ '^@[^[:space:]:]+:[^[:space:]]+$'",
+            name="ck_invitations_target_user_id_format",
+        ),
         Index("ix_invitations_status_expires_at", "status", "expires_at"),
         Index("ix_invitations_created_by_created_at", "created_by", "created_at"),
+        Index(
+            "uq_invitations_active_target_user_id",
+            "target_user_id",
+            unique=True,
+            postgresql_where=text(ACTIVE_INVITATION_TARGET_PREDICATE),
+        ),
     )
 
     id: Mapped[UUID] = mapped_column(Uuid, default=uuid4)
@@ -92,6 +111,7 @@ class Invitation(Base):
         server_default=InvitationStatus.pending.value,
     )
     created_by: Mapped[str] = mapped_column(String(255))
+    target_user_id: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
