@@ -50,7 +50,9 @@ A fundação inicial contém apenas:
 - criação preguiçosa do engine e das sessões SQLAlchemy;
 - modelo `Invitation` que armazena apenas o hash SHA-256 do token;
 - modelo `UserRoleAssignment` que associa uma identidade Matrix a um papel próprio;
-- Alembic com revisão-base e migrações reversíveis de `invitations` e `user_role_assignments`;
+- modelo `RegistrationAttempt` com estado operacional sem token ou senha;
+- Alembic com revisão-base e migrações reversíveis de `invitations`,
+  `user_role_assignments` e `registration_attempts`;
 - gerador de token URL-safe com 256 bits de entropia e hash SHA-256;
 - repositório SQLAlchemy com paginação e transições atômicas;
 - serviço interno para emissão, validação, revogação, reserva, conclusão e liberação;
@@ -107,9 +109,9 @@ conclusão da tentativa serão gravados em uma nova transação atômica. Um
 resultado ambíguo depois do `PUT` nunca libera o convite nem repete a criação
 automaticamente.
 
-Este desenho foi aprovado pelos dois colaboradores, mas continua apenas
-documental. Não existem ainda modelo, migração, serviço de orquestração,
-endpoint público ou procedimento de reconciliação.
+O modelo e a migração de `registration_attempts` já implementam os campos,
+estados, restrições e índices parciais aprovados. Ainda não existem repositório,
+serviço de orquestração, endpoint público ou procedimento de reconciliação.
 
 ## Autorização administrativa interna
 
@@ -163,5 +165,19 @@ A migração de convites foi validada com upgrade, downgrade e reaplicação em 
 O serviço interno também foi validado em PostgreSQL `17.6-alpine`: emissão, validade de 24 horas, validação sem mutação, revogação idempotente, expiração, liberação após falha e conclusão funcionaram. Em duas reservas simultâneas do mesmo token, apenas uma avançou para `processing`.
 
 A migração de papéis e o bootstrap foram validados no mesmo PostgreSQL com upgrade, downgrade e reaplicação. O comando foi testado de forma idempotente e duas execuções simultâneas com identidades diferentes resultaram em somente um `platform_admin` inicial.
+
+A migração de `registration_attempts` foi validada em PostgreSQL
+`17.6-alpine` com upgrade, `alembic check`, downgrade, reaplicação e oito testes
+de restrições reais. Os testes confirmam chave estrangeira, metadados
+coerentes, códigos de falha sanitizados, exclusividade de tentativas ativas por
+convite e identidade e nova tentativa depois de uma liberação.
+
+Para executar apenas esses testes contra um banco próprio já migrado e
+descartável:
+
+```bash
+BACKEND_TEST_DATABASE_URL=postgresql+psycopg://usuario:senha@127.0.0.1:5432/banco \
+  uv run pytest -m postgres --no-cov
+```
 
 O arquivo `.env` é local e não deve ser versionado. `.env.example` contém apenas valores fictícios.
