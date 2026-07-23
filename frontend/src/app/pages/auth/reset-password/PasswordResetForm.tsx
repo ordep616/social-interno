@@ -36,12 +36,10 @@ type FormData = {
 };
 
 function ResetPasswordComplete({ email }: { email?: string }) {
-  const server = useAuthServer();
-
   const navigate = useNavigate();
 
   const handleClick = () => {
-    const path = getLoginPath(server);
+    const path = getLoginPath();
     if (email) {
       navigate(withSearchParam<LoginPathSearchParams>(path, { email }));
       return;

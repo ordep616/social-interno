@@ -144,7 +144,7 @@ type ClientRootProps = {
 };
 export function ClientRoot({ children }: ClientRootProps) {
   const [loading, setLoading] = useState(true);
-  const { baseUrl, userId } = getFallbackSession() ?? {};
+  const { baseUrl } = getFallbackSession() ?? {};
 
   const [loadState, loadMatrix] = useAsyncCallback<MatrixClient, Error, []>(
     useCallback(() => {
@@ -184,7 +184,7 @@ export function ClientRoot({ children }: ClientRootProps) {
   );
 
   return (
-    <AutoDiscovery userId={userId!} baseUrl={baseUrl!}>
+    <AutoDiscovery baseUrl={baseUrl!}>
       <SpecVersions baseUrl={baseUrl!}>
         {mx && <SyncStatus mx={mx} />}
         {loading && <ClientRootOptions mx={mx} />}

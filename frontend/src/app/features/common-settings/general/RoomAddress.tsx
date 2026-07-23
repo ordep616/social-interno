@@ -23,7 +23,6 @@ import { useRoom } from '../../../hooks/useRoom';
 import {
   useLocalAliases,
   usePublishedAliases,
-  usePublishUnpublishAliases,
   useSetMainAlias,
 } from '../../../hooks/useRoomAliases';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
@@ -202,20 +201,13 @@ function LocalAddressInput({ addLocalAlias }: { addLocalAlias: (alias: string) =
 function LocalAddressesList({
   localAliases,
   removeLocalAlias,
-  canEditCanonical,
 }: {
   localAliases: string[];
   removeLocalAlias: (alias: string) => Promise<void>;
-  canEditCanonical?: boolean;
 }) {
-  const room = useRoom();
   const alive = useAlive();
 
-  const [, publishedAliases] = usePublishedAliases(room);
-  const { publishAliases, unpublishAliases } = usePublishUnpublishAliases(room);
-
   const [selectedAliases, setSelectedAliases] = useState<string[]>([]);
-  const selectHasPublished = selectedAliases.find((alias) => publishedAliases.includes(alias));
 
   const toggleSelect = (alias: string) => {
     setSelectedAliases((aliases) => {
@@ -245,27 +237,14 @@ function LocalAddressesList({
       [removeLocalAlias]
     )
   );
-  const [publishState, publish] = useAsyncCallback(publishAliases);
-  const [unpublishState, unpublish] = useAsyncCallback(unpublishAliases);
 
   const handleDelete = () => {
     deleteAliases(selectedAliases).then(clearSelected);
   };
-  const handlePublish = () => {
-    publish(selectedAliases).then(clearSelected);
-  };
-  const handleUnpublish = () => {
-    unpublish(selectedAliases).then(clearSelected);
-  };
 
-  const loading =
-    deleteState.status === AsyncStatus.Loading ||
-    publishState.status === AsyncStatus.Loading ||
-    unpublishState.status === AsyncStatus.Loading;
+  const loading = deleteState.status === AsyncStatus.Loading;
   let error: MatrixError | undefined;
   if (deleteState.status === AsyncStatus.Error) error = deleteState.error as MatrixError;
-  if (publishState.status === AsyncStatus.Error) error = publishState.error as MatrixError;
-  if (unpublishState.status === AsyncStatus.Error) error = unpublishState.error as MatrixError;
 
   return (
     <Box direction="Column" gap="300">
@@ -275,36 +254,6 @@ function LocalAddressesList({
             <Text size="L400">{selectedAliases.length} Selected</Text>
           </Box>
           <Box shrink="No" gap="Inherit">
-            {canEditCanonical &&
-              (selectHasPublished ? (
-                <Chip
-                  variant="Warning"
-                  radii="Pill"
-                  disabled={loading}
-                  onClick={handleUnpublish}
-                  before={
-                    unpublishState.status === AsyncStatus.Loading && (
-                      <Spinner size="100" variant="Warning" />
-                    )
-                  }
-                >
-                  <Text size="B300">Unpublish</Text>
-                </Chip>
-              ) : (
-                <Chip
-                  variant="Success"
-                  radii="Pill"
-                  disabled={loading}
-                  onClick={handlePublish}
-                  before={
-                    publishState.status === AsyncStatus.Loading && (
-                      <Spinner size="100" variant="Success" />
-                    )
-                  }
-                >
-                  <Text size="B300">Publicar</Text>
-                </Chip>
-              ))}
             <Chip
               variant="Critical"
               radii="Pill"
@@ -322,7 +271,6 @@ function LocalAddressesList({
         </Box>
       )}
       {localAliases.map((alias) => {
-        const published = publishedAliases.includes(alias);
         const selected = selectedAliases.includes(alias);
 
         return (
@@ -341,13 +289,6 @@ function LocalAddressesList({
                 {alias}
               </Text>
             </Box>
-            <Box shrink="No" gap="100">
-              {published && (
-                <Badge variant="Success" fill="Soft" size="500">
-                  <Text size="L400">Publicado</Text>
-                </Badge>
-              )}
-            </Box>
           </Box>
         );
       })}
@@ -360,14 +301,8 @@ function LocalAddressesList({
   );
 }
 
-export function RoomLocalAddresses({ permissions }: { permissions: RoomPermissionsAPI }) {
-  const mx = useMatrixClient();
+export function RoomLocalAddresses() {
   const room = useRoom();
-
-  const canEditCanonical = permissions.stateEvent(
-    StateEvent.RoomCanonicalAlias,
-    mx.getSafeUserId()
-  );
 
   const [expand, setExpand] = useState(false);
 
@@ -419,7 +354,6 @@ export function RoomLocalAddresses({ permissions }: { permissions: RoomPermissio
               <LocalAddressesList
                 localAliases={localAliasesState.data}
                 removeLocalAlias={removeLocalAlias}
-                canEditCanonical={canEditCanonical}
               />
             ))}
           {localAliasesState.status === AsyncStatus.Error && (

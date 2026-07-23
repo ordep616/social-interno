@@ -15,7 +15,6 @@ import {
   INBOX_INVITES_PATH,
   INBOX_NOTIFICATIONS_PATH,
   INBOX_PATH,
-  REGISTER_PATH,
   RESET_PASSWORD_PATH,
   ROOT_PATH,
   SPACE_LOBBY_PATH,
@@ -72,20 +71,11 @@ export const getAppPathFromHref = (baseUrl: string, href: string): string => {
 
 export const getRootPath = (): string => ROOT_PATH;
 
-export const getLoginPath = (server?: string): string => {
-  const params = server ? { server: encodeURIComponent(server) } : undefined;
-  return generatePath(LOGIN_PATH, params);
-};
+export const getLoginPath = (): string => generatePath(LOGIN_PATH);
 
-export const getRegisterPath = (server?: string): string => {
-  const params = server ? { server: encodeURIComponent(server) } : undefined;
-  return generatePath(REGISTER_PATH, params);
-};
+export const getRegisterPath = (): string => getLoginPath();
 
-export const getResetPasswordPath = (server?: string): string => {
-  const params = server ? { server: encodeURIComponent(server) } : undefined;
-  return generatePath(RESET_PASSWORD_PATH, params);
-};
+export const getResetPasswordPath = (): string => generatePath(RESET_PASSWORD_PATH);
 
 export const getHomePath = (): string => HOME_PATH;
 export const getHomeCreatePath = (): string => HOME_CREATE_PATH;

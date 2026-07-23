@@ -8,7 +8,7 @@ import {
   redirect,
 } from 'react-router-dom';
 
-import { ClientConfig } from '../hooks/useClientConfig';
+import { ClientConfig, clientAllowedServer } from '../hooks/useClientConfig';
 import { AuthLayout, Login, ResetPassword } from './auth';
 import {
   DIRECT_PATH,
@@ -61,20 +61,28 @@ import { HomeCreateRoom } from './client/home/CreateRoom';
 import { Create } from './client/create';
 import { CreateSpaceModalRenderer } from '../features/create-space';
 import { SearchModalRenderer } from '../features/search';
-import { getFallbackSession } from '../state/sessions';
+import { getFallbackSession, removeFallbackSession } from '../state/sessions';
 import { CallStatusRenderer } from './CallStatusRenderer';
 import { CallEmbedProvider } from '../components/CallEmbedProvider';
 
 export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize) => {
   const { hashRouter } = clientConfig;
   const mobile = screenSize === ScreenSize.Mobile;
+  const getAllowedFallbackSession = () => {
+    const session = getFallbackSession();
+    if (!session) return undefined;
+    if (clientAllowedServer(clientConfig, session.baseUrl)) return session;
+
+    removeFallbackSession();
+    return undefined;
+  };
 
   const routes = createRoutesFromElements(
     <Route>
       <Route
         index
         loader={() => {
-          if (getFallbackSession()) return redirect(getHomePath());
+          if (getAllowedFallbackSession()) return redirect(getHomePath());
           const afterLoginPath = getAppPathFromHref(getOriginBaseUrl(), window.location.href);
           if (afterLoginPath) setAfterLoginRedirectPath(afterLoginPath);
           return redirect(getLoginPath());
@@ -82,7 +90,7 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
       />
       <Route
         loader={() => {
-          if (getFallbackSession()) {
+          if (getAllowedFallbackSession()) {
             return redirect(getHomePath());
           }
 
@@ -101,7 +109,7 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
 
       <Route
         loader={() => {
-          const session = getFallbackSession();
+          const session = getAllowedFallbackSession();
           if (!session) {
             const afterLoginPath = getAppPathFromHref(
               getOriginBaseUrl(hashRouter),

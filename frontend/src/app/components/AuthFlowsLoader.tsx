@@ -1,14 +1,8 @@
 import { ReactNode, useCallback, useEffect, useMemo } from 'react';
-import { MatrixError, createClient } from 'matrix-js-sdk';
+import { createClient } from 'matrix-js-sdk';
 import { AsyncStatus, useAsyncCallback } from '../hooks/useAsyncCallback';
 import { useAutoDiscoveryInfo } from '../hooks/useAutoDiscoveryInfo';
-import { promiseFulfilledResult, promiseRejectedResult } from '../utils/common';
-import {
-  AuthFlows,
-  RegisterFlowStatus,
-  RegisterFlowsResponse,
-  parseRegisterErrResp,
-} from '../hooks/useAuthFlows';
+import { AuthFlows, RegisterFlowStatus } from '../hooks/useAuthFlows';
 
 type AuthFlowsLoaderProps = {
   fallback?: () => ReactNode;
@@ -23,14 +17,7 @@ export function AuthFlowsLoader({ fallback, error, children }: AuthFlowsLoaderPr
 
   const [state, load] = useAsyncCallback(
     useCallback(async () => {
-      const result = await Promise.allSettled([mx.loginFlows(), mx.registerRequest({})]);
-      const loginFlows = promiseFulfilledResult(result[0]);
-      const registerResp = promiseRejectedResult(result[1]) as MatrixError | undefined;
-      let registerFlows: RegisterFlowsResponse = { status: RegisterFlowStatus.InvalidRequest };
-
-      if (typeof registerResp === 'object' && registerResp.httpStatus) {
-        registerFlows = parseRegisterErrResp(registerResp);
-      }
+      const loginFlows = await mx.loginFlows();
 
       if (!loginFlows) {
         throw new Error('Fluxo de autenticação ausente.');
@@ -41,7 +28,9 @@ export function AuthFlowsLoader({ fallback, error, children }: AuthFlowsLoaderPr
 
       const authFlows: AuthFlows = {
         loginFlows,
-        registerFlows,
+        registerFlows: {
+          status: RegisterFlowStatus.RegistrationDisabled,
+        },
       };
 
       return authFlows;

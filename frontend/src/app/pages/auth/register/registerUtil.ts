@@ -15,7 +15,7 @@ import {
   getAfterLoginRedirectPath,
 } from '../../afterLoginRedirectPath';
 import { getHomePath, getLoginPath, withSearchParam } from '../../pathUtils';
-import { getMxIdLocalPart, getMxIdServer } from '../../../utils/matrix';
+import { getMxIdLocalPart } from '../../../utils/matrix';
 import { setFallbackSession } from '../../../state/sessions';
 
 export enum RegisterError {
@@ -125,9 +125,8 @@ export const useRegisterComplete = (data?: CustomRegisterResponse) => {
         navigate(afterLoginRedirectPath ?? getHomePath(), { replace: true });
       } else {
         const username = getMxIdLocalPart(userId);
-        const userServer = getMxIdServer(userId);
         navigate(
-          withSearchParam<LoginPathSearchParams>(getLoginPath(userServer), {
+          withSearchParam<LoginPathSearchParams>(getLoginPath(), {
             username,
           }),
           { replace: true }

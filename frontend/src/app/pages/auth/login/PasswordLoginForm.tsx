@@ -20,19 +20,12 @@ import {
 import FocusTrap from 'focus-trap-react';
 import { Link } from 'react-router-dom';
 import { MatrixError } from 'matrix-js-sdk';
-import { getMxIdLocalPart, getMxIdServer, isUserId } from '../../../utils/matrix';
+import { getMxIdLocalPart, isUserId } from '../../../utils/matrix';
 import { EMAIL_REGEX } from '../../../utils/regex';
 import { useAutoDiscoveryInfo } from '../../../hooks/useAutoDiscoveryInfo';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useAuthServer } from '../../../hooks/useAuthServer';
-import { useClientConfig } from '../../../hooks/useClientConfig';
-import {
-  CustomLoginResponse,
-  LoginError,
-  factoryGetBaseUrl,
-  login,
-  useLoginComplete,
-} from './loginUtil';
+import { CustomLoginResponse, LoginError, login, useLoginComplete } from './loginUtil';
 import { PasswordInput } from '../../../components/password-input';
 import { FieldError } from '../FiledError';
 import { getResetPasswordPath } from '../../pathUtils';
@@ -112,7 +105,6 @@ type PasswordLoginFormProps = {
 };
 export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLoginFormProps) {
   const server = useAuthServer();
-  const clientConfig = useClientConfig();
 
   const serverDiscovery = useAutoDiscoveryInfo();
   const baseUrl = serverDiscovery['m.homeserver'].base_url;
@@ -137,22 +129,11 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
     });
   };
 
-  const handleMxIdLogin = async (mxId: string, password: string) => {
-    const mxIdServer = getMxIdServer(mxId);
+  const handleMxIdLogin = (mxId: string, password: string) => {
     const mxIdUsername = getMxIdLocalPart(mxId);
-    if (!mxIdServer || !mxIdUsername) return;
+    if (!mxIdUsername) return;
 
-    const getBaseUrl = factoryGetBaseUrl(clientConfig, mxIdServer);
-
-    startLogin(getBaseUrl, {
-      type: 'm.login.password',
-      identifier: {
-        type: 'm.id.user',
-        user: mxIdUsername,
-      },
-      password,
-      initial_device_display_name: 'Comunicação Interna Web',
-    });
+    handleUsernameLogin(mxIdUsername, password);
   };
   const handleEmailLogin = (email: string, password: string) => {
     startLogin(baseUrl, {
@@ -212,16 +193,6 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
           outlined
           after={<UsernameHint server={server} />}
         />
-        {loginState.status === AsyncStatus.Error && (
-          <>
-            {loginState.error.errcode === LoginError.ServerNotAllowed && (
-              <FieldError message="Login com servidor personalizado não é permitido neste cliente." />
-            )}
-            {loginState.error.errcode === LoginError.InvalidServer && (
-              <FieldError message="Falha ao encontrar o servidor do seu ID Matrix." />
-            )}
-          </>
-        )}
       </Box>
       <Box direction="Column" gap="100">
         <Text as="label" size="L400" priority="300">
@@ -250,7 +221,7 @@ export function PasswordLoginForm({ defaultUsername, defaultEmail }: PasswordLog
           )}
           <Box grow="Yes" shrink="No" justifyContent="End">
             <Text as="span" size="T200" priority="400" align="Right">
-              <Link to={getResetPasswordPath(server)}>Esqueceu a senha?</Link>
+              <Link to={getResetPasswordPath()}>Esqueceu a senha?</Link>
             </Text>
           </Box>
         </Box>

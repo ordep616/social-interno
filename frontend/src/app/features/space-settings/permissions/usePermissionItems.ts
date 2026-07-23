@@ -90,7 +90,7 @@ export const usePermissionGroups = (): PermissionGroup[] => {
             state: true,
             key: StateEvent.RoomCanonicalAlias,
           },
-          name: 'Publicar endereço',
+          name: 'Gerenciar endereços',
         },
         {
           location: {

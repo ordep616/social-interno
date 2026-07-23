@@ -80,7 +80,7 @@ export function CreateRoomAliasInput({ disabled }: { disabled?: boolean }) {
     <Box shrink="No" direction="Column" gap="100">
       <Text size="L400">Endereço (opcional)</Text>
       <Text size="T200" priority="300">
-        Escolha um endereço único para facilitar a descoberta.
+        Escolha um endereço único para facilitar o compartilhamento interno.
       </Text>
       <Input
         ref={aliasInputRef}
