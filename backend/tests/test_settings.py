@@ -17,6 +17,10 @@ def configure_environment(monkeypatch: pytest.MonkeyPatch) -> None:
         "BACKEND_SYNAPSE_BASE_URL",
         "http://127.0.0.1:8008",
     )
+    monkeypatch.setenv(
+        "BACKEND_INVITATION_PUBLIC_BASE_URL",
+        "http://127.0.0.1:8080/register",
+    )
 
 
 def test_settings_load_prefixed_environment(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -26,6 +30,7 @@ def test_settings_load_prefixed_environment(monkeypatch: pytest.MonkeyPatch) -> 
     assert settings.environment == "test"
     assert str(settings.database_url).startswith("postgresql+psycopg://")
     assert settings.synapse_request_timeout_seconds == 5
+    assert str(settings.invitation_public_base_url).endswith("/register")
 
 
 def test_settings_reject_invalid_synapse_timeout(monkeypatch: pytest.MonkeyPatch) -> None:

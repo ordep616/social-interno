@@ -18,6 +18,7 @@ def settings() -> Settings:
         environment="test",
         database_url="postgresql+psycopg://test:test@127.0.0.1:5433/test",
         synapse_base_url="http://127.0.0.1:8008",
+        invitation_public_base_url="http://127.0.0.1:8080/register",
     )
 
 
