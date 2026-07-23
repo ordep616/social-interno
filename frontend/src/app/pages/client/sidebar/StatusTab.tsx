@@ -28,7 +28,7 @@ import {
 import { UserAvatar } from '../../../components/user-avatar';
 import { AvatarPresence, PresenceBadge } from '../../../components/presence';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
-import { Presence, useUserPresence } from '../../../hooks/useUserPresence';
+import { Presence, UserPresence, useUserPresence } from '../../../hooks/useUserPresence';
 import { useUserProfile } from '../../../hooks/useUserProfile';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import { getMxIdLocalPart, mxcUrlToHttp } from '../../../utils/matrix';
@@ -73,15 +73,22 @@ const getPresenceErrorMessage = (error: unknown): string => {
 
 type StatusDialogProps = {
   requestClose: () => void;
+  userId: string;
+  userPresence?: UserPresence;
+  currentPresence: Presence;
+  onPresenceChange: (presence: Presence) => void;
 };
 
-function StatusDialog({ requestClose }: StatusDialogProps) {
+function StatusDialog({
+  requestClose,
+  userId,
+  userPresence,
+  currentPresence,
+  onPresenceChange,
+}: StatusDialogProps) {
   const mx = useMatrixClient();
   const useAuthentication = useMediaAuthentication();
-  const userId = mx.getSafeUserId();
   const profile = useUserProfile(userId);
-  const userPresence = useUserPresence(userId);
-  const [optimisticPresence, setOptimisticPresence] = useState<Presence>();
   const [changingPresence, setChangingPresence] = useState<Presence>();
   const [error, setError] = useState<string>();
 
@@ -89,13 +96,6 @@ function StatusDialog({ requestClose }: StatusDialogProps) {
   const avatarUrl = profile.avatarUrl
     ? mxcUrlToHttp(mx, profile.avatarUrl, useAuthentication, 96, 96, 'crop') ?? undefined
     : undefined;
-  const currentPresence = optimisticPresence ?? userPresence?.presence ?? Presence.Offline;
-
-  useEffect(() => {
-    if (userPresence?.presence === optimisticPresence) {
-      setOptimisticPresence(undefined);
-    }
-  }, [optimisticPresence, userPresence?.presence]);
 
   const handlePresenceChange = async (presence: Presence) => {
     if (changingPresence || presence === currentPresence) return;
@@ -106,7 +106,7 @@ function StatusDialog({ requestClose }: StatusDialogProps) {
     try {
       await mx.setPresence({ presence });
       await mx.setSyncPresence(presence as unknown as Parameters<typeof mx.setSyncPresence>[0]);
-      setOptimisticPresence(presence);
+      onPresenceChange(presence);
     } catch (err) {
       setError(getPresenceErrorMessage(err));
     } finally {
@@ -233,7 +233,18 @@ function StatusDialog({ requestClose }: StatusDialogProps) {
 }
 
 export function StatusTab() {
+  const mx = useMatrixClient();
+  const userId = mx.getSafeUserId();
+  const userPresence = useUserPresence(userId);
+  const [optimisticPresence, setOptimisticPresence] = useState<Presence>();
   const [status, setStatus] = useState(false);
+  const currentPresence = optimisticPresence ?? userPresence?.presence ?? Presence.Offline;
+
+  useEffect(() => {
+    if (userPresence?.presence === optimisticPresence) {
+      setOptimisticPresence(undefined);
+    }
+  }, [optimisticPresence, userPresence?.presence]);
 
   const openStatus = () => setStatus(true);
   const closeStatus = () => setStatus(false);
@@ -243,14 +254,34 @@ export function StatusTab() {
       <SidebarItemTooltip tooltip="Status do usuário">
         {(triggerRef) => (
           <SidebarItemAction ref={triggerRef} onClick={openStatus}>
-            <SidebarAvatar as="span" outlined>
-              <Icon src={Icons.User} filled={status} />
-            </SidebarAvatar>
+            <AvatarPresence
+              as="span"
+              variant="Background"
+              badge={
+                <PresenceBadge
+                  presence={currentPresence}
+                  status={userPresence?.status}
+                  size="200"
+                />
+              }
+            >
+              <SidebarAvatar as="span" outlined>
+                <Icon src={Icons.User} filled={status} />
+              </SidebarAvatar>
+            </AvatarPresence>
             <SidebarItemLabel>Status</SidebarItemLabel>
           </SidebarItemAction>
         )}
       </SidebarItemTooltip>
-      {status && <StatusDialog requestClose={closeStatus} />}
+      {status && (
+        <StatusDialog
+          requestClose={closeStatus}
+          userId={userId}
+          userPresence={userPresence}
+          currentPresence={currentPresence}
+          onPresenceChange={setOptimisticPresence}
+        />
+      )}
     </SidebarItem>
   );
 }
