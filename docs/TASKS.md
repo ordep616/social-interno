@@ -130,6 +130,52 @@ Aceitação: o fluxo de mídia funciona em computador e celular dentro dos limit
 - [ ] Nunca expor token ou API administrativa no navegador.
 - [ ] Implementar estados de conta bloqueada e permissão negada.
 
+## Mensagens de voz aprovadas e chamadas futuras
+
+`DEC-020` inclui mensagens de voz no MVP e mantém chamadas fora do MVP. A prova
+de conceito de chamadas pode avançar em paralelo, mas não bloqueia os marcos
+atuais. Matrix, Synapse e o repositório de mídia continuam sendo o caminho dos
+áudios; o FastAPI não processará mensagens ou mídia.
+
+### Decisões e preparação compartilhadas
+
+- [x] Incluir mensagens de voz gravadas no MVP e manter chamadas em fase posterior.
+- [x] Escolher MatrixRTC, Element Call, LiveKit, `lk-jwt-service` e coturn para a futura prova de conceito, sem desenvolver WebRTC próprio.
+- [x] Definir limite inicial de 5 minutos e 10 MB por mensagem de voz, com WebM/Opus preferencial e MP4/AAC alternativo.
+- [x] Fazer mensagens de voz e chamadas herdarem a política de criptografia e retenção da sala.
+- [ ] Aprovar e registrar versões, commits, imagens, arquivos incorporados e licenças antes de adicionar componentes de chamada à plataforma.
+- [ ] Aprovar os nomes públicos, domínio e endereços de Matrix, MatrixRTC e TURN antes de qualquer implantação externa.
+
+### Colaborador 1 — Plataforma, mídia e infraestrutura
+
+- [ ] Confirmar no Synapse os MIME types, o limite de 10 MB e a retenção aplicáveis às mensagens de voz sem reduzir indevidamente o limite dos demais arquivos.
+- [ ] Validar upload, download, autenticação de mídia, E2EE, backup e restauração de eventos `m.audio`.
+- [ ] Preparar uma prova de conceito isolada de MatrixRTC com LiveKit e `lk-jwt-service`, sem reabrir federação pública.
+- [ ] Configurar os recursos exigidos pelo MatrixRTC no Synapse e anunciar o backend por `.well-known/matrix/client`.
+- [ ] Implantar coturn com IP público, credenciais temporárias, cotas e bloqueio de acesso a redes internas.
+- [ ] Definir TLS, proxy reverso, WebSocket, portas UDP/TCP e regras de firewall para MatrixRTC e TURN.
+- [ ] Adicionar métricas, logs sem credenciais, alertas e limites contra abuso dos serviços de chamada.
+- [ ] Testar uma chamada entre duas contas em redes diferentes, incluindo computador e celular, reconexão e falha do TURN.
+
+### Colaborador 2 — Gravação, reprodução e experiência
+
+- [ ] Validar e testar o envio e a reprodução de arquivos `m.audio` já existentes no fork.
+- [ ] Adicionar ao compositor um botão de microfone com iniciar, pausar, continuar, cancelar e enviar.
+- [ ] Gravar com `MediaRecorder`, selecionando WebM/Opus quando disponível e MP4/AAC como alternativa compatível.
+- [ ] Integrar a gravação ao upload Matrix e à criptografia de mídia já existentes, sem criar outra API de upload.
+- [ ] Incluir duração, tamanho, progresso, limite, falha, repetição e estado de permissão negada.
+- [ ] Garantir acessibilidade, descarte do áudio cancelado e liberação imediata do microfone ao terminar.
+- [ ] Testar gravação e reprodução em Chrome, Safari, Android e iPhone.
+- [ ] Validar o Element Call incorporado ao Cinny e manter os controles de chamada ocultos quando MatrixRTC não estiver anunciado.
+- [ ] Preparar estados de chamada recebida, saída, conectando, mute, reconexão, encerramento e indisponibilidade, sem liberar chamadas no MVP.
+
+Aceitação das mensagens de voz: duas contas gravam, enviam, recebem, descriptografam
+e reproduzem áudio no computador e no celular dentro dos limites aprovados.
+
+Aceitação futura das chamadas: duas contas em redes diferentes concluem uma
+chamada de voz com TURN validado, sem federação pública e sem credenciais no
+navegador ou no repositório.
+
 ## Marcos de integração
 
 ### I1 — Conectividade e sessão
@@ -144,11 +190,17 @@ Aceitação: o fluxo de mídia funciona em computador e celular dentro dos limit
 
 ### I3 — Mídia e estados em tempo real
 
-- Validar leitura, digitação, presença, upload, download e limites.
+- Validar leitura, digitação, presença, upload, download, mensagens de voz e limites.
 
 ### I4 — Segurança e piloto
 
 - Validar convites, permissões, retenção, auditoria, backup e experiência PWA.
+
+### I5 — Chamadas após o MVP
+
+- Validar MatrixRTC, LiveKit, serviço de autorização e TURN em ambiente isolado.
+- Testar chamada entre computador e celular em redes diferentes antes de avaliar grupos.
+- Liberar chamadas no produto somente após revisão conjunta de segurança, capacidade, operação e licenças.
 
 ## Regras para bloqueios
 
