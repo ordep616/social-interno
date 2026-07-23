@@ -9,7 +9,8 @@ import React, {
 } from 'react';
 import { useAtom, useAtomValue } from 'jotai';
 import { isKeyHotkey } from 'is-hotkey';
-import { EventType, IContent, MsgType, RelationType, Room } from 'matrix-js-sdk';
+import { EventType, IContent, MsgType, RelationType, Room, UploadProgress } from 'matrix-js-sdk';
+import { type RoomMessageEventContent } from 'matrix-js-sdk/lib/@types/events';
 import { ReactEditor } from 'slate-react';
 import { Transforms, Editor } from 'slate';
 import {
@@ -62,6 +63,7 @@ import {
   getImageInfo,
   getMxIdLocalPart,
   mxcUrlToHttp,
+  uploadContent,
 } from '../../utils/matrix';
 import { useTypingStatusUpdater } from '../../hooks/useTypingStatusUpdater';
 import { useFilePicker } from '../../hooks/useFilePicker';
@@ -116,6 +118,7 @@ import { useTheme } from '../../hooks/useTheme';
 import { useRoomCreatorsTag } from '../../hooks/useRoomCreatorsTag';
 import { usePowerLevelTags } from '../../hooks/usePowerLevelTags';
 import { useComposingCheck } from '../../hooks/useComposingCheck';
+import { VoiceRecorder, VoiceRecording } from './VoiceRecorder';
 
 interface RoomInputProps {
   editor: Editor;
@@ -288,6 +291,41 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       const contents = fulfilledPromiseSettledResult(await Promise.allSettled(contentsPromises));
       contents.forEach((content) => mx.sendMessage(roomId, content as any));
     };
+
+    const handleVoiceRecordingSubmit = useCallback(
+      async (
+        recording: VoiceRecording,
+        onProgress: (progress: UploadProgress) => void
+      ): Promise<void> => {
+        const file = safeFile(recording.file);
+        const metadata: TUploadMetadata = {
+          markedAsSpoiler: false,
+          duration: recording.duration,
+        };
+        const fileItem: TUploadItem = room.hasEncryptionStateEvent()
+          ? {
+              ...(await encryptFile(file)),
+              metadata,
+            }
+          : {
+              file,
+              originalFile: file,
+              encInfo: undefined,
+              metadata,
+            };
+
+        const mxc = await new Promise<string>((resolve, reject) => {
+          uploadContent(mx, fileItem.file, {
+            onProgress,
+            onSuccess: resolve,
+            onError: reject,
+          });
+        });
+        const content = getAudioMsgContent(fileItem, mxc);
+        await mx.sendMessage(roomId, content as RoomMessageEventContent);
+      },
+      [mx, room, roomId]
+    );
 
     const submit = useCallback(() => {
       uploadBoardHandlers.current?.handleSend();
@@ -643,6 +681,7 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
                   </PopOut>
                 )}
               </UseStateProvider>
+              <VoiceRecorder onSubmit={handleVoiceRecordingSubmit} />
               <IconButton onClick={submit} variant="SurfaceVariant" size="300" radii="300">
                 <Icon src={Icons.Send} />
               </IconButton>
