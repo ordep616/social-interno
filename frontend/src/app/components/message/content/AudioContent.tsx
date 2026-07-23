@@ -87,6 +87,8 @@ const getWaveformPeaks = async (fileContent: Blob): Promise<number[]> => {
   }
 };
 
+const clampProgress = (value: number): number => Math.max(0, Math.min(1, value));
+
 export type AudioContentProps = {
   mimeType: string;
   url: string;
@@ -142,6 +144,25 @@ export function AudioContent({
     getAudioRef,
     useThrottle(handlePlayTimeCallback, PLAY_TIME_THROTTLE_OPS)
   );
+
+  useEffect(() => {
+    if (!playing) return undefined;
+
+    let animationFrameId = 0;
+    const syncPlayProgress = () => {
+      const audioElement = audioRef.current;
+      if (audioElement) {
+        if (Number.isFinite(audioElement.duration)) {
+          setDuration(audioElement.duration);
+        }
+        setCurrentTime(audioElement.currentTime);
+      }
+      animationFrameId = window.requestAnimationFrame(syncPlayProgress);
+    };
+
+    animationFrameId = window.requestAnimationFrame(syncPlayProgress);
+    return () => window.cancelAnimationFrame(animationFrameId);
+  }, [playing]);
 
   useEffect(() => {
     if (srcState.status === AsyncStatus.Idle) {
@@ -200,7 +221,8 @@ export function AudioContent({
       ? (srcState.data as AudioContentData).waveform
       : FALLBACK_WAVEFORM;
   const safeDuration = duration || 1;
-  const activeBars = Math.round((currentTime / safeDuration) * waveform.length);
+  const progress = clampProgress(currentTime / safeDuration);
+  const progressClipRight = `${100 - progress * 100}%`;
   const sentAt = timeHourMinute(ts, true);
   const sourceUrl =
     srcState.status === AsyncStatus.Success ? (srcState.data as AudioContentData).src : undefined;
@@ -250,10 +272,23 @@ export function AudioContent({
                     // eslint-disable-next-line react/no-array-index-key
                     key={index}
                     className={css.WaveformBar}
-                    data-active={index < activeBars ? 'true' : 'false'}
                     style={{ height: `${Math.round(4 + peak * 24)}px` }}
                   />
                 ))}
+                <div
+                  className={css.WaveformProgress}
+                  style={{ clipPath: `inset(0 ${progressClipRight} 0 0)` }}
+                  aria-hidden
+                >
+                  {waveform.map((peak, index) => (
+                    <span
+                      // eslint-disable-next-line react/no-array-index-key
+                      key={index}
+                      className={css.WaveformProgressBar}
+                      style={{ height: `${Math.round(4 + peak * 24)}px` }}
+                    />
+                  ))}
+                </div>
                 {params.children}
               </div>
             )}

@@ -97,6 +97,7 @@ export const Timeline = style({
 export const WaveformTrack = style([
   DefaultReset,
   {
+    position: 'relative',
     width: '100%',
     height: toRem(28),
     display: 'flex',
@@ -120,19 +121,31 @@ export const WaveformBar = style({
   minWidth: toRem(2),
   borderRadius: config.radii.R300,
   background: 'rgba(244, 247, 251, 0.38)',
-  transition: 'background-color 120ms ease, opacity 120ms ease',
+});
 
-  selectors: {
-    '&[data-active=true]': {
-      background: '#ffffff',
-    },
-  },
+export const WaveformProgress = style({
+  position: 'absolute',
+  inset: 0,
+  zIndex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  gap: toRem(2),
+  pointerEvents: 'none',
+  transition: 'clip-path 90ms linear',
+});
+
+export const WaveformProgressBar = style({
+  flex: '1 1 0',
+  minWidth: toRem(2),
+  borderRadius: config.radii.R300,
+  background: '#ffffff',
 });
 
 export const WaveformThumb = style({
   width: toRem(1),
   height: toRem(28),
   opacity: 0,
+  zIndex: 2,
 
   selectors: {
     '&:focus-visible': {
