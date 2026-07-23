@@ -114,8 +114,13 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 
 ## DEC-017 — Cadastro controlado por convite
 
-- Status: aceita pelos dois colaboradores.
-- Decisão: o cadastro público continuará desabilitado. Um `platform_admin` poderá gerar um link secreto, de uso único e com validade de 24 horas, para que o convidado escolha usuário e senha sem informar e-mail.
+- Status: substituída parcialmente por `DEC-022`, aceita pelos dois
+  colaboradores. A regra em que o convidado escolhe o usuário não deve
+  orientar nova implementação.
+- Decisão histórica: o cadastro público continuaria desabilitado e um
+  `platform_admin` geraria um link para o convidado escolher usuário e senha.
+  Essa escolha de identidade não deve orientar nova implementação durante a
+  revisão de `DEC-022`.
 - Papéis: o convite poderá conceder `user` ou `group_admin`. A promoção a `platform_admin` será uma operação administrativa separada.
 - Implementação: um serviço FastAPI validará o hash do token, validade, uso, cancelamento e limites de tentativa; depois criará a conta pela API administrativa do Synapse, aplicará o papel e invalidará o convite.
 - Segurança: token administrativo nunca será entregue ao navegador. Logs de auditoria não registrarão token de convite, senha ou credenciais administrativas.
@@ -124,9 +129,13 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 
 ## DEC-018 — API própria orientada a REST
 
-- Status: aceita pelos dois colaboradores.
+- Status: aceita pelos dois colaboradores; o estilo REST permanece vigente e
+  o contrato inicial de cadastro foi substituído parcialmente por `DEC-022`.
 - Decisão: APIs próprias do serviço FastAPI seguirão REST sobre HTTP, serão versionadas em `/v1`, usarão recursos nomeados por substantivos, JSON e códigos HTTP consistentes.
-- Contrato inicial: convites administrativos usam `POST`, `GET` e `DELETE` em `/v1/admin/invitations`; a revogação é uma remoção lógica e idempotente. O convidado valida o token em `GET /v1/invitations/{token}` e cria seu cadastro em `POST /v1/registrations`.
+- Contrato inicial histórico: convites administrativos usam `POST`, `GET` e
+  `DELETE` em `/v1/admin/invitations`; a revogação é lógica e idempotente. A
+  validação com token no caminho e o `username` escolhido pelo convidado não
+  devem orientar nova implementação durante a revisão de `DEC-022`.
 - Motivo: manter o contrato simples, previsível, independente de linguagem e compatível com o frontend e ferramentas HTTP comuns.
 - Limite: Matrix continua sendo o contrato de salas, mensagens, mídia e sincronização. O FastAPI não encapsula nem redefine a Matrix Client-Server API.
 - Segurança: token administrativo do Synapse permanece no servidor; tokens de convite e senhas não são registrados; respostas relacionadas ao convite usam `Cache-Control: no-store`.
@@ -158,18 +167,111 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 
 ## DEC-021 — Orquestração durável do cadastro
 
-- Status: aceita pelos dois colaboradores.
+- Status: aceita pelos dois colaboradores; a origem da identidade e o
+  mecanismo de criação usados especificamente na ativação foram atualizados
+  por `DEC-022`.
 - Problema: PostgreSQL e Synapse não compartilham uma transação. Uma interrupção entre criar a conta, atribuir o papel e concluir o convite pode deixar estado parcial.
 - Decisão proposta: coordenar o cadastro como uma saga durável, com uma tentativa operacional persistida e fases transacionais locais separadas da chamada HTTP.
-- Identidade proposta: `username` terá 3 a 32 caracteres ASCII minúsculos, começará e terminará com letra ou número e aceitará apenas `.`, `_` e `-` no interior. Maiúsculas serão rejeitadas, não normalizadas. O backend acrescentará o `server_name` configurado.
+- Identidade proposta: `username` terá 3 a 32 caracteres ASCII minúsculos, começará e terminará com letra ou número e aceitará apenas `.`, `_` e `-` no interior. Maiúsculas serão rejeitadas, não normalizadas. O backend acrescentará o `server_name` configurado. Conforme `DEC-022`, esse valor virá exclusivamente da identidade definida pelo `platform_admin`.
 - Senha proposta: 15 a 128 caracteres, sem regras de composição, transformação, persistência ou registro. A fonte e a licença de uma lista local de senhas comuns ou comprometidas serão aprovadas antes do endpoint público.
 - Referência de senha: a proposta segue a orientação para senha de fator único do [NIST SP 800-63B](https://pages.nist.gov/800-63-4/sp800-63b.html), preservando frases-senha, espaços, Unicode e gerenciadores de senha.
 - Concorrência: a reserva do convite e a criação da tentativa ocorrerão na mesma transação. Restrições únicas parciais impedirão tentativas ativas simultâneas para o mesmo convite ou identidade.
-- Provisionamento: nenhuma transação de banco ficará aberta durante a chamada ao Synapse. Confirmação `201` permitirá a finalização local; resultados que possam ter criado ou modificado uma conta serão tratados como ambíguos.
+- Provisionamento: nenhuma transação de banco ficará aberta durante a chamada ao Synapse. Confirmação `201` permitirá a finalização local; resultados que possam ter criado uma conta serão tratados como ambíguos. A ativação não deverá modificar contas existentes.
 - Finalização: atribuição do papel próprio, conclusão do convite e conclusão da tentativa ocorrerão atomicamente no PostgreSQL. O convite nunca concederá `platform_admin` ou administração global do Synapse.
-- Reconciliação: falha seguramente anterior ao `PUT` poderá liberar o convite. Falha posterior ou ambígua manterá o convite indisponível e exigirá reconciliação, sem repetição automática da criação.
+- Reconciliação: falha seguramente anterior à requisição de criação poderá liberar o convite. Falha posterior ou ambígua manterá o convite indisponível e exigirá reconciliação, sem repetição automática da criação.
 - Persistência: `registration_attempts` guardará somente identificadores, papel, estado, instantes e código sanitizado de falha. Não guardará token, hash de token, senha, credencial administrativa ou corpo retornado pelo Synapse.
 - Limite: esta decisão não cria endpoints públicos, contas reais, auditoria, limites de tentativa, bloqueio, redefinição de senha ou desligamento.
+
+## DEC-022 — Ativação de identidade previamente definida
+
+- Status: aceita pelos dois colaboradores em 2026-07-23. A decisão define o
+  contrato e o desenho aprovados, mas cada implementação, migração ou
+  publicação ainda exige autorização própria.
+- Problema: `DEC-017` permite que o portador do convite escolha o `username`.
+  Isso concede liberdade indevida para criar identidades e não atende ao fluxo
+  administrativo em que a organização autoriza previamente cada conta.
+- Administração: somente uma sessão Matrix válida associada ao papel
+  próprio `platform_admin` poderá criar, listar ou revogar links de ativação.
+  `user` e `group_admin` não recebem essa capacidade. Ocultar a interface é
+  apenas experiência; o backend continuará sendo a autoridade.
+- Identidade: o `platform_admin` escolherá `username` e papel
+  `user` ou `group_admin` antes da emissão. O backend validará o nome,
+  acrescentará seu `server_name` configurado e persistirá o
+  `target_user_id` completo. O funcionário não poderá mudar identidade ou
+  papel.
+- Senha: somente o funcionário informará a senha na ativação. O
+  administrador não a define nem a conhece; backend e frontend não a
+  persistem, registram ou colocam em URL. As regras de senha de `DEC-021`
+  permanecem aplicáveis a esse campo.
+- Papéis: um link poderá conceder somente `user` ou
+  `group_admin`. A ativação jamais concederá `platform_admin` ou
+  administração global do Synapse.
+- Link: a URL pública usará `/activate#<token>`. O fragmento não será
+  enviado em requisições HTTP; o frontend o lerá uma vez, chamará
+  `history.replaceState` e conservará o token apenas em memória.
+- Pré-validação: `POST /v1/activation-validations` receberá o token
+  no corpo e retornará identidade, papel e expiração quando utilizável. Não
+  existirá preflight público com token no caminho.
+- Ativação: `POST /v1/registrations` receberá somente token e senha,
+  criará a conta autorizada e retornará apenas `user_id`. O frontend seguirá
+  para o login Matrix normal com o `username` preenchido, sem receber sessão
+  ou token Matrix do backend.
+- Capacidades: `GET /v1/me/capabilities` validará a credencial
+  Matrix por `whoami` e retornará o papel próprio e a capacidade
+  `can_manage_user_activations`. A rota administrativa verificará
+  `platform_admin` novamente em cada operação.
+- Persistência: `invitations` receberá `target_user_id`; um índice
+  único parcial impedirá dois convites ativos para a mesma identidade. O
+  estado terminal `conflicted` representará identidade confirmadamente
+  indisponível antes da criação.
+- Migração: convites legados pendentes sem identidade serão
+  revogados; registros usados poderão derivar `target_user_id` de
+  `accepted_user_id`; qualquer registro legado em processamento bloqueará a
+  implantação até revisão manual. Estados históricos terminais poderão
+  conservar `target_user_id` nulo.
+- Conflitos: a emissão consultará a disponibilidade suportada pelo
+  Synapse, mas essa consulta não reserva a identidade. A criação deverá usar
+  mecanismo create-only e tratar identidade já utilizada como conflito. Uma
+  conta existente nunca será atualizada, reativada ou terá senha redefinida
+  por um link.
+- Provisionamento: o
+  [`PUT` administrativo de usuários](https://element-hq.github.io/synapse/latest/admin_api/user_admin_api.html#create-or-modify-account)
+  não será usado para ativação porque também modifica contas existentes. Será
+  feita uma prova de conceito do
+  [registro por segredo compartilhado](https://element-hq.github.io/synapse/latest/admin_api/register_api.html),
+  com conta sempre não administrativa. O `access_token` e o `device_id`
+  retornados representam uma sessão ativa: o token nunca será persistido ou
+  enviado ao navegador, e o dispositivo deverá ser revogado pela API
+  administrativa antes de concluir a ativação. Falha ou resultado ambíguo
+  nessa revogação levará a tentativa para `reconciliation_required`, sem
+  marcar o convite como usado.
+- Compatibilidade com MAS: o registro por segredo compartilhado fica
+  desabilitado quando o Matrix Authentication Service (MAS) está integrado.
+  Uma futura adoção do MAS exigirá outro mecanismo de provisionamento,
+  registrado em nova decisão conjunta antes de substituir esse fluxo. A adoção
+  do mecanismo inicial depende da prova de conceito, da proteção do segredo e
+  da confirmação de compatibilidade com a configuração escolhida do Synapse.
+- Consistência: Synapse e PostgreSQL não serão descritos como uma
+  transação ACID. A saga de `DEC-021` reservará convite e tentativa, fechará a
+  transação local, fará a criação externa, revogará a sessão de provisionamento
+  e somente então finalizará papel, convite e tentativa. Resultado ambíguo na
+  criação ou na revogação permanecerá bloqueado para reconciliação, sem
+  repetição automática.
+- Respostas: token inexistente retorna `404`; expirado, usado ou
+  revogado compartilham `410` genérico; identidade indisponível retorna `409`;
+  limitação retorna `429`. Todas as respostas de ativação usam
+  `Cache-Control: no-store`.
+- Segurança: a página de ativação terá `Referrer-Policy:
+  no-referrer`, CSP restritiva, `frame-ancestors 'none'`, nenhum analytics ou
+  script de terceiro e nenhum token em storage. Corpos sensíveis serão
+  omitidos de logs; auditoria e limites são obrigatórios antes da publicação.
+- Compatibilidade com o frontend: o cadastro público e o cadastro nativo do Cinny
+  permanecerão indisponíveis. A ativação será uma camada corporativa anterior
+  ao login e não modificará profundamente o fluxo Matrix normal do fork.
+- Contrato: como os endpoints públicos ainda não foram publicados,
+  a revisão ocorrerá em `/v1`; qualquer implantação anterior exigiria `/v2`.
+- Limite: esta decisão não autoriza código, conta real, segredo de produção,
+  endpoint público, migração, alteração no Synapse ou interface.
 
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.
