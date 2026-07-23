@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     database_url: PostgresDsn
     synapse_base_url: AnyHttpUrl
     synapse_request_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
+    invitation_public_base_url: AnyHttpUrl
     service_name: str = "social-interno-backend"
 
 
