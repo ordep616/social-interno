@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import { trimTrailingSlash } from '../utils/common';
 
 export type HashRouterConfig = {
   enabled?: boolean;
@@ -30,13 +31,25 @@ export function useClientConfig(): ClientConfig {
   return config;
 }
 
+export const normalizeHomeserverUrl = (server: string): string => trimTrailingSlash(server);
+
 export const clientDefaultServer = (clientConfig: ClientConfig): string =>
-  clientConfig.homeserverList?.[clientConfig.defaultHomeserver ?? 0] ?? 'http://localhost:8008';
+  normalizeHomeserverUrl(
+    clientConfig.homeserverList?.[clientConfig.defaultHomeserver ?? 0] ?? 'http://localhost:8008'
+  );
+
+export const clientDefaultServerName = (clientConfig: ClientConfig): string => {
+  const server = clientDefaultServer(clientConfig);
+  try {
+    return new URL(server).host;
+  } catch {
+    return server;
+  }
+};
 
 export const clientAllowedServer = (clientConfig: ClientConfig, server: string): boolean => {
-  const { homeserverList, allowCustomHomeservers } = clientConfig;
+  const { homeserverList } = clientConfig;
 
-  if (allowCustomHomeservers) return true;
-
-  return homeserverList?.includes(server) === true;
+  const normalizedServer = normalizeHomeserverUrl(server);
+  return homeserverList?.map(normalizeHomeserverUrl).includes(normalizedServer) === true;
 };

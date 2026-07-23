@@ -2,7 +2,6 @@ import { Box, Text } from 'folds';
 import React, { useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { getLoginPath } from '../../pathUtils';
-import { useAuthServer } from '../../../hooks/useAuthServer';
 import { PasswordResetForm } from './PasswordResetForm';
 import { ResetPasswordPathSearchParams } from '../../paths';
 
@@ -17,7 +16,6 @@ const useResetPasswordSearchParams = (
   );
 
 export function ResetPassword() {
-  const server = useAuthServer();
   const [searchParams] = useSearchParams();
   const resetPasswordSearchParams = useResetPasswordSearchParams(searchParams);
 
@@ -30,7 +28,7 @@ export function ResetPassword() {
       <span data-spacing-node />
 
       <Text align="Center">
-        Lembrou sua senha? <Link to={getLoginPath(server)}>Entrar</Link>
+        Lembrou sua senha? <Link to={getLoginPath()}>Entrar</Link>
       </Text>
     </Box>
   );

@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { Box, Text, color } from 'folds';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SSOAction } from 'matrix-js-sdk';
-import { useAuthServer } from '../../../hooks/useAuthServer';
 import { RegisterFlowStatus, useAuthFlows } from '../../../hooks/useAuthFlows';
 import { useParsedLoginFlows } from '../../../hooks/useParsedLoginFlows';
 import { PasswordRegisterForm, SUPPORTED_REGISTER_STAGES } from '../register/PasswordRegisterForm';
@@ -24,14 +23,13 @@ const useRegisterSearchParams = (searchParams: URLSearchParams): RegisterPathSea
   );
 
 export function Register() {
-  const server = useAuthServer();
   const { loginFlows, registerFlows } = useAuthFlows();
   const [searchParams] = useSearchParams();
   const registerSearchParams = useRegisterSearchParams(searchParams);
   const { sso } = useParsedLoginFlows(loginFlows.flows);
 
   // redirect to /login because only that path handle m.login.token
-  const ssoRedirectUrl = usePathWithOrigin(getLoginPath(server));
+  const ssoRedirectUrl = usePathWithOrigin(getLoginPath());
 
   return (
     <Box direction="Column" gap="500">
@@ -91,7 +89,7 @@ export function Register() {
         </>
       )}
       <Text align="Center">
-        Já tem uma conta? <Link to={getLoginPath(server)}>Entrar</Link>
+        Já tem uma conta? <Link to={getLoginPath()}>Entrar</Link>
       </Text>
     </Box>
   );

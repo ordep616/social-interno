@@ -2,8 +2,6 @@ import to from 'await-to-js';
 import { LoginRequest, LoginResponse, MatrixError, createClient } from 'matrix-js-sdk';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClientConfig, clientAllowedServer } from '../../../hooks/useClientConfig';
-import { autoDiscovery, specVersions } from '../../../cs-api';
 import { ErrorCode } from '../../../cs-errorcode';
 import {
   deleteAfterLoginRedirectPath,
@@ -12,40 +10,7 @@ import {
 import { getHomePath } from '../../pathUtils';
 import { setFallbackSession } from '../../../state/sessions';
 
-export enum GetBaseUrlError {
-  NotAllow = 'NotAllow',
-  NotFound = 'NotFound',
-}
-export const factoryGetBaseUrl = (clientConfig: ClientConfig, server: string) => {
-  const getBaseUrl = async (): Promise<string> => {
-    if (!clientAllowedServer(clientConfig, server)) {
-      throw new Error(GetBaseUrlError.NotAllow);
-    }
-
-    const [, discovery] = await to(autoDiscovery(fetch, server));
-
-    let mxIdBaseUrl: string | undefined;
-    const [, discoveryInfo] = discovery ?? [];
-
-    if (discoveryInfo) {
-      mxIdBaseUrl = discoveryInfo['m.homeserver'].base_url;
-    }
-
-    if (!mxIdBaseUrl) {
-      throw new Error(GetBaseUrlError.NotFound);
-    }
-    const [, versions] = await to(specVersions(fetch, mxIdBaseUrl));
-    if (!versions) {
-      throw new Error(GetBaseUrlError.NotFound);
-    }
-    return mxIdBaseUrl;
-  };
-  return getBaseUrl;
-};
-
 export enum LoginError {
-  ServerNotAllowed = 'ServerNotAllowed',
-  InvalidServer = 'InvalidServer',
   Forbidden = 'Forbidden',
   UserDeactivated = 'UserDeactivated',
   InvalidRequest = 'InvalidRequest',
@@ -58,21 +23,10 @@ export type CustomLoginResponse = {
   response: LoginResponse;
 };
 export const login = async (
-  serverBaseUrl: string | (() => Promise<string>),
+  serverBaseUrl: string,
   data: LoginRequest
 ): Promise<CustomLoginResponse> => {
-  const [urlError, url] =
-    typeof serverBaseUrl === 'function' ? await to(serverBaseUrl()) : [undefined, serverBaseUrl];
-  if (urlError) {
-    throw new MatrixError({
-      errcode:
-        urlError.message === GetBaseUrlError.NotAllow
-          ? LoginError.ServerNotAllowed
-          : LoginError.InvalidServer,
-    });
-  }
-
-  const mx = createClient({ baseUrl: url });
+  const mx = createClient({ baseUrl: serverBaseUrl });
   const [err, res] = await to<LoginResponse, MatrixError>(mx.loginRequest(data));
 
   if (err) {
@@ -103,7 +57,7 @@ export const login = async (
     });
   }
   return {
-    baseUrl: url,
+    baseUrl: serverBaseUrl,
     response: res,
   };
 };

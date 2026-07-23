@@ -72,7 +72,6 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
   const allowAdditionalCreators = creatorsSupported(selectedRoomVersion);
   const { additionalCreators, addAdditionalCreator, removeAdditionalCreator } =
     useAdditionalCreators();
-  const [federation, setFederation] = useState(true);
   const [knock, setKnock] = useState(false);
   const [advance, setAdvance] = useState(false);
 
@@ -126,7 +125,7 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
       topic: roomTopic || undefined,
       aliasLocalPart: publicRoom ? aliasLocalPart : undefined,
       knock: roomKnock,
-      allowFederation: federation,
+      allowFederation: false,
       additionalCreators: allowAdditionalCreators ? additionalCreators : undefined,
     }).then((roomId) => {
       if (alive()) {
@@ -219,25 +218,6 @@ export function CreateSpaceForm({ defaultAccess, space, onCreate }: CreateSpaceF
           </SequenceCard>
         )}
 
-        <SequenceCard
-          style={{ padding: config.space.S300 }}
-          variant="SurfaceVariant"
-          direction="Column"
-          gap="500"
-        >
-          <SettingTile
-            title="Permitir federação"
-            description="Usuários de outros servidores podem entrar."
-            after={
-              <Switch
-                variant="Primary"
-                value={federation}
-                onChange={setFederation}
-                disabled={disabled}
-              />
-            }
-          />
-        </SequenceCard>
         {advance && (
           <RoomVersionSelector
             versions={roomVersions?.available ? Object.keys(roomVersions.available) : ['1']}

@@ -40,9 +40,9 @@ export function Login() {
   const { loginFlows } = useAuthFlows();
   const [searchParams] = useSearchParams();
   const loginSearchParams = useLoginSearchParams(searchParams);
-  const ssoRedirectUrl = usePathWithOrigin(getLoginPath(server));
+  const ssoRedirectUrl = usePathWithOrigin(getLoginPath());
   const loginTokenForHashRouter = getLoginTokenSearchParam();
-  const absoluteLoginPath = usePathWithOrigin(getLoginPath(server));
+  const absoluteLoginPath = usePathWithOrigin(getLoginPath());
 
   if (hashRouter?.enabled && loginTokenForHashRouter) {
     window.location.replace(

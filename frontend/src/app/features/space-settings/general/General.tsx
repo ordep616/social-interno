@@ -7,8 +7,6 @@ import {
   RoomProfile,
   RoomJoinRules,
   RoomLocalAddresses,
-  RoomPublishedAddresses,
-  RoomPublish,
   RoomUpgrade,
 } from '../../common-settings/general';
 import { useRoomCreators } from '../../../hooks/useRoomCreators';
@@ -47,12 +45,10 @@ export function General({ requestClose }: GeneralProps) {
               <Box direction="Column" gap="100">
                 <Text size="L400">Opções</Text>
                 <RoomJoinRules permissions={permissions} />
-                <RoomPublish permissions={permissions} />
               </Box>
               <Box direction="Column" gap="100">
                 <Text size="L400">Endereços</Text>
-                <RoomPublishedAddresses permissions={permissions} />
-                <RoomLocalAddresses permissions={permissions} />
+                <RoomLocalAddresses />
               </Box>
               <Box direction="Column" gap="100">
                 <Text size="L400">Opções avançadas</Text>
