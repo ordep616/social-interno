@@ -83,7 +83,7 @@ export const MessageDeliveryIcon = style({
 
   selectors: {
     [`${MessageDeliveryStatus}[data-status=seen] &`]: {
-      gap: toRem(8),
+      gap: toRem(4),
       transform: 'translateY(1px) scale(1.2)',
       transformOrigin: 'center',
     },
