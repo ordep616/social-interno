@@ -42,6 +42,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Criar armazenamento próprio de papéis e procedimento local, idempotente e serializado para o primeiro `platform_admin`.
 - [x] Implementar cliente Matrix `whoami` e autorização interna de `platform_admin`, sem persistir ou registrar o token.
 - [~] Implementar provisionamento, bloqueio, redefinição de senha e desligamento de usuários pela API administrativa do Synapse; cliente HTTP mínimo de consulta e criação coberto por testes simulados, sem contas reais; orquestração do cadastro, serialização, papéis, auditoria e demais operações ainda pendentes.
+- [x] Planejar e aprovar a orquestração interna do cadastro como saga durável em `DEC-021`, antes de modelo, migração ou implementação.
 - [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
 - [ ] Avaliar OIDC como evolução posterior, sem bloquear o MVP baseado em convite.
 - [ ] Testar acessos negados e revogação de sessão.

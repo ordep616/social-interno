@@ -156,6 +156,21 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Validação: a prova de conceito começará com duas pessoas em redes diferentes. Chamadas em grupo só avançarão depois da validação funcional, de segurança e de capacidade.
 - Código aberto: versões, commits, imagens, arquivos incorporados e licenças dos componentes de chamada deverão ser aprovados e registrados antes da incorporação à plataforma.
 
+## DEC-021 — Orquestração durável do cadastro
+
+- Status: aceita pelos dois colaboradores.
+- Problema: PostgreSQL e Synapse não compartilham uma transação. Uma interrupção entre criar a conta, atribuir o papel e concluir o convite pode deixar estado parcial.
+- Decisão proposta: coordenar o cadastro como uma saga durável, com uma tentativa operacional persistida e fases transacionais locais separadas da chamada HTTP.
+- Identidade proposta: `username` terá 3 a 32 caracteres ASCII minúsculos, começará e terminará com letra ou número e aceitará apenas `.`, `_` e `-` no interior. Maiúsculas serão rejeitadas, não normalizadas. O backend acrescentará o `server_name` configurado.
+- Senha proposta: 15 a 128 caracteres, sem regras de composição, transformação, persistência ou registro. A fonte e a licença de uma lista local de senhas comuns ou comprometidas serão aprovadas antes do endpoint público.
+- Referência de senha: a proposta segue a orientação para senha de fator único do [NIST SP 800-63B](https://pages.nist.gov/800-63-4/sp800-63b.html), preservando frases-senha, espaços, Unicode e gerenciadores de senha.
+- Concorrência: a reserva do convite e a criação da tentativa ocorrerão na mesma transação. Restrições únicas parciais impedirão tentativas ativas simultâneas para o mesmo convite ou identidade.
+- Provisionamento: nenhuma transação de banco ficará aberta durante a chamada ao Synapse. Confirmação `201` permitirá a finalização local; resultados que possam ter criado ou modificado uma conta serão tratados como ambíguos.
+- Finalização: atribuição do papel próprio, conclusão do convite e conclusão da tentativa ocorrerão atomicamente no PostgreSQL. O convite nunca concederá `platform_admin` ou administração global do Synapse.
+- Reconciliação: falha seguramente anterior ao `PUT` poderá liberar o convite. Falha posterior ou ambígua manterá o convite indisponível e exigirá reconciliação, sem repetição automática da criação.
+- Persistência: `registration_attempts` guardará somente identificadores, papel, estado, instantes e código sanitizado de falha. Não guardará token, hash de token, senha, credencial administrativa ou corpo retornado pelo Synapse.
+- Limite: esta decisão não cria endpoints públicos, contas reais, auditoria, limites de tentativa, bloqueio, redefinição de senha ou desligamento.
+
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.
 - Aprovação das versões da prova de conceito para homologação e produção.

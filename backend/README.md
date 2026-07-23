@@ -94,6 +94,23 @@ cadastro, a serialização transacional por `user_id`, aplicação do papel,
 auditoria, limites, bloqueio, redefinição de senha e desligamento permanecem
 fora desta etapa.
 
+## Orquestração planejada
+
+`DEC-021` propõe coordenar convite, conta Matrix e papel próprio como uma saga
+durável. O desenho usa uma tentativa operacional sem segredos para impedir
+concorrência pelo mesmo convite ou identidade e para distinguir falhas
+repetíveis de estados que exigem reconciliação.
+
+A reserva do convite e a tentativa serão persistidas juntas; a chamada HTTP ao
+Synapse ocorrerá sem transação de banco aberta; e papel, conclusão do convite e
+conclusão da tentativa serão gravados em uma nova transação atômica. Um
+resultado ambíguo depois do `PUT` nunca libera o convite nem repete a criação
+automaticamente.
+
+Este desenho foi aprovado pelos dois colaboradores, mas continua apenas
+documental. Não existem ainda modelo, migração, serviço de orquestração,
+endpoint público ou procedimento de reconciliação.
+
 ## Autorização administrativa interna
 
 O cliente do Synapse valida a sessão em `GET /_matrix/client/v3/account/whoami`, conforme a Matrix Client-Server API. O token é enviado somente no cabeçalho `Authorization: Bearer`, nunca em query string ou corpo, e não é conservado no resultado. O cliente não segue redirecionamentos, ignora proxies do ambiente e aplica o timeout `BACKEND_SYNAPSE_REQUEST_TIMEOUT_SECONDS`, maior que zero, limitado a 30 segundos e com padrão de 5 segundos.
