@@ -21,6 +21,7 @@ Criar um sistema web privado de comunicação corporativa, acessível pelo naveg
 - Confirmação de entrega e leitura.
 - Indicador de digitação e presença.
 - Envio de imagens e documentos.
+- Gravação, envio e reprodução de mensagens de voz.
 - Painel administrativo básico.
 - Registro de ações administrativas.
 - Criptografia ponta a ponta conforme a política híbrida aprovada.
@@ -34,6 +35,9 @@ Criar um sistema web privado de comunicação corporativa, acessível pelo naveg
 - Chamadas de voz e vídeo.
 - Federação com outras organizações.
 - Compatibilidade com a rede Telegram.
+
+A prova de conceito futura de chamadas não altera esse limite: chamadas de voz
+e vídeo continuam fora do MVP até a conclusão e aprovação de um marco próprio.
 
 ## Requisitos principais
 

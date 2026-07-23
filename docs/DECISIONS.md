@@ -144,6 +144,18 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Licenças: dependências diretas serão registradas antes da incorporação. As transitivas serão identificadas na primeira resolução e registradas antes do merge da implementação. Psycopg 3 e o extra `binary` exigem atenção específica à `LGPL-3.0-only` e às bibliotecas empacotadas antes de homologação ou produção.
 - Limite: a fundação é exclusiva para convites, provisionamento e ciclo de vida de contas aprovados. Ela não implementa chat nem substitui Matrix ou Synapse.
 
+## DEC-020 — Mensagens de voz no MVP e chamadas em fase posterior
+
+- Status: aceita pelos dois colaboradores; o Colaborador 2 delegou a escolha final de escopo ao Colaborador 1.
+- Escopo: mensagens de voz gravadas entram no MVP. Chamadas de voz e vídeo continuam fora do MVP, mas poderão receber uma prova de conceito paralela que não bloqueia o piloto inicial.
+- Mensagens de voz: utilizarão o evento Matrix `m.audio` e o fluxo de mídia já existente no Cinny, sem passar pelo FastAPI. A gravação terá limite inicial de 5 minutos e 10 MB.
+- Compatibilidade: WebM/Opus será o formato preferencial e MP4/AAC será aceito como alternativa para navegadores que não produzam WebM. Os formatos definitivos serão confirmados em testes de navegador e celular.
+- Segurança: mensagens de voz herdam a criptografia e a retenção da sala. O acesso ao microfone será solicitado somente durante a gravação e exigirá contexto seguro fora de `localhost`.
+- Chamadas: a prova de conceito reutilizará MatrixRTC e o Element Call incorporado ao Cinny, com LiveKit, MatrixRTC Authorization Service (`lk-jwt-service`) e coturn. A equipe não desenvolverá uma pilha WebRTC própria.
+- Implantação: chamadas externas exigirão domínio, HTTPS, descoberta por `.well-known/matrix/client`, TURN com IP público, proteção de rede, limites e observabilidade. A federação pública continuará desabilitada.
+- Validação: a prova de conceito começará com duas pessoas em redes diferentes. Chamadas em grupo só avançarão depois da validação funcional, de segurança e de capacidade.
+- Código aberto: versões, commits, imagens, arquivos incorporados e licenças dos componentes de chamada deverão ser aprovados e registrados antes da incorporação à plataforma.
+
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.
 - Aprovação das versões da prova de conceito para homologação e produção.
