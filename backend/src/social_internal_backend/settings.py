@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import AnyHttpUrl, PostgresDsn
+from pydantic import AnyHttpUrl, Field, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     environment: Literal["local", "test", "homologation", "production"] = "local"
     database_url: PostgresDsn
     synapse_base_url: AnyHttpUrl
+    synapse_request_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     service_name: str = "social-interno-backend"
 
 

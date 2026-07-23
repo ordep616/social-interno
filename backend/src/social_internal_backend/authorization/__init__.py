@@ -6,10 +6,18 @@ from social_internal_backend.authorization.bootstrap import (
     PlatformAdminBootstrapService,
 )
 from social_internal_backend.authorization.repository import UserRoleAssignmentRepository
+from social_internal_backend.authorization.service import (
+    AuthorizedPlatformAdmin,
+    PlatformAdminAccessDeniedError,
+    PlatformAdminAuthorizationService,
+)
 
 __all__ = [
     "BootstrapAlreadyCompletedError",
     "BootstrapResult",
+    "AuthorizedPlatformAdmin",
+    "PlatformAdminAccessDeniedError",
+    "PlatformAdminAuthorizationService",
     "PlatformAdminBootstrapService",
     "UserRoleAssignmentRepository",
 ]

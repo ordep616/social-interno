@@ -25,6 +25,15 @@ def test_settings_load_prefixed_environment(monkeypatch: pytest.MonkeyPatch) -> 
 
     assert settings.environment == "test"
     assert str(settings.database_url).startswith("postgresql+psycopg://")
+    assert settings.synapse_request_timeout_seconds == 5
+
+
+def test_settings_reject_invalid_synapse_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    configure_environment(monkeypatch)
+    monkeypatch.setenv("BACKEND_SYNAPSE_REQUEST_TIMEOUT_SECONDS", "0")
+
+    with pytest.raises(ValueError):
+        Settings(_env_file=None)
 
 
 def test_get_settings_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:

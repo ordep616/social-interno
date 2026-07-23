@@ -9,8 +9,8 @@ from sqlalchemy.orm import Session
 from social_internal_backend.authorization.bootstrap import (
     BootstrapAlreadyCompletedError,
     PlatformAdminBootstrapService,
-    validate_matrix_user_id,
 )
+from social_internal_backend.matrix import validate_matrix_user_id
 from social_internal_backend.models import UserRole, UserRoleAssignment
 
 NOW = datetime(2026, 7, 22, 16, tzinfo=UTC)
