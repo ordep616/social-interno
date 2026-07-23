@@ -154,6 +154,88 @@ Respostas esperadas: validação `200` e criação do cadastro `201`. Token inex
 - Convites inválidos, expirados, usados ou revogados retornam resposta genérica que não revela dados internos.
 - Validação e aceitação possuem limite de tentativas por origem e por hash do token.
 
+### Orquestração interna proposta
+
+`DEC-021` propõe uma saga durável para coordenar o PostgreSQL próprio e o
+Synapse, pois os dois sistemas não compartilham uma transação. A decisão foi
+aceita pelos dois colaboradores e esta seção não cria uma nova rota.
+
+Antes de reservar o convite, o serviço deverá:
+
+- aceitar `username` com 3 a 32 caracteres ASCII minúsculos, usando a expressão
+  `^[a-z0-9][a-z0-9._-]{1,30}[a-z0-9]$`;
+- rejeitar letras maiúsculas em vez de normalizá-las silenciosamente;
+- formar o identificador `@{username}:{server_name}` somente com o domínio
+  configurado no backend;
+- aceitar senha entre 15 e 128 caracteres sem remover espaços, impor regras de
+  composição ou modificar seu conteúdo;
+- definir e revisar a licença de uma lista local de senhas comuns ou
+  comprometidas antes de expor o endpoint público;
+- validar tudo antes de iniciar qualquer transação ou chamada ao Synapse.
+
+Uma tabela operacional `registration_attempts`, separada da futura auditoria,
+deverá persistir somente:
+
+```text
+id
+invitation_id
+matrix_user_id
+role
+status
+created_at
+updated_at
+completed_at
+failure_code
+```
+
+Os estados propostos são `processing`, `synapse_created`, `completed`,
+`released` e `reconciliation_required`. Token de convite, hash do token, senha,
+credencial administrativa e corpo de resposta do Synapse não pertencem a essa
+tabela. Restrições únicas parciais impedem mais de uma tentativa ativa para o
+mesmo convite ou `matrix_user_id`, sem impedir que um convite liberado seja
+tentado novamente com outro nome.
+
+O fluxo terá quatro fases:
+
+1. Em uma transação local curta, mover o convite de `pending` para
+   `processing` e criar a tentativa. Qualquer conflito desfaz as duas mudanças.
+2. Depois do commit, sem manter transação ou bloqueio de banco durante a
+   requisição, consultar e criar a conta pelo `SynapseAdminClient`.
+3. Após confirmação `201`, persistir `synapse_created` em uma transação local
+   curta. Se nem isso for possível, a tentativa permanece ambígua e exige
+   reconciliação.
+4. Em outra transação local, criar
+   `UserRoleAssignment`, marcar o convite como `used` e concluir a tentativa.
+   O campo `granted_by` recebe o `created_by` do convite.
+
+O papel do convite será convertido diretamente: `user` para `user` e
+`group_admin` para `group_admin`. O cadastro nunca cria `platform_admin` nem
+administrador global do Synapse.
+
+As falhas serão classificadas pela última operação que pode ter produzido
+efeito:
+
+- validação local, conflito transacional ou conta encontrada antes do `PUT`:
+  falha segura; liberar o convite e marcar a tentativa como `released`;
+- resposta `201`: registrar `synapse_created` antes da finalização local;
+- timeout, queda de conexão ou resposta inesperada depois de iniciar o `PUT`:
+  não liberar o convite; marcar `reconciliation_required`;
+- falha local depois do `201`: conservar o estado suficiente para concluir a
+  atribuição do papel sem tentar criar outra conta;
+- estado ambíguo: nunca repetir automaticamente o `PUT` e nunca retornar senha,
+  token ou detalhes internos ao cliente.
+
+Antes da implementação, o cliente administrativo deverá distinguir conta
+encontrada na consulta preventiva de resultado ambíguo depois do `PUT`. A
+orquestração não chamará os métodos atuais que realizam `commit` internamente;
+as transições combinadas serão executadas por uma unidade de trabalho que
+possua os limites transacionais acima.
+
+Os testes da implementação deverão cobrir a matriz completa de falhas com
+clientes simulados, concorrência real no PostgreSQL, retomada após interrupção,
+idempotência da finalização e ausência de segredos em modelos, erros e
+representações. Nenhuma chamada real ao Synapse fará parte desses testes.
+
 ### Auditoria
 
 Uma tabela separada registra criação, revogação, aceitação, falha de provisionamento, bloqueio e redefinição administrativa. Cada evento contém autor, ação, alvo, instante UTC e resultado, sem token, senha ou credencial.
