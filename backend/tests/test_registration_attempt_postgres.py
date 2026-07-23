@@ -8,6 +8,14 @@ from uuid import UUID
 import pytest
 from sqlalchemy import Connection, Engine, create_engine, inspect, text
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from social_internal_backend.models import (
+    InvitationRole,
+    RegistrationAttempt,
+    RegistrationAttemptStatus,
+)
+from social_internal_backend.registrations import RegistrationAttemptRepository
 
 pytestmark = pytest.mark.postgres
 
@@ -242,3 +250,143 @@ def test_foreign_key_rejects_attempt_without_invitation(connection: Connection) 
             invitation_id=MISSING_INVITATION,
             matrix_user_id="@alice:localhost",
         )
+
+
+def test_repository_persists_and_completes_attempt_in_order(
+    connection: Connection,
+) -> None:
+    insert_invitation(connection, INVITATION_ONE, "a")
+    created_at = datetime(2026, 7, 23, 12, tzinfo=UTC)
+    synapse_created_at = created_at + timedelta(minutes=1)
+    completed_at = created_at + timedelta(minutes=2)
+
+    with Session(
+        bind=connection,
+        expire_on_commit=False,
+        join_transaction_mode="create_savepoint",
+    ) as session:
+        repository = RegistrationAttemptRepository(session)
+        attempt = RegistrationAttempt(
+            id=ATTEMPT_ONE,
+            invitation_id=INVITATION_ONE,
+            matrix_user_id="@alice:localhost",
+            role=InvitationRole.user,
+            status=RegistrationAttemptStatus.processing,
+            created_at=created_at,
+            updated_at=created_at,
+        )
+
+        assert repository.add(attempt) is attempt
+        assert repository.get(ATTEMPT_ONE) is attempt
+        assert repository.get_active_by_invitation(INVITATION_ONE) is attempt
+        assert repository.get_active_by_matrix_user_id("@alice:localhost") is attempt
+
+        created = repository.mark_synapse_created(ATTEMPT_ONE, synapse_created_at)
+        assert created is attempt
+        assert created.status is RegistrationAttemptStatus.synapse_created
+        assert created.updated_at == synapse_created_at
+        assert created.failure_code is None
+        assert repository.mark_synapse_created(ATTEMPT_ONE, completed_at) is None
+
+        completed = repository.mark_completed(ATTEMPT_ONE, completed_at)
+        assert completed is attempt
+        assert completed.status is RegistrationAttemptStatus.completed
+        assert completed.updated_at == completed_at
+        assert completed.completed_at == completed_at
+        assert completed.failure_code is None
+        assert repository.get_active_by_invitation(INVITATION_ONE) is None
+        assert repository.get_active_by_matrix_user_id("@alice:localhost") is None
+        assert repository.mark_completed(ATTEMPT_ONE, completed_at) is None
+
+
+def test_repository_releases_only_processing_attempt(
+    connection: Connection,
+) -> None:
+    insert_invitation(connection, INVITATION_ONE, "a")
+    created_at = datetime(2026, 7, 23, 12, tzinfo=UTC)
+    released_at = created_at + timedelta(minutes=1)
+
+    with Session(
+        bind=connection,
+        expire_on_commit=False,
+        join_transaction_mode="create_savepoint",
+    ) as session:
+        repository = RegistrationAttemptRepository(session)
+        repository.add(
+            RegistrationAttempt(
+                id=ATTEMPT_ONE,
+                invitation_id=INVITATION_ONE,
+                matrix_user_id="@alice:localhost",
+                role=InvitationRole.user,
+                status=RegistrationAttemptStatus.processing,
+                created_at=created_at,
+                updated_at=created_at,
+            )
+        )
+
+        released = repository.mark_released(
+            ATTEMPT_ONE,
+            failure_code="username_unavailable",
+            now=released_at,
+        )
+        assert released is not None
+        assert released.status is RegistrationAttemptStatus.released
+        assert released.updated_at == released_at
+        assert released.completed_at is None
+        assert released.failure_code == "username_unavailable"
+        assert repository.get_active_by_invitation(INVITATION_ONE) is None
+        assert (
+            repository.mark_reconciliation_required(
+                ATTEMPT_ONE,
+                failure_code="synapse_result_ambiguous",
+                now=released_at,
+            )
+            is None
+        )
+
+
+@pytest.mark.parametrize(
+    "initial_status",
+    [
+        RegistrationAttemptStatus.processing,
+        RegistrationAttemptStatus.synapse_created,
+    ],
+)
+def test_repository_marks_ambiguous_active_attempt_for_reconciliation(
+    connection: Connection,
+    initial_status: RegistrationAttemptStatus,
+) -> None:
+    insert_invitation(connection, INVITATION_ONE, "a")
+    created_at = datetime(2026, 7, 23, 12, tzinfo=UTC)
+    failed_at = created_at + timedelta(minutes=1)
+
+    with Session(
+        bind=connection,
+        expire_on_commit=False,
+        join_transaction_mode="create_savepoint",
+    ) as session:
+        repository = RegistrationAttemptRepository(session)
+        repository.add(
+            RegistrationAttempt(
+                id=ATTEMPT_ONE,
+                invitation_id=INVITATION_ONE,
+                matrix_user_id="@alice:localhost",
+                role=InvitationRole.user,
+                status=initial_status,
+                created_at=created_at,
+                updated_at=created_at,
+            )
+        )
+
+        ambiguous = repository.mark_reconciliation_required(
+            ATTEMPT_ONE,
+            failure_code="synapse_result_ambiguous",
+            now=failed_at,
+        )
+        assert ambiguous is not None
+        assert ambiguous.status is RegistrationAttemptStatus.reconciliation_required
+        assert ambiguous.updated_at == failed_at
+        assert ambiguous.completed_at is None
+        assert ambiguous.failure_code == "synapse_result_ambiguous"
+        assert repository.get_active_by_invitation(INVITATION_ONE) is ambiguous
+        assert repository.mark_completed(ATTEMPT_ONE, failed_at) is None

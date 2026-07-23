@@ -44,6 +44,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [~] Implementar provisionamento, bloqueio, redefinição de senha e desligamento de usuários pela API administrativa do Synapse; cliente HTTP mínimo de consulta e criação coberto por testes simulados, sem contas reais; orquestração do cadastro, serialização, papéis, auditoria e demais operações ainda pendentes.
 - [x] Planejar e aprovar a orquestração interna do cadastro como saga durável em `DEC-021`, antes de modelo, migração ou implementação.
 - [x] Implementar o modelo e a migração reversível de `registration_attempts`, com restrições e índices parciais validados em PostgreSQL isolado.
+- [x] Implementar o repositório de `registration_attempts`, com consultas ativas e transições condicionais validadas sem assumir os limites da futura unidade de trabalho.
 - [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
 - [ ] Avaliar OIDC como evolução posterior, sem bloquear o MVP baseado em convite.
 - [ ] Testar acessos negados e revogação de sessão.
