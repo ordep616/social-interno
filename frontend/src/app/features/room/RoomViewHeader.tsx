@@ -37,7 +37,12 @@ import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { useSpaceOptionally } from '../../hooks/useSpace';
 import { getHomeSearchPath, getSpaceSearchPath, withSearchParam } from '../../pages/pathUtils';
-import { getCanonicalAliasOrRoomId, isRoomAlias, mxcUrlToHttp } from '../../utils/matrix';
+import {
+  getCanonicalAliasOrRoomId,
+  guessDmRoomUserId,
+  isRoomAlias,
+  mxcUrlToHttp,
+} from '../../utils/matrix';
 import { _SearchPathSearchParams } from '../../pages/paths';
 import * as css from './RoomViewHeader.css';
 import { useRoomUnread } from '../../state/hooks/unread';
@@ -72,6 +77,59 @@ import { RoomSettingsPage } from '../../state/roomSettings';
 import { useCallEmbed, useCallStart } from '../../hooks/useCallEmbed';
 import { useLivekitSupport } from '../../hooks/useLivekitSupport';
 import { webRTCSupported } from '../../utils/rtc';
+import { Presence, UserPresence, useUserPresence } from '../../hooks/useUserPresence';
+import { timeHourMinute, today, yesterday } from '../../utils/time';
+
+const lastSeenDateFormatter = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+});
+
+const formatLastSeen = (ts: number, hour24Clock: boolean): string => {
+  const time = timeHourMinute(ts, hour24Clock);
+
+  if (today(ts)) return `visto por último hoje às ${time}`;
+  if (yesterday(ts)) return `visto por último ontem às ${time}`;
+
+  return `visto por último em ${lastSeenDateFormatter.format(new Date(ts))} às ${time}`;
+};
+
+const getDirectPresenceLabel = (
+  presence: UserPresence | undefined,
+  hour24Clock: boolean
+): string => {
+  if (presence?.presence === Presence.Online) {
+    return 'online agora';
+  }
+
+  if (presence?.lastActiveTs && presence.lastActiveTs > 0) {
+    return formatLastSeen(presence.lastActiveTs, hour24Clock);
+  }
+
+  return 'visto por último indisponível';
+};
+
+type DirectPresenceStatusProps = {
+  userId: string;
+  hour24Clock: boolean;
+};
+function DirectPresenceStatus({ userId, hour24Clock }: DirectPresenceStatusProps) {
+  const presence = useUserPresence(userId);
+  const online = presence?.presence === Presence.Online;
+
+  return (
+    <Text
+      className={css.HeaderPresence}
+      data-online={online}
+      size="T200"
+      priority="300"
+      truncate
+    >
+      {getDirectPresenceLabel(presence, hour24Clock)}
+    </Text>
+  );
+}
 
 type RoomMenuProps = {
   room: Room;
@@ -393,10 +451,11 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
   const powerLevels = usePowerLevelsContext();
   const creators = useRoomCreators(room);
   const permissions = useRoomPermissions(creators, powerLevels);
+  const myUserId = mx.getSafeUserId();
 
   const hasCallPermission = permissions.stateEvent(
     StateEvent.GroupCallMemberPrefix,
-    mx.getSafeUserId()
+    myUserId
   );
   const livekitSupported = useLivekitSupport();
   const rtcSupported = webRTCSupported();
@@ -411,11 +470,16 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
   const avatarMxc = useRoomAvatar(room, direct);
   const name = useRoomName(room);
   const topic = useRoomTopic(room);
+  const directUserId = direct ? guessDmRoomUserId(room, myUserId) : undefined;
+  const directPresenceUserId =
+    directUserId && directUserId !== myUserId ? directUserId : undefined;
+  const headerHasSubtitle = !!directPresenceUserId || !!topic;
   const avatarUrl = avatarMxc
     ? mxcUrlToHttp(mx, avatarMxc, useAuthentication, 96, 96, 'crop') ?? undefined
     : undefined;
 
   const [peopleDrawer, setPeopleDrawer] = useSetting(settingsAtom, 'isPeopleDrawer');
+  const [hour24Clock] = useSetting(settingsAtom, 'hour24Clock');
 
   const handleSearchClick = () => {
     const searchParams: _SearchPathSearchParams = {
@@ -444,6 +508,51 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
     }
     setPeopleDrawer(!peopleDrawer);
   };
+
+  let headerSubtitle: React.ReactNode;
+  if (directPresenceUserId) {
+    headerSubtitle = (
+      <DirectPresenceStatus userId={directPresenceUserId} hour24Clock={hour24Clock} />
+    );
+  } else if (topic) {
+    headerSubtitle = (
+      <UseStateProvider initial={false}>
+        {(viewTopic, setViewTopic) => (
+          <>
+            <Overlay open={viewTopic} backdrop={<OverlayBackdrop />}>
+              <OverlayCenter>
+                <FocusTrap
+                  focusTrapOptions={{
+                    initialFocus: false,
+                    clickOutsideDeactivates: true,
+                    onDeactivate: () => setViewTopic(false),
+                    escapeDeactivates: stopPropagation,
+                  }}
+                >
+                  <RoomTopicViewer
+                    name={name}
+                    topic={topic}
+                    requestClose={() => setViewTopic(false)}
+                  />
+                </FocusTrap>
+              </OverlayCenter>
+            </Overlay>
+            <Text
+              as="button"
+              type="button"
+              onClick={() => setViewTopic(true)}
+              className={css.HeaderTopic}
+              size="T200"
+              priority="300"
+              truncate
+            >
+              {topic}
+            </Text>
+          </>
+        )}
+      </UseStateProvider>
+    );
+  }
 
   return (
     <PageHeader
@@ -476,46 +585,10 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
             </Avatar>
           )}
           <Box direction="Column">
-            <Text size={topic ? 'H5' : 'H3'} truncate>
+            <Text size={headerHasSubtitle ? 'H5' : 'H3'} truncate>
               {name}
             </Text>
-            {topic && (
-              <UseStateProvider initial={false}>
-                {(viewTopic, setViewTopic) => (
-                  <>
-                    <Overlay open={viewTopic} backdrop={<OverlayBackdrop />}>
-                      <OverlayCenter>
-                        <FocusTrap
-                          focusTrapOptions={{
-                            initialFocus: false,
-                            clickOutsideDeactivates: true,
-                            onDeactivate: () => setViewTopic(false),
-                            escapeDeactivates: stopPropagation,
-                          }}
-                        >
-                          <RoomTopicViewer
-                            name={name}
-                            topic={topic}
-                            requestClose={() => setViewTopic(false)}
-                          />
-                        </FocusTrap>
-                      </OverlayCenter>
-                    </Overlay>
-                    <Text
-                      as="button"
-                      type="button"
-                      onClick={() => setViewTopic(true)}
-                      className={css.HeaderTopic}
-                      size="T200"
-                      priority="300"
-                      truncate
-                    >
-                      {topic}
-                    </Text>
-                  </>
-                )}
-              </UseStateProvider>
-            )}
+            {headerSubtitle}
           </Box>
         </Box>
 
