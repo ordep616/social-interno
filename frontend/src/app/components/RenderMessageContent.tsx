@@ -25,7 +25,7 @@ import {
   VideoContent,
 } from './message';
 import { UrlPreviewCard, UrlPreviewHolder } from './url-preview';
-import { Image, MediaControl, Video } from './media';
+import { Image, Video } from './media';
 import { ImageViewer } from './image-viewer';
 import { PdfViewer } from './Pdf-viewer';
 import { TextViewer } from './text-viewer';
@@ -34,6 +34,7 @@ import { IImageContent } from '../../types/matrix/common';
 
 type RenderMessageContentProps = {
   displayName: string;
+  senderIsMe?: boolean;
   msgType: string;
   ts: number;
   edited?: boolean;
@@ -47,6 +48,7 @@ type RenderMessageContentProps = {
 };
 export function RenderMessageContent({
   displayName,
+  senderIsMe,
   msgType,
   ts,
   edited,
@@ -242,10 +244,10 @@ export function RenderMessageContent({
         <MAudio
           content={getContent()}
           renderAsFile={renderFile}
-          renderAudioContent={(props) => (
-            <AudioContent {...props} renderMediaControl={(p) => <MediaControl {...p} />} />
-          )}
-          outlined={outlineAttachment}
+          displayName={displayName}
+          ts={ts}
+          senderIsMe={senderIsMe}
+          renderAudioContent={(props) => <AudioContent {...props} />}
         />
         {renderCaption()}
       </>
