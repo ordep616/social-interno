@@ -54,11 +54,20 @@ A fundação inicial contém apenas:
 - gerador de token URL-safe com 256 bits de entropia e hash SHA-256;
 - repositório SQLAlchemy com paginação e transições atômicas;
 - serviço interno para emissão, validação, revogação, reserva, conclusão e liberação;
+- cliente Matrix `whoami` e autorização interna exclusiva de `platform_admin`;
 - testes de saúde, configuração, banco, convite e ponto de entrada ASGI.
 
 O token aberto existe apenas no retorno da emissão e não aparece no `repr` do resultado. A emissão fixa validade de 24 horas. A reserva usa uma atualização condicional de `pending` para `processing`, impedindo que duas tentativas processem o mesmo convite; a conclusão e a liberação também usam transições condicionais.
 
-Endpoints REST, validação da sessão Matrix, aplicação da autorização nos endpoints, limites de tentativa, auditoria e chamadas administrativas ao Synapse ainda não foram implementados.
+Endpoints REST, aplicação da autorização aos endpoints, limites de tentativa, auditoria e chamadas administrativas de provisionamento ao Synapse ainda não foram implementados.
+
+## Autorização administrativa interna
+
+O cliente do Synapse valida a sessão em `GET /_matrix/client/v3/account/whoami`, conforme a Matrix Client-Server API. O token é enviado somente no cabeçalho `Authorization: Bearer`, nunca em query string ou corpo, e não é conservado no resultado. O cliente não segue redirecionamentos, ignora proxies do ambiente e aplica o timeout `BACKEND_SYNAPSE_REQUEST_TIMEOUT_SECONDS`, maior que zero, limitado a 30 segundos e com padrão de 5 segundos.
+
+Respostas `401` e `403` são tratadas como credencial recusada, `429` como limitação do Synapse, respostas `5xx` ou falhas de rede como indisponibilidade e respostas inesperadas como erro de protocolo. Os erros internos não incluem o token, o corpo retornado ou a requisição HTTP original.
+
+Depois do `whoami`, o serviço consulta `UserRoleAssignment` pelo `user_id` exato. Convidados, identidades sem atribuição, `user` e `group_admin` são recusados; somente `platform_admin` produz um contexto autorizado sem armazenar a credencial. Essa camada ainda não está conectada a rotas HTTP.
 
 ## Bootstrap do primeiro administrador
 

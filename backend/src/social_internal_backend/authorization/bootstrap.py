@@ -8,6 +8,7 @@ from typing import Protocol
 from sqlalchemy.orm import Session
 
 from social_internal_backend.authorization.repository import UserRoleAssignmentRepository
+from social_internal_backend.matrix import validate_matrix_user_id
 from social_internal_backend.models import UserRole, UserRoleAssignment
 
 Clock = Callable[[], datetime]
@@ -41,22 +42,6 @@ def utc_now() -> datetime:
     """Fornece o instante atual em UTC."""
 
     return datetime.now(UTC)
-
-
-def validate_matrix_user_id(matrix_user_id: str) -> str:
-    """Aceita uma identidade Matrix completa sem tentar normalizá-la."""
-
-    if len(matrix_user_id) > 255 or any(
-        character.isspace() or not character.isprintable() for character in matrix_user_id
-    ):
-        raise ValueError("invalid Matrix user ID")
-    if not matrix_user_id.startswith("@") or ":" not in matrix_user_id[1:]:
-        raise ValueError("invalid Matrix user ID")
-
-    localpart, server_name = matrix_user_id[1:].split(":", maxsplit=1)
-    if not localpart or not server_name:
-        raise ValueError("invalid Matrix user ID")
-    return matrix_user_id
 
 
 class PlatformAdminBootstrapService:
