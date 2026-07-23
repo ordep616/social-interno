@@ -6,14 +6,7 @@ import { Range } from 'react-range';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { IAudioInfo } from '../../../../types/matrix/common';
-import {
-  PlayTimeCallback,
-  useMediaLoading,
-  useMediaPlay,
-  useMediaPlayTimeCallback,
-  useMediaSeek,
-} from '../../../hooks/media';
-import { useThrottle } from '../../../hooks/useThrottle';
+import { useMediaLoading, useMediaPlay, useMediaSeek } from '../../../hooks/media';
 import { secondsToMinutesAndSeconds } from '../../../utils/common';
 import {
   decryptFile,
@@ -24,11 +17,6 @@ import {
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import { timeHourMinute } from '../../../utils/time';
 import * as css from './AudioContent.css';
-
-const PLAY_TIME_THROTTLE_OPS = {
-  wait: 500,
-  immediate: true,
-};
 
 let activeVoiceAudioElement: HTMLAudioElement | undefined;
 
@@ -89,6 +77,9 @@ const getWaveformPeaks = async (fileContent: Blob): Promise<number[]> => {
 
 const clampProgress = (value: number): number => Math.max(0, Math.min(1, value));
 
+const getFiniteDuration = (duration: number | undefined): number | undefined =>
+  typeof duration === 'number' && Number.isFinite(duration) && duration > 0 ? duration : undefined;
+
 export type AudioContentProps = {
   mimeType: string;
   url: string;
@@ -130,39 +121,61 @@ export function AudioContent({
   const [currentTime, setCurrentTime] = useState(0);
   // duration in seconds. (NOTE: info.duration is in milliseconds)
   const infoDuration = info.duration ?? 0;
-  const [duration, setDuration] = useState((infoDuration >= 0 ? infoDuration : 0) / 1000);
+  const infoDurationSeconds = (infoDuration >= 0 ? infoDuration : 0) / 1000;
+  const [duration, setDuration] = useState(infoDurationSeconds);
 
   const getAudioRef = useCallback(() => audioRef.current, []);
   const { loading, error: mediaError } = useMediaLoading(getAudioRef);
   const { playing, setPlaying } = useMediaPlay(getAudioRef);
   const { seek } = useMediaSeek(getAudioRef);
-  const handlePlayTimeCallback: PlayTimeCallback = useCallback((d, ct) => {
-    if (Number.isFinite(d)) setDuration(d);
-    setCurrentTime(ct);
-  }, []);
-  useMediaPlayTimeCallback(
-    getAudioRef,
-    useThrottle(handlePlayTimeCallback, PLAY_TIME_THROTTLE_OPS)
-  );
+  const sourceUrl =
+    srcState.status === AsyncStatus.Success ? (srcState.data as AudioContentData).src : undefined;
+
+  const syncAudioProgress = useCallback(() => {
+    const audioElement = audioRef.current;
+    if (!audioElement) return;
+
+    const nextDuration =
+      getFiniteDuration(audioElement.duration) ?? getFiniteDuration(infoDurationSeconds) ?? 0;
+    const nextCurrentTime = audioElement.ended
+      ? nextDuration
+      : Math.min(audioElement.currentTime, nextDuration || audioElement.currentTime);
+
+    setDuration(nextDuration);
+    setCurrentTime(nextCurrentTime);
+  }, [infoDurationSeconds]);
+
+  useEffect(() => {
+    const audioElement = audioRef.current;
+    if (!audioElement) return undefined;
+
+    audioElement.addEventListener('durationchange', syncAudioProgress);
+    audioElement.addEventListener('loadedmetadata', syncAudioProgress);
+    audioElement.addEventListener('seeked', syncAudioProgress);
+    audioElement.addEventListener('timeupdate', syncAudioProgress);
+    audioElement.addEventListener('ended', syncAudioProgress);
+
+    return () => {
+      audioElement.removeEventListener('durationchange', syncAudioProgress);
+      audioElement.removeEventListener('loadedmetadata', syncAudioProgress);
+      audioElement.removeEventListener('seeked', syncAudioProgress);
+      audioElement.removeEventListener('timeupdate', syncAudioProgress);
+      audioElement.removeEventListener('ended', syncAudioProgress);
+    };
+  }, [sourceUrl, syncAudioProgress]);
 
   useEffect(() => {
     if (!playing) return undefined;
 
     let animationFrameId = 0;
     const syncPlayProgress = () => {
-      const audioElement = audioRef.current;
-      if (audioElement) {
-        if (Number.isFinite(audioElement.duration)) {
-          setDuration(audioElement.duration);
-        }
-        setCurrentTime(audioElement.currentTime);
-      }
+      syncAudioProgress();
       animationFrameId = window.requestAnimationFrame(syncPlayProgress);
     };
 
     animationFrameId = window.requestAnimationFrame(syncPlayProgress);
     return () => window.cancelAnimationFrame(animationFrameId);
-  }, [playing]);
+  }, [playing, syncAudioProgress]);
 
   useEffect(() => {
     if (srcState.status === AsyncStatus.Idle) {
@@ -220,12 +233,12 @@ export function AudioContent({
     srcState.status === AsyncStatus.Success
       ? (srcState.data as AudioContentData).waveform
       : FALLBACK_WAVEFORM;
-  const safeDuration = duration || 1;
-  const progress = clampProgress(currentTime / safeDuration);
+  const playbackDuration = getFiniteDuration(duration) ?? getFiniteDuration(infoDurationSeconds);
+  const safeDuration = playbackDuration ?? 1;
+  const safeCurrentTime = Math.min(currentTime, safeDuration);
+  const progress = playbackDuration ? clampProgress(safeCurrentTime / playbackDuration) : 0;
   const progressClipRight = `${100 - progress * 100}%`;
   const sentAt = timeHourMinute(ts, true);
-  const sourceUrl =
-    srcState.status === AsyncStatus.Success ? (srcState.data as AudioContentData).src : undefined;
   const hasError = srcState.status === AsyncStatus.Error || mediaError;
   const ariaLabel = useMemo(
     () => `Mensagem de voz de ${displayName} as ${sentAt}`,
@@ -263,7 +276,7 @@ export function AudioContent({
             step={0.1}
             min={0}
             max={safeDuration}
-            values={[Math.min(currentTime, safeDuration)]}
+            values={[safeCurrentTime]}
             onChange={(values) => seek(values[0])}
             renderTrack={(params) => (
               <div {...params.props} className={css.WaveformTrack} style={params.props.style}>

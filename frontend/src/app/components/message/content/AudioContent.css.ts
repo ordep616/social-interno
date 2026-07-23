@@ -131,7 +131,7 @@ export const WaveformProgress = style({
   alignItems: 'center',
   gap: toRem(2),
   pointerEvents: 'none',
-  transition: 'clip-path 90ms linear',
+  willChange: 'clip-path',
 });
 
 export const WaveformProgressBar = style({
