@@ -30,6 +30,8 @@ const PLAY_TIME_THROTTLE_OPS = {
   immediate: true,
 };
 
+let activeVoiceAudioElement: HTMLAudioElement | undefined;
+
 const WAVEFORM_BAR_COUNT = 34;
 const MIN_BAR_SCALE = 0.16;
 const FALLBACK_WAVEFORM = [
@@ -142,10 +144,48 @@ export function AudioContent({
   );
 
   useEffect(() => {
+    if (srcState.status === AsyncStatus.Idle) {
+      loadSrc().catch(() => undefined);
+    }
+  }, [loadSrc, srcState.status]);
+
+  useEffect(() => {
     if (srcState.status !== AsyncStatus.Success) return undefined;
     const { src } = srcState.data as AudioContentData;
     return () => URL.revokeObjectURL(src);
   }, [srcState]);
+
+  useEffect(() => {
+    const audioElement = audioRef.current;
+    if (!audioElement) return undefined;
+
+    const handlePlayStart = () => {
+      const previousAudioElement = activeVoiceAudioElement;
+      activeVoiceAudioElement = audioElement;
+
+      if (previousAudioElement && previousAudioElement !== audioElement) {
+        previousAudioElement.pause();
+      }
+    };
+    const handlePlayStop = () => {
+      if (activeVoiceAudioElement === audioElement) {
+        activeVoiceAudioElement = undefined;
+      }
+    };
+
+    audioElement.addEventListener('play', handlePlayStart);
+    audioElement.addEventListener('pause', handlePlayStop);
+    audioElement.addEventListener('ended', handlePlayStop);
+
+    return () => {
+      audioElement.removeEventListener('play', handlePlayStart);
+      audioElement.removeEventListener('pause', handlePlayStop);
+      audioElement.removeEventListener('ended', handlePlayStop);
+      if (activeVoiceAudioElement === audioElement) {
+        activeVoiceAudioElement = undefined;
+      }
+    };
+  }, []);
 
   const handlePlay = () => {
     if (srcState.status === AsyncStatus.Success) {
@@ -244,7 +284,7 @@ export function AudioContent({
       <audio
         className={css.AudioElement}
         controls={false}
-        autoPlay
+        preload="metadata"
         ref={audioRef}
         src={sourceUrl}
       />
