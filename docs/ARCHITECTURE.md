@@ -8,6 +8,7 @@ O produto será uma adaptação de uma plataforma Matrix auto-hospedada. A equip
 Navegador / PWA
   ├── Fork corporativo do Cinny
   ├── Identidade visual e restrições corporativas
+  ├── Ativação anterior ao login e painel por capacidade
   ├── Estado e cache da aplicação
   └── Integração Matrix mantida pelo cliente
                     │
@@ -24,10 +25,14 @@ Navegador / PWA
         PostgreSQL   mídia/armazenamento
 
 Serviço de convites (FastAPI)
-  ├── convites, papéis e auditoria
-  ├── API administrativa do Synapse
+  ├── identidades pré-autorizadas, papéis e auditoria
+  ├── ativação create-only no Synapse
   └── PostgreSQL próprio
 ```
+
+A camada de ativação acima foi aprovada pelos dois colaboradores em `DEC-022`.
+Ela ainda depende das implementações autorizadas separadamente e não altera o
+cadastro público desabilitado do Synapse.
 
 ## Tecnologias adotadas ou candidatas
 
@@ -36,7 +41,12 @@ Serviço de convites (FastAPI)
 - Frontend: fork do Cinny `v4.12.3`, baseado em React, Vite e `matrix-js-sdk`.
 - SDK do frontend: versão utilizada e fixada pelo Cinny; atualizações exigem teste conjunto.
 - Banco do Synapse: PostgreSQL.
-- Identidade inicial: conta local criada por convite administrativo de uso único; OIDC poderá ser avaliado posteriormente.
+- Identidade inicial: `DEC-022` exige que `platform_admin` defina
+  previamente a conta local e que o funcionário escolha somente sua senha por
+  link de uso único; OIDC poderá ser avaliado posteriormente. O mecanismo
+  inicial por segredo compartilhado não é compatível com uma integração ao
+  Matrix Authentication Service (MAS), que exigirá nova decisão conjunta de
+  provisionamento.
 - Ambiente: contêineres durante desenvolvimento e homologação.
 - Serviço complementar: API REST FastAPI aprovada para convites, provisionamento e ciclo de vida de contas; novos usos exigem outra decisão.
 - Fundação do serviço: CPython `>=3.14,<3.15`, FastAPI síncrono, Uvicorn, SQLAlchemy `2.0.x`, Psycopg 3, Alembic, `pydantic-settings` e HTTPX.
@@ -51,17 +61,29 @@ Serviço de convites (FastAPI)
 - Não importa código, tipos ou clientes do Telegram.
 - Evita alterações profundas na camada Matrix original do Cinny e mantém personalizações corporativas isoladas sempre que possível.
 - Recebe URL do homeserver e opções públicas por configuração, nunca segredos administrativos.
+- Mantém o painel administrativo fechado por padrão e consulta capacidades no
+  backend antes de mostrá-lo.
+- Implementa ativação como página corporativa anterior ao login, sem reutilizar
+  o cadastro nativo Matrix ou seu `PasswordRegisterForm`.
 
 ### Backend, plataforma e infraestrutura — Colaborador 1
 
 - O Synapse é a fonte de verdade para contas Matrix, salas, participantes, mensagens, mídia e sincronização.
 - O acesso público, o registro livre e a federação externa permanecem desabilitados, salvo decisão conjunta posterior.
-- O serviço de convites controla a criação inicial; o Synapse autentica as contas e controla o acesso à plataforma.
+- Conforme `DEC-022`, o serviço de convites controlará uma identidade
+  previamente definida e o Synapse autenticará a conta depois da ativação.
 - A administração deve usar APIs e módulos suportados, evitando alterações diretas no banco do Synapse.
 - FastAPI não duplicará mensagens, salas, presença ou sincronização.
 - O serviço FastAPI usa PostgreSQL próprio e mantém credenciais administrativas fora do navegador.
 - A API própria segue REST versionado; operações de chat continuam usando diretamente o contrato Matrix.
 - O ambiente e o banco do serviço são independentes dos processos e do banco lógico do Synapse.
+- Somente `platform_admin` poderá criar ativações; `group_admin` continuará sem
+  administração de usuários.
+- Nenhuma conta existente será atualizada, reativada ou terá senha redefinida
+  pelo fluxo de ativação.
+- Qualquer sessão criada incidentalmente pelo mecanismo de provisionamento será
+  revogada antes de concluir a ativação; falha ou ambiguidade bloqueará o
+  convite para reconciliação.
 
 ### Dados
 
@@ -116,7 +138,7 @@ O diretório `contracts/` será criado somente quando uma extensão corporativa 
 | Leitura e digitação | Receipts e typing notifications |
 | Presença | Presence, se habilitada pela política |
 | Imagens e documentos | Repositório de mídia Matrix |
-| Criação de conta | Convite FastAPI e API administrativa do Synapse |
+| Criação de conta | Identidade pré-autorizada pelo FastAPI e mecanismo create-only do Synapse, conforme `DEC-022` |
 | Login | Autenticação local do Synapse; OIDC é evolução possível |
 | Administração | FastAPI, APIs administrativas e políticas do Synapse |
 
@@ -124,9 +146,15 @@ O diretório `contracts/` será criado somente quando uma extensão corporativa 
 
 - HTTPS obrigatório fora do computador local.
 - Cadastro público desabilitado.
+- Identidade e papel definidos previamente por `platform_admin`; o funcionário
+  informa somente a própria senha.
 - Federação desabilitada por padrão e validada em teste.
-- Cadastro por convite administrativo e encerramento de acesso após desligamento.
+- Ativação administrativa de identidade previamente definida e encerramento de
+  acesso após desligamento.
 - Segredos fora do frontend e do repositório.
+- Token de ativação no fragmento, removido da URL e mantido somente em memória.
+- Autorização administrativa sempre revalidada no backend, independentemente
+  da visibilidade do botão.
 - Limites de requisição e upload configurados.
 - Política explícita para criptografia ponta a ponta, recuperação e auditoria.
 - Backups testados e criptografados.

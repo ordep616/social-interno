@@ -10,7 +10,8 @@ O Matrix define o protocolo compartilhado. Depois que configuração, autentica�
 - [~] Avaliar Synapse `1.156.0`, Cinny `v4.12.3` e `matrix-js-sdk` `41.7.0`; validação conjunta pendente.
 - [x] Definir federação privada por lista de permissão, iniciando sem organizações parceiras e sem listener de federação exposto.
 - [x] Definir política híbrida de criptografia ponta a ponta para o MVP.
-- [~] Definir autenticação inicial por convite; domínio de produção e formato definitivo dos identificadores ainda pendentes.
+- [x] Aprovar a ativação de identidade previamente definida em `DEC-022`.
+- [ ] Definir domínio de produção e formato definitivo dos identificadores.
 - [ ] Definir convenções para conversas diretas, grupos e departamentos.
 - [x] Executar prova de conceito: dois usuários, uma sala, mensagem, leitura e arquivo.
 
@@ -41,10 +42,32 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [~] Implementar o serviço FastAPI de convites administrativos de uso único, com validade de 24 horas; geração segura, repositório, ciclo de vida interno, endpoints administrativos e controle de acesso concluídos; endpoints públicos, limites e auditoria pendentes.
 - [x] Criar armazenamento próprio de papéis e procedimento local, idempotente e serializado para o primeiro `platform_admin`.
 - [x] Implementar cliente Matrix `whoami` e autorização interna de `platform_admin`, sem persistir ou registrar o token.
-- [~] Implementar provisionamento, bloqueio, redefinição de senha e desligamento de usuários pela API administrativa do Synapse; cliente HTTP mínimo de consulta e criação coberto por testes simulados, sem contas reais; orquestração do cadastro, serialização, papéis, auditoria e demais operações ainda pendentes.
+- [~] Implementar provisionamento, bloqueio, redefinição de senha e desligamento
+  de usuários; o cliente `PUT /users/{user_id}` permanece fundação para ciclo
+  de vida, mas está excluído da ativação por também modificar contas
+  existentes; mecanismo create-only, orquestração, auditoria e demais
+  operações ainda pendentes.
 - [x] Planejar e aprovar a orquestração interna do cadastro como saga durável em `DEC-021`, antes de modelo, migração ou implementação.
 - [x] Implementar o modelo e a migração reversível de `registration_attempts`, com restrições e índices parciais validados em PostgreSQL isolado.
 - [x] Implementar o repositório de `registration_attempts`, com consultas ativas e transições condicionais validadas sem assumir os limites da futura unidade de trabalho.
+- [x] Revisar e aprovar conjuntamente a ativação de identidades em `DEC-022`.
+- [ ] Migrar convites para `target_user_id`, unicidade
+  parcial por identidade ativa e estado terminal `conflicted`.
+- [ ] Implementar `GET /v1/me/capabilities` sem conceder criação de usuários a
+  `user` ou `group_admin`.
+- [ ] Executar prova de conceito create-only do registro administrativo por
+  segredo compartilhado, revogar o dispositivo e o token de sessão retornados
+  antes da conclusão e comprovar que conta existente nunca é modificada.
+- [ ] Adaptar `registration_attempts` para guardar somente o identificador do
+  dispositivo de provisionamento necessário à revogação e à reconciliação,
+  nunca o `access_token`.
+- [ ] Registrar o shared-secret registration como incompatível com MAS e exigir
+  nova decisão conjunta de provisionamento antes de qualquer adoção futura do
+  Matrix Authentication Service.
+- [ ] Adaptar emissão, pré-validação, unidade de trabalho e orquestração ao
+  contrato aprovado, sem aceitar `username` do funcionário.
+- [ ] Implementar limites, auditoria e cabeçalhos de segurança antes de
+  publicar a ativação.
 - [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
 - [ ] Avaliar OIDC como evolução posterior, sem bloquear o MVP baseado em convite.
 - [ ] Testar acessos negados e revogação de sessão.
@@ -96,9 +119,12 @@ Esta trilha utiliza um homeserver Matrix local ou compartilhado e não depende d
 
 Aceitação: o fork inicia, conecta somente ao homeserver configurado e preserva licença, origem e rastreabilidade das alterações.
 
-### F2 — Sessão e sincronização
+### F2 — Ativação, sessão e sincronização
 
-- [ ] Implementar entrada pelo fluxo de convite e autenticação local do Synapse.
+- [ ] Criar `/activate` conforme `DEC-022`, ler `#token`, limpar
+  a URL, pré-validar no FastAPI e pedir somente senha.
+- [ ] Redirecionar a ativação concluída para o login Matrix normal com apenas o
+  `username` preenchido.
 - [ ] Restaurar e encerrar sessão com segurança.
 - [ ] Inicializar sincronização e tratar reconexão.
 - [ ] Criar estados de carregamento, vazio, indisponibilidade e acesso negado.
@@ -129,7 +155,12 @@ Aceitação: o fluxo de mídia funciona em computador e celular dentro dos limit
 ### F5 — Administração necessária
 
 - [ ] Definir com o Colaborador 1 quais operações precisam de interface própria.
-- [ ] Criar somente telas administrativas aprovadas.
+- [ ] Consultar `GET /v1/me/capabilities` e manter “Gerenciamento” fechado e
+  oculto sem `can_manage_user_activations`.
+- [ ] Criar painel aprovado para listar, emitir e revogar ativações, definindo
+  `username` e papel `user` ou `group_admin`.
+- [ ] Garantir que `group_admin` não veja criação de usuários e que nenhuma
+  tela ofereça `platform_admin` como papel de convite.
 - [ ] Nunca expor token ou API administrativa no navegador.
 - [ ] Implementar estados de conta bloqueada e permissão negada.
 

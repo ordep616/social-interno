@@ -12,7 +12,8 @@ Criar um sistema web privado de comunicação corporativa, acessível pelo naveg
 
 ## MVP
 
-- Cadastro por convite administrativo e login Matrix controlado.
+- Ativação de identidade previamente definida por `platform_admin` e login
+  Matrix controlado, conforme decisão conjunta `DEC-022`.
 - Diretório interno de usuários.
 - Conversas individuais.
 - Grupos privados.
@@ -42,12 +43,24 @@ e vídeo continuam fora do MVP até a conclusão e aprovação de um marco próp
 ## Requisitos principais
 
 - Nenhum cadastro público.
+- Usuários comuns e `group_admin` não podem escolher ou criar identidades.
+- Links de ativação concedem somente a identidade e o papel `user` ou
+  `group_admin` definidos previamente pelo `platform_admin`.
+- O administrador nunca define nem conhece a senha do funcionário.
 - Todo acesso deve ser autenticado e autorizado.
 - Dados armazenados em infraestrutura controlada pela organização.
 - Arquivos protegidos por autorização e URLs temporárias.
 - Operações administrativas auditáveis.
 - Política de retenção definida antes da produção.
 - Marca e identidade visual próprias.
+
+## Ativação de identidade aprovada
+
+`DEC-022`, aceita pelos dois colaboradores, substitui o convite em que o
+funcionário escolhe `username` por ativação de uma identidade previamente
+definida. Contrato, persistência, segurança da página e limites do mecanismo
+create-only foram aprovados como desenho. Cada implementação, migração e
+publicação continua dependente de autorização específica.
 
 ## Fases
 
