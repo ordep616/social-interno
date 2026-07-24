@@ -21,7 +21,6 @@ import {
   RectCords,
   Badge,
   Spinner,
-  Button,
 } from 'folds';
 import { useNavigate } from 'react-router-dom';
 import { Room } from 'matrix-js-sdk';
@@ -315,55 +314,7 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
   );
 });
 
-type CallMenuProps = {
-  onVoiceCall: () => void;
-  onVideoCall: () => void;
-  requestClose: () => void;
-};
-const CallMenu = forwardRef<HTMLDivElement, CallMenuProps>(
-  ({ requestClose, onVoiceCall, onVideoCall }, ref) => {
-    const handleVoice = () => {
-      onVoiceCall();
-      requestClose();
-    };
-    const handleVideo = () => {
-      onVideoCall();
-      requestClose();
-    };
-
-    return (
-      <Menu ref={ref} style={{ padding: config.space.S200, minWidth: toRem(150) }}>
-        <Box direction="Column" gap="200">
-          <Text size="L400">Iniciar chamada</Text>
-          <Box direction="Column" gap="200">
-            <Button
-              size="300"
-              variant="Success"
-              fill="Soft"
-              outlined
-              radii="300"
-              before={<Icon size="100" src={Icons.Phone} filled />}
-              onClick={handleVoice}
-            >
-              <Text size="B300">Voz</Text>
-            </Button>
-            <Button
-              size="300"
-              variant="Success"
-              radii="300"
-              before={<Icon size="100" src={Icons.VideoCamera} filled />}
-              onClick={handleVideo}
-            >
-              <Text size="B300">Vídeo</Text>
-            </Button>
-          </Box>
-        </Box>
-      </Menu>
-    );
-  }
-);
-
-function CallButton() {
+function AudioCallButton() {
   const room = useRoom();
   const direct = useIsDirectRoom();
 
@@ -371,73 +322,42 @@ function CallButton() {
   const startCall = useCallStart(direct);
   const callStarted = callEmbed && callEmbed.roomId === room.roomId;
   const inAnotherCall = callEmbed && !callStarted;
-  const [menuAnchor, setMenuAnchor] = useState<RectCords>();
 
-  const handleOpenMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
-    setMenuAnchor(evt.currentTarget.getBoundingClientRect());
+  const handleStartAudioCall = () => {
+    startCall(room, {
+      microphone: true,
+      video: false,
+      sound: true,
+    });
   };
 
   return (
-    <>
-      <TooltipProvider
-        position="Bottom"
-        offset={4}
-        tooltip={
-          <Tooltip>
-            {inAnotherCall ? (
-              <Text size="L400">Você já está em outra chamada. Encerre a atual para entrar.</Text>
-            ) : (
-              <Text>Chamada</Text>
-            )}
-          </Tooltip>
-        }
-      >
-        {(triggerRef) => (
-          <IconButton
-            variant="Surface"
-            fill="None"
-            ref={triggerRef}
-            onClick={handleOpenMenu}
-            onContextMenu={(evt) => {
-              evt.preventDefault();
-              startCall(room, {
-                microphone: true,
-                video: true,
-                sound: true,
-              });
-            }}
-            disabled={inAnotherCall || callStarted}
-            aria-pressed={!!menuAnchor}
-          >
-            <Icon size="400" src={Icons.VideoCamera} filled={!!menuAnchor} />
-          </IconButton>
-        )}
-      </TooltipProvider>
-      <PopOut
-        anchor={menuAnchor}
-        position="Bottom"
-        align="Center"
-        content={
-          <FocusTrap
-            focusTrapOptions={{
-              initialFocus: false,
-              returnFocusOnDeactivate: false,
-              onDeactivate: () => setMenuAnchor(undefined),
-              clickOutsideDeactivates: true,
-              isKeyForward: (evt: KeyboardEvent) => evt.key === 'ArrowDown',
-              isKeyBackward: (evt: KeyboardEvent) => evt.key === 'ArrowUp',
-              escapeDeactivates: stopPropagation,
-            }}
-          >
-            <CallMenu
-              onVideoCall={() => startCall(room, { microphone: true, video: true, sound: true })}
-              onVoiceCall={() => startCall(room, { microphone: true, video: false, sound: true })}
-              requestClose={() => setMenuAnchor(undefined)}
-            />
-          </FocusTrap>
-        }
-      />
-    </>
+    <TooltipProvider
+      position="Bottom"
+      offset={4}
+      tooltip={
+        <Tooltip>
+          {inAnotherCall ? (
+            <Text size="L400">Você já está em outra chamada. Encerre a atual para entrar.</Text>
+          ) : (
+            <Text>Iniciar chamada de áudio</Text>
+          )}
+        </Tooltip>
+      }
+    >
+      {(triggerRef) => (
+        <IconButton
+          variant="Surface"
+          fill="None"
+          ref={triggerRef}
+          onClick={handleStartAudioCall}
+          disabled={inAnotherCall || callStarted}
+          aria-label="Iniciar chamada de áudio"
+        >
+          <Icon size="400" src={Icons.Phone} filled />
+        </IconButton>
+      )}
+    </TooltipProvider>
   );
 }
 
@@ -668,7 +588,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
             }
           />
           {!room.isCallRoom() && livekitSupported && rtcSupported && hasCallPermission && (
-            <CallButton />
+            <AudioCallButton />
           )}
           {screenSize === ScreenSize.Desktop && (
             <TooltipProvider

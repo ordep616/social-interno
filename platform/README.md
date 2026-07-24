@@ -9,13 +9,19 @@
 - PostgreSQL isolado na rede Docker interna, sem porta publicada.
 - Synapse conectado à rede interna e a uma rede de borda, com a API Matrix
   publicada somente em `127.0.0.1`.
+- POC local de chamadas MatrixRTC com LiveKit, `lk-jwt-service` e coturn,
+  publicada somente em `127.0.0.1`.
 - Cadastro público desabilitado.
-- Listener configurado apenas para a API de cliente, sem recurso de federação.
+- Listener configurado para API de cliente e OpenID necessário ao
+  `lk-jwt-service`, sem recurso de federação.
 - Federação limitada por lista vazia.
 - Diretório público e pré-visualização de URLs desabilitados.
 - Configuração gerada localmente a partir de variáveis, sem versionar segredos.
 
-Este ambiente é uma prova de conceito local. Não possui TLS, OIDC, backup, monitoramento ou endurecimento de produção.
+Este ambiente é uma prova de conceito local. Não possui TLS, OIDC, backup,
+monitoramento ou endurecimento de produção. A POC de chamadas não altera o MVP
+e não deve ser exposta na internet sem domínio, HTTPS, TURN público,
+observabilidade, limites e revisão de licenças.
 
 ## Pré-requisitos
 
@@ -43,17 +49,52 @@ O endpoint ficará disponível em:
 http://localhost:8008/_matrix/client/versions
 ```
 
+Com a POC de chamadas, também ficam disponíveis localmente:
+
+```text
+http://localhost:8008/.well-known/matrix/client
+http://localhost:8085/healthz
+ws://host.docker.internal:7880
+turn:localhost:3478
+```
+
+No navegador local, o fork do Cinny lê o `.well-known` do Synapse e só mostra
+os controles de chamada quando `org.matrix.msc4143.rtc_foci` está anunciado.
+
 ## Comandos
 
 ```bash
-make init     # gera runtime/homeserver.yaml e copia o log.config
+make init     # gera as configurações em runtime/ e copia o log.config
 make keys     # gera a chave de assinatura do homeserver com a imagem oficial
 make config   # valida o Compose
 make up       # gera a configuração e inicia os serviços
-make logs     # acompanha Synapse e PostgreSQL
+make logs     # acompanha os serviços principais
 make ps       # mostra a saúde dos serviços
 make down     # encerra os serviços sem apagar os volumes
 ```
+
+## Chamadas MatrixRTC — POC local
+
+A POC usa:
+
+- Synapse como fonte de salas, membros, sinalização MatrixRTC e OpenID.
+- Element Call incorporado ao fork do Cinny.
+- LiveKit como SFU local.
+- `lk-jwt-service` para trocar identidade Matrix por JWT LiveKit.
+- coturn para anunciar TURN local aos clientes Matrix.
+
+Valores de desenvolvimento ficam em `.env.example`. Os padrões gerados pelo
+script são apenas placeholders locais; troque qualquer valor `change-me` antes
+de compartilhar o ambiente.
+
+Limites conhecidos:
+
+- a publicação está presa a `127.0.0.1`;
+- `host.docker.internal` é voltado ao Docker Desktop local;
+- teste em celular ou redes diferentes exige IP/domínio alcançável, HTTPS e
+  regras de firewall;
+- chamadas em grupo continuam fora do escopo até validação de capacidade e
+  segurança.
 
 ## Dados locais
 

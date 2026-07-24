@@ -19,7 +19,7 @@ down:
 	$(COMPOSE) --env-file .env -f compose.yaml down
 
 logs:
-	$(COMPOSE) --env-file .env -f compose.yaml logs -f synapse postgres
+	$(COMPOSE) --env-file .env -f compose.yaml logs -f synapse postgres livekit lk-jwt-service coturn
 
 ps:
 	$(COMPOSE) --env-file .env -f compose.yaml ps
