@@ -13,6 +13,11 @@ export type AutoDiscoveryError = {
   action: AutoDiscoveryAction;
 };
 
+export type MatrixRtcFocus = {
+  livekit_service_url: string;
+  type: 'livekit';
+};
+
 export type AutoDiscoveryInfo = Record<string, unknown> & {
   'm.homeserver': {
     base_url: string;
@@ -24,12 +29,7 @@ export type AutoDiscoveryInfo = Record<string, unknown> & {
     account?: string;
     issuer?: string;
   };
-  'org.matrix.msc4143.rtc_foci'?: [
-    {
-      livekit_service_url: string;
-      type: 'livekit';
-    }
-  ];
+  'org.matrix.msc4143.rtc_foci'?: MatrixRtcFocus[];
 };
 
 export const autoDiscovery = async (

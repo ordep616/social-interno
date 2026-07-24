@@ -41,6 +41,7 @@ def test_settings_load_prefixed_environment(monkeypatch: pytest.MonkeyPatch) -> 
     )
     assert "opaque-admin-value-for-tests" not in repr(settings)
     assert str(settings.invitation_public_base_url).endswith("/activate")
+    assert "http://127.0.0.1:8080" in settings.cors_allowed_origins
 
 
 def test_settings_reject_invalid_synapse_timeout(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import { MatrixRtcFocus } from '../cs-api';
 import { trimTrailingSlash } from '../utils/common';
 
 export type HashRouterConfig = {
@@ -10,6 +11,7 @@ export type ClientConfig = {
   defaultHomeserver?: number;
   homeserverList?: string[];
   allowCustomHomeservers?: boolean;
+  backendUrl?: string;
 
   featuredCommunities?: {
     openAsDefault?: boolean;
@@ -19,6 +21,10 @@ export type ClientConfig = {
   };
 
   hashRouter?: HashRouterConfig;
+
+  matrixRTC?: {
+    rtcFoci?: MatrixRtcFocus[];
+  };
 };
 
 const ClientConfigContext = createContext<ClientConfig | null>(null);

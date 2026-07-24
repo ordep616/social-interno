@@ -10,6 +10,7 @@ from social_internal_backend.synapse.admin_client import (
     SynapseUser,
     SynapseUserAlreadyExistsError,
     SynapseUserNotFoundError,
+    SynapseUserPage,
 )
 from social_internal_backend.synapse.client import (
     InvalidMatrixAccessTokenError,
@@ -36,4 +37,5 @@ __all__ = [
     "SynapseUser",
     "SynapseUserAlreadyExistsError",
     "SynapseUserNotFoundError",
+    "SynapseUserPage",
 ]

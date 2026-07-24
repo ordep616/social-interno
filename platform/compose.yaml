@@ -45,6 +45,52 @@ services:
         gw_priority: 1
       matrix-internal: {}
 
+  livekit:
+    image: livekit/livekit-server:v1.13.1
+    restart: unless-stopped
+    command: ["--config", "/etc/livekit.yaml"]
+    ports:
+      - "127.0.0.1:${LIVEKIT_PORT:-7880}:7880"
+      - "127.0.0.1:${LIVEKIT_RTC_TCP_PORT:-7881}:${LIVEKIT_RTC_TCP_PORT:-7881}"
+      - "127.0.0.1:${LIVEKIT_RTC_UDP_PORT:-7882}:${LIVEKIT_RTC_UDP_PORT:-7882}/udp"
+    volumes:
+      - ./runtime/livekit.yaml:/etc/livekit.yaml:ro
+    networks:
+      - matrix-edge
+
+  lk-jwt-service:
+    image: ghcr.io/element-hq/lk-jwt-service:0.4.4
+    restart: unless-stopped
+    depends_on:
+      - livekit
+      - synapse
+    environment:
+      LIVEKIT_URL: ${LIVEKIT_URL:-ws://host.docker.internal:7880}
+      LIVEKIT_KEY: ${LIVEKIT_KEY:-devkey}
+      LIVEKIT_SECRET: ${LIVEKIT_SECRET:-change-me-local-livekit-secret}
+      LIVEKIT_FULL_ACCESS_HOMESERVERS: ${LIVEKIT_FULL_ACCESS_HOMESERVERS:-localhost}
+      LIVEKIT_JWT_BIND: :8080
+      LIVEKIT_CS_API_URL_OVERRIDES: ${LIVEKIT_CS_API_URL_OVERRIDES:-localhost=http://synapse:8008}
+    ports:
+      - "127.0.0.1:${LIVEKIT_JWT_PORT:-8085}:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - matrix-edge
+      - matrix-internal
+
+  coturn:
+    image: coturn/coturn:4.12.0
+    restart: unless-stopped
+    command: ["-c", "/etc/coturn/turnserver.conf"]
+    ports:
+      - "127.0.0.1:${TURN_PORT:-3478}:3478"
+      - "127.0.0.1:${TURN_PORT:-3478}:3478/udp"
+    volumes:
+      - ./runtime/turnserver.conf:/etc/coturn/turnserver.conf:ro
+    networks:
+      - matrix-edge
+
 networks:
   matrix-edge:
   matrix-internal:

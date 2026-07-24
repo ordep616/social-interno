@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     synapse_request_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     synapse_admin_access_token: SecretStr
     invitation_public_base_url: AnyHttpUrl
+    cors_allowed_origins: tuple[str, ...] = (
+        "http://127.0.0.1:8080",
+        "http://localhost:8080",
+    )
     service_name: str = "social-interno-backend"
 
     @field_validator("matrix_server_name")

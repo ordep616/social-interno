@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Avatar,
   Box,
@@ -30,9 +30,11 @@ import { Devices } from './devices';
 import { EmojisStickers } from './emojis-stickers';
 import { DeveloperTools } from './developer-tools';
 import { About } from './about';
+import { Administration, administrationBackendUrl, getCurrentCapabilities } from './administration';
 import { UseStateProvider } from '../../components/UseStateProvider';
 import { stopPropagation } from '../../utils/keyboard';
 import { LogoutDialog } from '../../components/LogoutDialog';
+import { useClientConfig } from '../../hooks/useClientConfig';
 
 export enum SettingsPages {
   GeneralPage,
@@ -42,6 +44,7 @@ export enum SettingsPages {
   EmojisStickersPage,
   DeveloperToolsPage,
   AboutPage,
+  AdministrationPage,
 }
 
 type SettingsMenuItem = {
@@ -50,9 +53,9 @@ type SettingsMenuItem = {
   icon: IconSrc;
 };
 
-const useSettingsMenuItems = (): SettingsMenuItem[] =>
-  useMemo(
-    () => [
+const useSettingsMenuItems = (showAdministration: boolean): SettingsMenuItem[] =>
+  useMemo(() => {
+    const items: SettingsMenuItem[] = [
       {
         page: SettingsPages.GeneralPage,
         name: 'Geral',
@@ -88,9 +91,18 @@ const useSettingsMenuItems = (): SettingsMenuItem[] =>
         name: 'Sobre',
         icon: Icons.Info,
       },
-    ],
-    []
-  );
+    ];
+
+    if (showAdministration) {
+      items.push({
+        page: SettingsPages.AdministrationPage,
+        name: 'Administração',
+        icon: Icons.ShieldUser,
+      });
+    }
+
+    return items;
+  }, [showAdministration]);
 
 type SettingsProps = {
   initialPage?: SettingsPages;
@@ -98,6 +110,7 @@ type SettingsProps = {
 };
 export function Settings({ initialPage, requestClose }: SettingsProps) {
   const mx = useMatrixClient();
+  const clientConfig = useClientConfig();
   const useAuthentication = useMediaAuthentication();
   const userId = mx.getUserId()!;
   const profile = useUserProfile(userId);
@@ -111,7 +124,33 @@ export function Settings({ initialPage, requestClose }: SettingsProps) {
     if (initialPage) return initialPage;
     return screenSize === ScreenSize.Mobile ? undefined : SettingsPages.GeneralPage;
   });
-  const menuItems = useSettingsMenuItems();
+  const [showAdministration, setShowAdministration] = useState(false);
+  const menuItems = useSettingsMenuItems(showAdministration);
+
+  useEffect(() => {
+    const accessToken = mx.getAccessToken();
+    if (!accessToken) {
+      setShowAdministration(false);
+      return undefined;
+    }
+
+    let ignore = false;
+    getCurrentCapabilities(administrationBackendUrl(clientConfig), accessToken)
+      .then((capabilities) => {
+        if (ignore) return;
+        setShowAdministration(
+          capabilities.capabilities.can_manage_accounts === true ||
+            capabilities.capabilities.can_manage_user_activations === true
+        );
+      })
+      .catch(() => {
+        if (!ignore) setShowAdministration(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [clientConfig, mx]);
 
   const handlePageRequestClose = () => {
     if (screenSize === ScreenSize.Mobile) {
@@ -229,6 +268,9 @@ export function Settings({ initialPage, requestClose }: SettingsProps) {
         <DeveloperTools requestClose={handlePageRequestClose} />
       )}
       {activePage === SettingsPages.AboutPage && <About requestClose={handlePageRequestClose} />}
+      {activePage === SettingsPages.AdministrationPage && (
+        <Administration requestClose={handlePageRequestClose} />
+      )}
     </PageRoot>
   );
 }

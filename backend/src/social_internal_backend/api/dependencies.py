@@ -7,6 +7,7 @@ from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session, sessionmaker
 
+from social_internal_backend.accounts import AccountService
 from social_internal_backend.authorization import (
     AuthorizedPlatformAdmin,
     CorporateUserAccessDeniedError,
@@ -98,6 +99,30 @@ InvitationIssuanceServiceDependency = Annotated[
     InvitationService,
     Depends(get_invitation_issuance_service),
 ]
+
+
+def get_synapse_admin_client(settings: AppSettings) -> Iterator[SynapseAdminClient]:
+    """Monta o cliente que concentra o token administrativo no backend."""
+
+    with SynapseAdminClient(
+        base_url=str(settings.synapse_base_url),
+        timeout_seconds=settings.synapse_request_timeout_seconds,
+        matrix_server_name=settings.matrix_server_name,
+        admin_access_token=settings.synapse_admin_access_token,
+    ) as client:
+        yield client
+
+
+SynapseAdmin = Annotated[SynapseAdminClient, Depends(get_synapse_admin_client)]
+
+
+def get_account_service(synapse_admin: SynapseAdmin) -> AccountService:
+    """Monta as regras administrativas de contas."""
+
+    return AccountService(synapse_admin=synapse_admin)
+
+
+AccountServiceDependency = Annotated[AccountService, Depends(get_account_service)]
 
 
 def get_platform_admin_authorization_service(

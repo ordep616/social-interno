@@ -29,6 +29,7 @@ def make_user_payload(user_id: str = USER_ID) -> dict[str, object]:
 
     return {
         "name": user_id,
+        "displayname": "Alice",
         "admin": False,
         "deactivated": False,
         "locked": False,
@@ -103,6 +104,7 @@ def test_get_user_uses_encoded_path_bearer_header_and_minimal_result() -> None:
         user = client.get_user(USER_ID)
 
     assert user.user_id == USER_ID
+    assert user.display_name == "Alice"
     assert not user.admin
     assert not user.deactivated
     assert not user.locked
@@ -152,6 +154,92 @@ def test_create_user_preflights_and_sends_only_non_admin_account_fields() -> Non
     assert created.user_id == USER_ID
     assert OPAQUE_ACCOUNT_VALUE not in repr(created)
     assert OPAQUE_ADMIN_VALUE not in repr(created)
+
+
+def test_list_users_uses_safe_filters_and_parses_page() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "GET"
+        assert request.url.path == "/_synapse/admin/v2/users"
+        params = dict(request.url.params)
+        assert params == {
+            "from": "3",
+            "limit": "25",
+            "guests": "false",
+            "deactivated": "true",
+            "locked": "true",
+            "name": "alice",
+        }
+        return httpx.Response(
+            200,
+            json={
+                "users": [make_user_payload()],
+                "total": 1,
+                "next_token": "28",
+            },
+        )
+
+    with make_client(handler) as client:
+        page = client.list_users(offset=3, limit=25, query=" alice ")
+
+    assert len(page.users) == 1
+    assert page.users[0].user_id == USER_ID
+    assert page.total == 1
+    assert page.next_token == "28"  # noqa: S105
+
+
+def test_update_user_preflights_preserves_admin_flag_and_refetches() -> None:
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.method == "GET":
+            return httpx.Response(200, json=make_user_payload())
+        assert request.method == "PUT"
+        assert request.url.raw_path == b"/_synapse/admin/v2/users/%40alice%3Alocalhost"
+        assert json.loads(request.content) == {
+            "admin": False,
+            "displayname": "Alice Atualizada",
+            "locked": True,
+        }
+        return httpx.Response(200, json={"name": USER_ID})
+
+    with make_client(handler) as client:
+        user = client.update_user(
+            user_id=USER_ID,
+            display_name="Alice Atualizada",
+            locked=True,
+        )
+
+    assert [request.method for request in requests] == ["GET", "PUT", "GET"]
+    assert user.user_id == USER_ID
+
+
+def test_reset_password_uses_dedicated_endpoint_without_leaking_secret() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "POST"
+        assert request.url.raw_path == (b"/_synapse/admin/v1/reset_password/%40alice%3Alocalhost")
+        assert json.loads(request.content) == {
+            "new_password": OPAQUE_ACCOUNT_VALUE,
+            "logout_devices": True,
+        }
+        return httpx.Response(200, json={})
+
+    with make_client(handler) as client:
+        client.reset_password(
+            user_id=USER_ID,
+            new_password=SecretStr(OPAQUE_ACCOUNT_VALUE),
+        )
+
+
+def test_deactivate_user_uses_supported_deactivate_endpoint() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.method == "POST"
+        assert request.url.raw_path == b"/_synapse/admin/v1/deactivate/%40alice%3Alocalhost"
+        assert json.loads(request.content) == {"erase": True}
+        return httpx.Response(200, json={})
+
+    with make_client(handler) as client:
+        client.deactivate_user(user_id=USER_ID, erase=True)
 
 
 def test_create_user_stops_before_put_when_account_exists() -> None:
