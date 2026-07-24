@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Protocol
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from social_internal_backend.invitations.repository import InvitationRepository
@@ -13,11 +14,14 @@ from social_internal_backend.invitations.tokens import (
     generate_invitation_token,
     hash_invitation_token,
 )
+from social_internal_backend.matrix import build_local_matrix_user_id
 from social_internal_backend.models import Invitation, InvitationRole, InvitationStatus
+from social_internal_backend.synapse import SynapseUserNotFoundError
 
 INVITATION_LIFETIME = timedelta(hours=24)
 DEFAULT_LIST_LIMIT = 100
 MAX_LIST_LIMIT = 100
+ACTIVE_TARGET_CONSTRAINT_NAME = "uq_invitations_active_target_user_id"
 
 Clock = Callable[[], datetime]
 TokenFactory = Callable[[], str]
@@ -31,6 +35,8 @@ class InvitationRepositoryPort(Protocol):
     def get(self, invitation_id: UUID) -> Invitation | None: ...
 
     def get_by_token_hash(self, token_hash: str) -> Invitation | None: ...
+
+    def get_active_by_target_user_id(self, target_user_id: str) -> Invitation | None: ...
 
     def list(self, *, offset: int = 0, limit: int = 100) -> Sequence[Invitation]: ...
 
@@ -50,6 +56,12 @@ class InvitationRepositoryPort(Protocol):
     def release_processing(self, invitation_id: UUID, now: datetime) -> Invitation | None: ...
 
 
+class SynapseUserLookupPort(Protocol):
+    """Consulta mínima usada para confirmar que a identidade não existe."""
+
+    def get_user(self, user_id: str) -> object: ...
+
+
 class InvitationNotFoundError(Exception):
     """O convite solicitado não existe."""
 
@@ -60,6 +72,10 @@ class InvitationUnavailableError(Exception):
 
 class InvitationConflictError(Exception):
     """A operação administrativa conflita com o estado atual."""
+
+
+class InvitationIdentityConflictError(InvitationConflictError):
+    """A identidade já existe ou possui outro convite ativo."""
 
 
 class InvitationTransitionError(Exception):
@@ -88,21 +104,55 @@ class InvitationService:
         session: Session,
         *,
         repository: InvitationRepositoryPort | None = None,
+        identity_provider: SynapseUserLookupPort | None = None,
+        matrix_server_name: str | None = None,
         clock: Clock = utc_now,
         token_factory: TokenFactory = generate_invitation_token,
     ) -> None:
         self._session = session
         self._repository = repository if repository is not None else InvitationRepository(session)
+        self._identity_provider = identity_provider
+        self._matrix_server_name = matrix_server_name
         self._clock = clock
         self._token_factory = token_factory
 
-    def issue(self, *, role: InvitationRole, created_by: str) -> IssuedInvitation:
-        """Cria um convite de 24 horas e retorna o segredo somente nesta chamada."""
+    def issue(
+        self,
+        *,
+        role: InvitationRole,
+        created_by: str,
+        username: str | None = None,
+    ) -> IssuedInvitation:
+        """Reserva uma identidade livre e retorna o segredo uma única vez."""
 
         if not isinstance(role, InvitationRole):
             raise ValueError("role must be an invitation role")
         if not created_by.strip():
             raise ValueError("created_by must not be empty")
+        if username is None:
+            raise ValueError("username is required")
+        if self._matrix_server_name is None or self._identity_provider is None:
+            raise RuntimeError("invitation identity lookup is not configured")
+
+        target_user_id = build_local_matrix_user_id(username, self._matrix_server_name)
+        try:
+            active_invitation = self._repository.get_active_by_target_user_id(target_user_id)
+        except Exception:
+            self._session.rollback()
+            raise
+        if active_invitation is not None:
+            self._session.rollback()
+            raise InvitationIdentityConflictError
+
+        # A leitura local abre uma transação implícita. Ela deve ser encerrada
+        # antes da chamada HTTP ao Synapse.
+        self._session.rollback()
+        try:
+            self._identity_provider.get_user(target_user_id)
+        except SynapseUserNotFoundError:
+            pass
+        else:
+            raise InvitationIdentityConflictError
 
         now = self._now()
         token = self._token_factory()
@@ -111,12 +161,18 @@ class InvitationService:
             role=role,
             status=InvitationStatus.pending,
             created_by=created_by,
+            target_user_id=target_user_id,
             created_at=now,
             expires_at=now + INVITATION_LIFETIME,
         )
         try:
             self._repository.add(invitation)
             self._session.commit()
+        except IntegrityError as error:
+            self._session.rollback()
+            if self._constraint_name(error) == ACTIVE_TARGET_CONSTRAINT_NAME:
+                raise InvitationIdentityConflictError from None
+            raise
         except Exception:
             self._session.rollback()
             raise
@@ -244,3 +300,9 @@ class InvitationService:
         if now.tzinfo is None or now.utcoffset() is None:
             raise ValueError("clock must return a timezone-aware datetime")
         return now.astimezone(UTC)
+
+    @staticmethod
+    def _constraint_name(error: IntegrityError) -> str | None:
+        diagnostic = getattr(error.orig, "diag", None)
+        constraint_name = getattr(diagnostic, "constraint_name", None)
+        return constraint_name if isinstance(constraint_name, str) else None

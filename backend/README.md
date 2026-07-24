@@ -87,10 +87,15 @@ A revisão `20260723_0005` implementa somente a persistência aprovada em
 a identidade de `accepted_user_id` e a implantação é bloqueada se houver
 convite legado em `processing`.
 
-A emissão administrativa e os endpoints ainda não foram adaptados para
-fornecer `target_user_id`. Portanto, esta revisão intermediária não deve ser
-usada para emitir novos convites até a tarefa específica de adaptação do
-serviço e do contrato ser concluída.
+A camada interna de emissão já valida `username`, constrói `target_user_id`,
+consulta a existência da conta pela API administrativa do Synapse e trata como
+conflito tanto uma conta existente quanto outro convite ativo para a mesma
+identidade. A consulta externa ocorre sem transação PostgreSQL aberta, e o
+índice parcial continua protegendo contra corridas na inserção.
+
+Os endpoints administrativos ainda não fornecem `username` ao serviço nem
+retornam `target_user_id`. Portanto, esta revisão intermediária não deve ser
+usada para emitir novos convites até a adaptação específica do contrato HTTP.
 
 ## Cliente administrativo do Synapse
 
