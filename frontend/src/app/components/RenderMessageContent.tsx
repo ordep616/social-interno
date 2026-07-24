@@ -34,6 +34,7 @@ import { IImageContent } from '../../types/matrix/common';
 
 type RenderMessageContentProps = {
   displayName: string;
+  senderId?: string;
   senderIsMe?: boolean;
   msgType: string;
   ts: number;
@@ -48,6 +49,7 @@ type RenderMessageContentProps = {
 };
 export function RenderMessageContent({
   displayName,
+  senderId,
   senderIsMe,
   msgType,
   ts,
@@ -245,6 +247,7 @@ export function RenderMessageContent({
           content={getContent()}
           renderAsFile={renderFile}
           displayName={displayName}
+          senderId={senderId}
           ts={ts}
           senderIsMe={senderIsMe}
           renderAudioContent={(props) => <AudioContent {...props} />}

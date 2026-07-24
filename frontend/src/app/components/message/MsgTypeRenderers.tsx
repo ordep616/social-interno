@@ -291,6 +291,7 @@ type RenderAudioContentProps = {
   url: string;
   encInfo?: IEncryptedFile;
   displayName: string;
+  senderId?: string;
   ts: number;
   senderIsMe?: boolean;
 };
@@ -299,6 +300,7 @@ type MAudioProps = {
   renderAsFile: () => ReactNode;
   renderAudioContent: (props: RenderAudioContentProps) => ReactNode;
   displayName: string;
+  senderId?: string;
   ts: number;
   senderIsMe?: boolean;
 };
@@ -307,6 +309,7 @@ export function MAudio({
   renderAsFile,
   renderAudioContent,
   displayName,
+  senderId,
   ts,
   senderIsMe,
 }: MAudioProps) {
@@ -335,6 +338,7 @@ export function MAudio({
         url: mxcUrl,
         encInfo: content.file,
         displayName,
+        senderId,
         ts,
         senderIsMe,
       })}
