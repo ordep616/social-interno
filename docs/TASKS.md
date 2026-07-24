@@ -63,7 +63,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
   `whoami`, revogar o dispositivo, confirmar dispositivo ausente e token
   recusado, inspecionar logs sanitizados e comprovar que conta existente nunca
   é modificada.
-- [ ] Adaptar `registration_attempts` conforme `DEC-023` para
+- [x] Adaptar `registration_attempts` conforme `DEC-023` para
   guardar `provisioning_device_id` e `provisioning_session_revoked_at`, com
   restrições que impeçam conclusão sem revogação confirmada, transição atômica
   de reconciliação para `synapse_created` e proibição de persistir

@@ -60,9 +60,11 @@ class RegistrationAttemptRepository:
     def mark_synapse_created(
         self,
         attempt_id: UUID,
+        *,
+        provisioning_device_id: str,
         now: datetime,
     ) -> RegistrationAttempt | None:
-        """Confirma `201` somente para uma tentativa em processamento."""
+        """Persiste a criação e o dispositivo somente após validação externa."""
 
         statement = (
             update(RegistrationAttempt)
@@ -72,7 +74,42 @@ class RegistrationAttemptRepository:
             )
             .values(
                 status=RegistrationAttemptStatus.synapse_created,
+                provisioning_device_id=provisioning_device_id,
+                provisioning_session_revoked_at=None,
                 updated_at=now,
+                failure_code=None,
+            )
+            .returning(RegistrationAttempt)
+        )
+        return self._session.execute(statement).scalar_one_or_none()
+
+    def mark_provisioning_session_revoked(
+        self,
+        attempt_id: UUID,
+        *,
+        provisioning_device_id: str,
+        now: datetime,
+    ) -> RegistrationAttempt | None:
+        """Grava a revogação e recupera atomicamente uma tentativa ambígua."""
+
+        statement = (
+            update(RegistrationAttempt)
+            .where(
+                RegistrationAttempt.id == attempt_id,
+                RegistrationAttempt.status.in_(
+                    (
+                        RegistrationAttemptStatus.synapse_created,
+                        RegistrationAttemptStatus.reconciliation_required,
+                    )
+                ),
+                RegistrationAttempt.provisioning_device_id == provisioning_device_id,
+                RegistrationAttempt.provisioning_session_revoked_at.is_(None),
+            )
+            .values(
+                status=RegistrationAttemptStatus.synapse_created,
+                provisioning_session_revoked_at=now,
+                updated_at=now,
+                completed_at=None,
                 failure_code=None,
             )
             .returning(RegistrationAttempt)
@@ -91,6 +128,8 @@ class RegistrationAttemptRepository:
             .where(
                 RegistrationAttempt.id == attempt_id,
                 RegistrationAttempt.status == RegistrationAttemptStatus.synapse_created,
+                RegistrationAttempt.provisioning_device_id.is_not(None),
+                RegistrationAttempt.provisioning_session_revoked_at.is_not(None),
             )
             .values(
                 status=RegistrationAttemptStatus.completed,
@@ -119,6 +158,8 @@ class RegistrationAttemptRepository:
             )
             .values(
                 status=RegistrationAttemptStatus.released,
+                provisioning_device_id=None,
+                provisioning_session_revoked_at=None,
                 updated_at=now,
                 completed_at=None,
                 failure_code=failure_code,
@@ -146,6 +187,7 @@ class RegistrationAttemptRepository:
                         RegistrationAttemptStatus.synapse_created,
                     )
                 ),
+                RegistrationAttempt.provisioning_session_revoked_at.is_(None),
             )
             .values(
                 status=RegistrationAttemptStatus.reconciliation_required,

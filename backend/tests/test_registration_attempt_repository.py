@@ -67,7 +67,22 @@ def test_executes_all_conditional_transitions_without_committing() -> None:
     now = datetime(2026, 7, 23, 13, tzinfo=UTC)
     session.execute.return_value.scalar_one_or_none.return_value = attempt
 
-    assert repository.mark_synapse_created(attempt.id, now) is attempt
+    assert (
+        repository.mark_synapse_created(
+            attempt.id,
+            provisioning_device_id="PROVISIONING",
+            now=now,
+        )
+        is attempt
+    )
+    assert (
+        repository.mark_provisioning_session_revoked(
+            attempt.id,
+            provisioning_device_id="PROVISIONING",
+            now=now,
+        )
+        is attempt
+    )
     assert repository.mark_completed(attempt.id, now) is attempt
     assert (
         repository.mark_released(
@@ -86,6 +101,6 @@ def test_executes_all_conditional_transitions_without_committing() -> None:
         is attempt
     )
 
-    assert session.execute.call_count == 4
+    assert session.execute.call_count == 5
     session.commit.assert_not_called()
     session.rollback.assert_not_called()
