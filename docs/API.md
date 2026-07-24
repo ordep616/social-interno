@@ -286,8 +286,31 @@ Resposta válida:
 }
 ```
 
-A pré-validação não reserva nem consome o convite. O funcionário vê identidade
-e papel como somente leitura. Não existe endpoint público com token no caminho.
+A decisão `DEC-024`, aceita pelos dois colaboradores, detalha esta rota.
+O corpo será estrito e não aceitará outros campos. O token será tratado como
+segredo e não poderá aparecer em erros automáticos, inclusive `422`, logs,
+representações, métricas ou rastreamento. A borda limitará o corpo antes de o
+FastAPI processá-lo.
+
+A pré-validação não reserva, consome, expira, revoga ou marca o convite como
+`conflicted`. O funcionário vê identidade e papel como somente leitura. Não
+existe endpoint público com token no caminho. Um `200` representa somente o
+estado observado naquele instante e não garante que a ativação posterior
+vencerá uma corrida pela identidade.
+
+Antes do sucesso, o serviço deverá:
+
+- aceitar somente convite `pending` e ainda não expirado;
+- validar `target_user_id` contra o `matrix_server_name` configurado;
+- derivar `username` sem normalização silenciosa;
+- aceitar somente papel `user` ou `group_admin`;
+- encerrar a transação PostgreSQL antes da consulta externa;
+- chamar `SynapseAdminClient.get_user()` e considerar qualquer conta
+  retornada, inclusive bloqueada ou desativada, como indisponível.
+
+O token continuará sendo localizado somente pelo SHA-256 já usado no banco.
+Convite inexistente não provocará chamada ao Synapse. Nenhuma credencial
+administrativa será enviada ao navegador.
 
 Criação do cadastro autorizado:
 
@@ -313,12 +336,41 @@ token e senha da memória, o frontend segue para o login normal com apenas o
 processamento necessário, nunca são persistidos em texto aberto e não aparecem
 em logs.
 
-Respostas esperadas: pré-validação `200` e criação do cadastro `201`. Token
-inexistente retorna `404`; token expirado, usado ou revogado retorna a mesma
-resposta genérica `410`; identidade indisponível retorna `409`; limite excedido
-retorna `429`. Endpoints administrativos retornam `401` sem autenticação válida
-e `403` sem `platform_admin`. Todas as respostas relacionadas à ativação,
-inclusive erros automáticos, usam `Cache-Control: no-store`.
+Respostas esperadas: pré-validação `200` e criação do cadastro `201`. Na
+pré-validação, token inexistente retorna `404`; token expirado, usado ou
+revogado retorna a mesma resposta genérica `410`; convite `processing`,
+`conflicted` ou identidade encontrada no Synapse retorna `409` genérico;
+limite local excedido retorna `429` com `Retry-After`; resposta inválida do
+Synapse retorna `502`; e indisponibilidade, credencial inválida ou falha
+fechada do limitador retorna `503`. Corpo inválido retorna `422` sanitizado,
+sem repetir o token ou o campo `input`.
+
+Endpoints administrativos retornam `401` sem autenticação válida e `403` sem
+`platform_admin`. Todas as respostas relacionadas à ativação, inclusive
+validação automática, método inválido e falha interna, usam
+`Cache-Control: no-store`. A implementação deverá garantir o cabeçalho fora do
+corpo do endpoint para alcançar também exceções não tratadas.
+
+### Limites da ativação
+
+Conforme `DEC-024`, a pré-validação usará duas camadas:
+
+- borda: 100 requisições por origem a cada 15 minutos, corpo inicial de no
+  máximo 1 KiB e confiança em endereço encaminhado somente para proxies
+  configurados;
+- backend: 10 pré-validações por hash de convite existente a cada 15 minutos,
+  com contador PostgreSQL separado daquele usado pela ativação.
+
+O backend não criará contador por hash de token desconhecido. A futura
+persistência guardará somente tipo do contador, hash, início da janela,
+quantidade e expiração operacional, com atualização atômica, retenção curta e
+limpeza obrigatória. O prazo exato de retenção será aprovado antes da
+migração. Se essa persistência estiver indisponível, a rota falhará fechada com
+`503` e não chamará o Synapse.
+
+CORS restringe quais navegadores podem ler a resposta, mas não autentica a
+rota. Auditoria e métricas usarão somente resultados sanitizados. Token aberto,
+corpo sensível e credenciais administrativas permanecem proibidos.
 
 ### Concorrência e falhas
 
