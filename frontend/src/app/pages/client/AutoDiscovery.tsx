@@ -1,6 +1,6 @@
-import React, { ReactNode, useMemo } from 'react';
+import React, { ReactNode, useEffect, useMemo, useState } from 'react';
 import { AutoDiscoveryInfoProvider } from '../../hooks/useAutoDiscoveryInfo';
-import { AutoDiscoveryInfo } from '../../cs-api';
+import { AutoDiscoveryInfo, autoDiscovery } from '../../cs-api';
 
 type AutoDiscoveryProps = {
   baseUrl: string;
@@ -16,5 +16,22 @@ export function AutoDiscovery({ baseUrl, children }: AutoDiscoveryProps) {
     [baseUrl]
   );
 
-  return <AutoDiscoveryInfoProvider value={fallback}>{children}</AutoDiscoveryInfoProvider>;
+  const [info, setInfo] = useState<AutoDiscoveryInfo>(fallback);
+
+  useEffect(() => {
+    let disposed = false;
+
+    setInfo(fallback);
+    autoDiscovery(fetch, baseUrl).then(([, discovered]) => {
+      if (!disposed && discovered) {
+        setInfo(discovered);
+      }
+    });
+
+    return () => {
+      disposed = true;
+    };
+  }, [baseUrl, fallback]);
+
+  return <AutoDiscoveryInfoProvider value={info}>{children}</AutoDiscoveryInfoProvider>;
 }
