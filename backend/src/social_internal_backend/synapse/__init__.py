@@ -8,6 +8,7 @@ from social_internal_backend.synapse.admin_client import (
     SynapseAdminRateLimitedError,
     SynapseAdminUnavailableError,
     SynapseUser,
+    SynapseUserPage,
     SynapseUserAlreadyExistsError,
     SynapseUserNotFoundError,
 )
@@ -36,4 +37,5 @@ __all__ = [
     "SynapseUser",
     "SynapseUserAlreadyExistsError",
     "SynapseUserNotFoundError",
+    "SynapseUserPage",
 ]

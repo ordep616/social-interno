@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     synapse_request_timeout_seconds: float = Field(default=5.0, gt=0, le=30)
     synapse_admin_access_token: SecretStr
     invitation_public_base_url: AnyHttpUrl
+    cors_allowed_origins: tuple[str, ...] = (
+        "http://127.0.0.1:5173",
+        "http://localhost:5173",
+    )
     service_name: str = "social-interno-backend"
 
 

@@ -40,6 +40,12 @@ class UserCapabilitiesContext:
 
         return self.assignment.role is UserRole.platform_admin
 
+    @property
+    def can_manage_accounts(self) -> bool:
+        """Permite ciclo de vida de contas somente ao papel administrativo."""
+
+        return self.assignment.role is UserRole.platform_admin
+
 
 @dataclass(frozen=True, slots=True)
 class AuthorizedPlatformAdmin:

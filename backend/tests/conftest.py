@@ -21,7 +21,7 @@ def settings() -> Settings:
         matrix_server_name="localhost",
         synapse_base_url="http://127.0.0.1:8008",
         synapse_admin_access_token=SecretStr("opaque-admin-value-for-tests"),
-        invitation_public_base_url="http://127.0.0.1:8080/register",
+        invitation_public_base_url="http://127.0.0.1:5173/activate",
     )
 
 

@@ -10,11 +10,12 @@ from pydantic import AnyHttpUrl, BaseModel, ConfigDict
 from social_internal_backend.api.dependencies import (
     NO_STORE_HEADERS,
     AppSettings,
-    InvitationServiceDependency,
+    ConfiguredInvitationServiceDependency,
     PlatformAdmin,
 )
 from social_internal_backend.invitations import (
     InvitationConflictError,
+    InvitationIdentityConflictError,
     InvitationNotFoundError,
 )
 from social_internal_backend.models import Invitation, InvitationRole, InvitationStatus
@@ -25,6 +26,7 @@ router = APIRouter(prefix="/v1/admin/invitations", tags=["admin invitations"])
 class InvitationCreateRequest(BaseModel):
     """Papel corporativo permitido no convite."""
 
+    username: str
     role: InvitationRole
 
 
@@ -37,6 +39,7 @@ class InvitationAdminResponse(BaseModel):
     role: InvitationRole
     status: InvitationStatus
     created_by: str
+    target_user_id: str | None
     created_at: datetime
     expires_at: datetime
     used_at: datetime | None
@@ -53,7 +56,7 @@ class InvitationCreatedResponse(InvitationAdminResponse):
 def build_invite_url(base_url: AnyHttpUrl, token: str) -> str:
     """Acrescenta o token URL-safe ao prefixo público configurado."""
 
-    return f"{str(base_url).rstrip('/')}/{quote(token, safe='')}"
+    return f"{str(base_url).rstrip('/')}#{quote(token, safe='')}"
 
 
 def set_no_store(response: Response) -> None:
@@ -78,15 +81,29 @@ def create_invitation(
     payload: InvitationCreateRequest,
     response: Response,
     admin: PlatformAdmin,
-    service: InvitationServiceDependency,
+    service: ConfiguredInvitationServiceDependency,
     settings: AppSettings,
 ) -> InvitationCreatedResponse:
     """Emite um convite e apresenta seu token somente no endereço retornado."""
 
-    issued = service.issue(
-        role=payload.role,
-        created_by=admin.identity.user_id,
-    )
+    try:
+        issued = service.issue(
+            role=payload.role,
+            created_by=admin.identity.user_id,
+            username=payload.username,
+        )
+    except InvitationIdentityConflictError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Account identity is unavailable",
+            headers=NO_STORE_HEADERS,
+        ) from None
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid invitation identity",
+            headers=NO_STORE_HEADERS,
+        ) from None
     invitation = issued.invitation
     response.headers["Location"] = f"/v1/admin/invitations/{invitation.id}"
     set_no_store(response)
@@ -95,6 +112,7 @@ def create_invitation(
         role=invitation.role,
         status=invitation.status,
         created_by=invitation.created_by,
+        target_user_id=invitation.target_user_id,
         created_at=invitation.created_at,
         expires_at=invitation.expires_at,
         used_at=invitation.used_at,
@@ -112,7 +130,7 @@ def create_invitation(
 def list_invitations(
     response: Response,
     admin: PlatformAdmin,
-    service: InvitationServiceDependency,
+    service: ConfiguredInvitationServiceDependency,
     offset: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=100),
 ) -> list[InvitationAdminResponse]:
@@ -134,7 +152,7 @@ def get_invitation(
     invitation_id: UUID,
     response: Response,
     admin: PlatformAdmin,
-    service: InvitationServiceDependency,
+    service: ConfiguredInvitationServiceDependency,
 ) -> InvitationAdminResponse:
     """Consulta um convite pelo identificador público."""
 
@@ -160,7 +178,7 @@ def revoke_invitation(
     invitation_id: UUID,
     response: Response,
     admin: PlatformAdmin,
-    service: InvitationServiceDependency,
+    service: ConfiguredInvitationServiceDependency,
 ) -> None:
     """Realiza revogação lógica idempotente quando o estado permite."""
 

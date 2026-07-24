@@ -9,7 +9,7 @@ import httpx
 import pytest
 
 from social_internal_backend.api.dependencies import (
-    get_invitation_service,
+    get_configured_invitation_service,
     get_platform_admin_authorization_service,
 )
 from social_internal_backend.application import create_app
@@ -58,6 +58,7 @@ def make_invitation(
         role=role,
         status=status,
         created_by=ADMIN_USER_ID,
+        target_user_id="@employee:localhost",
         created_at=NOW,
         expires_at=NOW + timedelta(hours=24),
         used_at=None,
@@ -107,13 +108,19 @@ class FakeInvitationService:
         self.listed: Sequence[Invitation] = [self.invitation]
         self.get_error: Exception | None = None
         self.revoke_error: Exception | None = None
-        self.issue_arguments: tuple[InvitationRole, str] | None = None
+        self.issue_arguments: tuple[InvitationRole, str, str] | None = None
         self.list_arguments: tuple[int, int] | None = None
         self.requested_id: UUID | None = None
         self.revoked_id: UUID | None = None
 
-    def issue(self, *, role: InvitationRole, created_by: str) -> IssuedInvitation:
-        self.issue_arguments = (role, created_by)
+    def issue(
+        self,
+        *,
+        role: InvitationRole,
+        created_by: str,
+        username: str,
+    ) -> IssuedInvitation:
+        self.issue_arguments = (role, created_by, username)
         self.invitation.role = role
         return IssuedInvitation(invitation=self.invitation, token=OPAQUE_INVITATION_VALUE)
 
@@ -150,7 +157,7 @@ async def make_client(
     def override_authorization_service() -> FakeAuthorizationService:
         return authorization
 
-    app.dependency_overrides[get_invitation_service] = override_invitation_service
+    app.dependency_overrides[get_configured_invitation_service] = override_invitation_service
     app.dependency_overrides[get_platform_admin_authorization_service] = (
         override_authorization_service
     )
@@ -167,18 +174,23 @@ async def test_create_returns_location_single_secret_and_no_store(settings: Sett
         response = await client.post(
             "/v1/admin/invitations",
             headers=AUTHORIZATION_HEADER,
-            json={"role": "group_admin"},
+            json={"username": "employee", "role": "group_admin"},
         )
 
     assert response.status_code == 201
     assert response.headers["location"] == (f"/v1/admin/invitations/{invitations.invitation.id}")
     assert response.headers["cache-control"] == "no-store"
-    assert invitations.issue_arguments == (InvitationRole.group_admin, ADMIN_USER_ID)
+    assert invitations.issue_arguments == (
+        InvitationRole.group_admin,
+        ADMIN_USER_ID,
+        "employee",
+    )
     assert authorization.received_token == OPAQUE_MATRIX_VALUE
     payload = response.json()
     assert payload["role"] == "group_admin"
     assert payload["status"] == "pending"
-    assert payload["invite_url"] == (f"http://127.0.0.1:8080/register/{OPAQUE_INVITATION_VALUE}")
+    assert payload["target_user_id"] == "@employee:localhost"
+    assert payload["invite_url"] == (f"http://127.0.0.1:5173/activate#{OPAQUE_INVITATION_VALUE}")
     assert "token_hash" not in payload
     assert OPAQUE_INVITATION_VALUE not in repr(invitations.invitation)
 
@@ -323,7 +335,7 @@ async def test_request_validation_rejects_forbidden_role_and_bad_pagination(
         role_response = await client.post(
             "/v1/admin/invitations",
             headers=AUTHORIZATION_HEADER,
-            json={"role": "platform_admin"},
+            json={"username": "employee", "role": "platform_admin"},
         )
         pagination_response = await client.get(
             "/v1/admin/invitations?limit=101",

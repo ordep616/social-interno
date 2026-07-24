@@ -1,73 +1,59 @@
-import React, { ChangeEventHandler, FormEventHandler, useMemo, useState } from 'react';
-import { Box, Button, Chip, Icon, IconButton, Icons, Input, Scroll, Text } from 'folds';
+import React, {
+  ChangeEventHandler,
+  FormEventHandler,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { Box, Button, Chip, Icon, IconButton, Icons, Input, Scroll, Spinner, Text } from 'folds';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SettingTile } from '../../../components/setting-tile';
 import { BreakWord } from '../../../styles/Text.css';
 import { SequenceCardStyle } from '../styles.css';
+import { useMatrixClient } from '../../../hooks/useMatrixClient';
+import { useClientConfig } from '../../../hooks/useClientConfig';
+import {
+  AccountRole,
+  AdminAccount,
+  CreatableAccountRole,
+  administrationBackendUrl,
+  deactivateAccount,
+  issueActivation,
+  listAccounts,
+  resetAccountPassword,
+  updateAccount,
+} from './api';
 
-type AccountRole = 'user' | 'group_admin' | 'platform_admin';
-type CreatableAccountRole = Exclude<AccountRole, 'platform_admin'>;
-type AccountStatus = 'active' | 'deactivated';
-
-type ManagedAccount = {
-  id: string;
-  userId: string;
-  displayName: string;
-  role: AccountRole;
-  status: AccountStatus;
-  passwordResetRequested: boolean;
-};
-
-const ROLE_LABEL: Record<AccountRole, string> = {
+const ROLE_LABEL: Record<AccountRole | 'none', string> = {
   user: 'Usuário',
   group_admin: 'Admin de grupo',
   platform_admin: 'Administração da plataforma',
+  none: 'Sem papel corporativo',
 };
 
-const STATUS_LABEL: Record<AccountStatus, string> = {
-  active: 'Ativa',
-  deactivated: 'Bloqueada/desativada',
+const accountDisplayName = (account: AdminAccount): string =>
+  account.display_name || account.user_id;
+
+const accountStatus = (account: AdminAccount): string => {
+  if (account.deactivated) return 'Desativada';
+  if (account.locked || account.suspended) return 'Bloqueada';
+  return 'Ativa';
 };
 
-const INITIAL_ACCOUNTS: ManagedAccount[] = [
-  {
-    id: 'admin',
-    userId: '@admin:localhost',
-    displayName: 'Administrador',
-    role: 'platform_admin',
-    status: 'active',
-    passwordResetRequested: false,
-  },
-  {
-    id: 'maria',
-    userId: '@maria:localhost',
-    displayName: 'Maria Oliveira',
-    role: 'group_admin',
-    status: 'active',
-    passwordResetRequested: false,
-  },
-  {
-    id: 'joao',
-    userId: '@joao:localhost',
-    displayName: 'Joao Santos',
-    role: 'user',
-    status: 'deactivated',
-    passwordResetRequested: true,
-  },
-];
-
-const makeLocalUserId = (username: string): string => {
-  const normalized = username.trim().replace(/^@/, '').split(':')[0].toLowerCase();
-  return `@${normalized}:localhost`;
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) return error.message;
+  return 'Operação administrativa falhou.';
 };
 
 type RoleButtonProps = {
   accountRole: CreatableAccountRole;
   selected: boolean;
+  disabled: boolean;
   onSelect: (accountRole: CreatableAccountRole) => void;
 };
-function RoleButton({ accountRole, selected, onSelect }: RoleButtonProps) {
+function RoleButton({ accountRole, selected, disabled, onSelect }: RoleButtonProps) {
   return (
     <Button
       type="button"
@@ -77,6 +63,7 @@ function RoleButton({ accountRole, selected, onSelect }: RoleButtonProps) {
       fill={selected ? 'Solid' : 'Soft'}
       outlined={!selected}
       aria-pressed={selected}
+      disabled={disabled}
       onClick={() => onSelect(accountRole)}
     >
       <Text size="B300">{ROLE_LABEL[accountRole]}</Text>
@@ -85,17 +72,17 @@ function RoleButton({ accountRole, selected, onSelect }: RoleButtonProps) {
 }
 
 type AccountStatusChipProps = {
-  account: ManagedAccount;
+  account: AdminAccount;
 };
 function AccountStatusChip({ account }: AccountStatusChipProps) {
   return (
     <Box gap="100" wrap="Wrap">
       <Chip as="span" variant="Secondary" fill="Soft" radii="Pill">
-        <Text size="B300">{STATUS_LABEL[account.status]}</Text>
+        <Text size="B300">{accountStatus(account)}</Text>
       </Chip>
-      {account.passwordResetRequested && (
+      {account.role && (
         <Chip as="span" variant="Secondary" fill="Soft" radii="Pill">
-          <Text size="B300">Senha pendente</Text>
+          <Text size="B300">{ROLE_LABEL[account.role]}</Text>
         </Chip>
       )}
     </Box>
@@ -103,21 +90,26 @@ function AccountStatusChip({ account }: AccountStatusChipProps) {
 }
 
 type AccountRowProps = {
-  account: ManagedAccount;
+  account: AdminAccount;
   selected: boolean;
-  onEdit: (account: ManagedAccount) => void;
-  onPasswordReset: (accountId: string) => void;
-  onToggleStatus: (accountId: string) => void;
-  onDelete: (accountId: string) => void;
+  disabled: boolean;
+  onEdit: (account: AdminAccount) => void;
+  onPasswordReset: (account: AdminAccount) => void;
+  onToggleLocked: (account: AdminAccount) => void;
+  onDelete: (account: AdminAccount) => void;
 };
 function AccountRow({
   account,
   selected,
+  disabled,
   onEdit,
   onPasswordReset,
-  onToggleStatus,
+  onToggleLocked,
   onDelete,
 }: AccountRowProps) {
+  const { deactivated, locked, suspended } = account;
+  const blocked = locked || suspended;
+
   return (
     <SequenceCard
       className={SequenceCardStyle}
@@ -129,14 +121,16 @@ function AccountRow({
       <Box alignItems="Start" gap="300" wrap="Wrap">
         <Box grow="Yes" direction="Column" gap="100" style={{ minWidth: 0 }}>
           <Text className={BreakWord} size="T400">
-            {account.displayName}
+            {accountDisplayName(account)}
           </Text>
           <Text className={BreakWord} size="T200" priority="300">
-            {account.userId}
+            {account.user_id}
           </Text>
-          <Text className={BreakWord} size="T200" priority="300">
-            {ROLE_LABEL[account.role]}
-          </Text>
+          {!account.role && (
+            <Text className={BreakWord} size="T200" priority="300">
+              {ROLE_LABEL.none}
+            </Text>
+          )}
         </Box>
         <AccountStatusChip account={account} />
       </Box>
@@ -148,6 +142,7 @@ function AccountRow({
           fill="Soft"
           radii="300"
           before={<Icon src={Icons.Pencil} size="100" />}
+          disabled={disabled || deactivated}
           onClick={() => onEdit(account)}
         >
           <Text size="B300">Editar</Text>
@@ -159,7 +154,8 @@ function AccountRow({
           fill="Soft"
           radii="300"
           before={<Icon src={Icons.Lock} size="100" />}
-          onClick={() => onPasswordReset(account.id)}
+          disabled={disabled || deactivated}
+          onClick={() => onPasswordReset(account)}
         >
           <Text size="B300">Redefinir senha</Text>
         </Button>
@@ -170,9 +166,10 @@ function AccountRow({
           fill="Soft"
           radii="300"
           before={<Icon src={Icons.Prohibited} size="100" />}
-          onClick={() => onToggleStatus(account.id)}
+          disabled={disabled || deactivated || suspended}
+          onClick={() => onToggleLocked(account)}
         >
-          <Text size="B300">{account.status === 'active' ? 'Bloquear/desativar' : 'Reativar'}</Text>
+          <Text size="B300">{blocked ? 'Reativar' : 'Bloquear/desativar'}</Text>
         </Button>
         <Button
           type="button"
@@ -181,7 +178,8 @@ function AccountRow({
           fill="Soft"
           radii="300"
           before={<Icon src={Icons.Delete} size="100" />}
-          onClick={() => onDelete(account.id)}
+          disabled={disabled || deactivated}
+          onClick={() => onDelete(account)}
         >
           <Text size="B300">Excluir</Text>
         </Button>
@@ -194,13 +192,47 @@ type AdministrationProps = {
   requestClose: () => void;
 };
 export function Administration({ requestClose }: AdministrationProps) {
-  const [accounts, setAccounts] = useState<ManagedAccount[]>(INITIAL_ACCOUNTS);
+  const mx = useMatrixClient();
+  const clientConfig = useClientConfig();
+  const backendUrl = administrationBackendUrl(clientConfig);
+  const accessToken = mx.getAccessToken();
+
+  const [accounts, setAccounts] = useState<AdminAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string>();
+  const [notice, setNotice] = useState<string>();
+  const [activationUrl, setActivationUrl] = useState<string>();
   const [query, setQuery] = useState('');
   const [username, setUsername] = useState('');
-  const [displayName, setDisplayName] = useState('');
   const [role, setRole] = useState<CreatableAccountRole>('user');
-  const [editingAccountId, setEditingAccountId] = useState<string>();
+  const [editingAccount, setEditingAccount] = useState<AdminAccount>();
   const [editingDisplayName, setEditingDisplayName] = useState('');
+  const [passwordAccount, setPasswordAccount] = useState<AdminAccount>();
+  const [newPassword, setNewPassword] = useState('');
+
+  const load = useCallback(async () => {
+    if (!accessToken) {
+      setError('Sessão Matrix sem token de acesso.');
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(undefined);
+    try {
+      const response = await listAccounts(backendUrl, accessToken);
+      setAccounts(response.accounts);
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    } finally {
+      setLoading(false);
+    }
+  }, [accessToken, backendUrl]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const filteredAccounts = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -208,20 +240,29 @@ export function Administration({ requestClose }: AdministrationProps) {
 
     return accounts.filter(
       (account) =>
-        account.userId.toLowerCase().includes(term) ||
-        account.displayName.toLowerCase().includes(term) ||
-        ROLE_LABEL[account.role].toLowerCase().includes(term)
+        account.user_id.toLowerCase().includes(term) ||
+        accountDisplayName(account).toLowerCase().includes(term) ||
+        ROLE_LABEL[account.role ?? 'none'].toLowerCase().includes(term)
     );
   }, [accounts, query]);
 
-  const editingAccount = accounts.find((account) => account.id === editingAccountId);
+  const runOperation = async (operation: () => Promise<void>, successMessage: string) => {
+    setBusy(true);
+    setError(undefined);
+    setNotice(undefined);
+    try {
+      await operation();
+      setNotice(successMessage);
+      await load();
+    } catch (requestError) {
+      setError(getErrorMessage(requestError));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const handleUsernameChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
     setUsername(evt.target.value);
-  };
-
-  const handleDisplayNameChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    setDisplayName(evt.target.value);
   };
 
   const handleQueryChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
@@ -232,76 +273,75 @@ export function Administration({ requestClose }: AdministrationProps) {
     setEditingDisplayName(evt.target.value);
   };
 
-  const handleCreate: FormEventHandler<HTMLFormElement> = (evt) => {
-    evt.preventDefault();
-
-    const userId = makeLocalUserId(username);
-    const localPart = userId.slice(1).split(':')[0];
-    if (!localPart) return;
-    if (accounts.some((account) => account.userId === userId)) return;
-
-    const newAccount: ManagedAccount = {
-      id: `${localPart}-${Date.now()}`,
-      userId,
-      displayName: displayName.trim() || localPart,
-      role,
-      status: 'active',
-      passwordResetRequested: false,
-    };
-
-    setAccounts((currentAccounts) => [newAccount, ...currentAccounts]);
-    setUsername('');
-    setDisplayName('');
-    setRole('user');
+  const handlePasswordChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
+    setNewPassword(evt.target.value);
   };
 
-  const handleEdit = (account: ManagedAccount) => {
-    setEditingAccountId(account.id);
-    setEditingDisplayName(account.displayName);
+  const handleCreate: FormEventHandler<HTMLFormElement> = (evt) => {
+    evt.preventDefault();
+    if (!accessToken) return;
+
+    runOperation(async () => {
+      const issued = await issueActivation(backendUrl, accessToken, username, role);
+      setActivationUrl(issued.invite_url);
+      setUsername('');
+      setRole('user');
+    }, 'Ativação emitida.');
+  };
+
+  const handleEdit = (account: AdminAccount) => {
+    setPasswordAccount(undefined);
+    setEditingAccount(account);
+    setEditingDisplayName(account.display_name ?? '');
   };
 
   const handleSaveEdit: FormEventHandler<HTMLFormElement> = (evt) => {
     evt.preventDefault();
-    if (!editingAccount) return;
+    if (!accessToken || !editingAccount) return;
 
-    setAccounts((currentAccounts) =>
-      currentAccounts.map((account) =>
-        account.id === editingAccount.id
-          ? { ...account, displayName: editingDisplayName.trim() || account.displayName }
-          : account
-      )
-    );
-    setEditingAccountId(undefined);
-    setEditingDisplayName('');
-  };
-
-  const handlePasswordReset = (accountId: string) => {
-    setAccounts((currentAccounts) =>
-      currentAccounts.map((account) =>
-        account.id === accountId ? { ...account, passwordResetRequested: true } : account
-      )
-    );
-  };
-
-  const handleToggleStatus = (accountId: string) => {
-    setAccounts((currentAccounts) =>
-      currentAccounts.map((account) =>
-        account.id === accountId
-          ? {
-              ...account,
-              status: account.status === 'active' ? 'deactivated' : 'active',
-            }
-          : account
-      )
-    );
-  };
-
-  const handleDelete = (accountId: string) => {
-    setAccounts((currentAccounts) => currentAccounts.filter((account) => account.id !== accountId));
-    if (editingAccountId === accountId) {
-      setEditingAccountId(undefined);
+    runOperation(async () => {
+      await updateAccount(backendUrl, accessToken, editingAccount.user_id, {
+        display_name: editingDisplayName,
+      });
+      setEditingAccount(undefined);
       setEditingDisplayName('');
-    }
+    }, 'Conta atualizada.');
+  };
+
+  const handlePasswordReset = (account: AdminAccount) => {
+    setEditingAccount(undefined);
+    setPasswordAccount(account);
+    setNewPassword('');
+  };
+
+  const handleSavePassword: FormEventHandler<HTMLFormElement> = (evt) => {
+    evt.preventDefault();
+    if (!accessToken || !passwordAccount) return;
+
+    runOperation(async () => {
+      await resetAccountPassword(backendUrl, accessToken, passwordAccount.user_id, newPassword);
+      setPasswordAccount(undefined);
+      setNewPassword('');
+    }, 'Senha redefinida.');
+  };
+
+  const handleToggleLocked = (account: AdminAccount) => {
+    if (!accessToken) return;
+    const locked = !account.locked;
+    runOperation(
+      async () => {
+        await updateAccount(backendUrl, accessToken, account.user_id, { locked });
+      },
+      locked ? 'Conta bloqueada.' : 'Conta reativada.'
+    );
+  };
+
+  const handleDelete = (account: AdminAccount) => {
+    if (!accessToken) return;
+    runOperation(
+      () => deactivateAccount(backendUrl, accessToken, account.user_id),
+      'Conta desativada.'
+    );
   };
 
   return (
@@ -324,6 +364,19 @@ export function Administration({ requestClose }: AdministrationProps) {
         <Scroll hideTrack visibility="Hover">
           <PageContent>
             <Box direction="Column" gap="700">
+              {(error || notice) && (
+                <SequenceCard
+                  className={SequenceCardStyle}
+                  variant="SurfaceVariant"
+                  direction="Column"
+                  gap="400"
+                >
+                  <Text size="T300" priority={error ? '500' : '300'}>
+                    {error ?? notice}
+                  </Text>
+                </SequenceCard>
+              )}
+
               <Box direction="Column" gap="100">
                 <Text size="L400">Criar conta</Text>
                 <SequenceCard
@@ -334,9 +387,11 @@ export function Administration({ requestClose }: AdministrationProps) {
                   gap="400"
                   onSubmit={handleCreate}
                 >
-                  <Box gap="300" wrap="Wrap">
-                    <Box direction="Column" gap="100" grow="Yes" style={{ minWidth: 0 }}>
-                      <Text size="T300">Nome de usuário</Text>
+                  <SettingTile
+                    title="Ativação"
+                    description="A conta será criada quando o usuário abrir o link e escolher a própria senha."
+                  >
+                    <Box direction="Column" gap="300">
                       <Input
                         required
                         name="adminCreateUsername"
@@ -346,48 +401,55 @@ export function Administration({ requestClose }: AdministrationProps) {
                         variant="Secondary"
                         radii="300"
                         autoComplete="off"
+                        disabled={busy}
                       />
+                      <Box gap="200" wrap="Wrap">
+                        <RoleButton
+                          accountRole="user"
+                          selected={role === 'user'}
+                          disabled={busy}
+                          onSelect={setRole}
+                        />
+                        <RoleButton
+                          accountRole="group_admin"
+                          selected={role === 'group_admin'}
+                          disabled={busy}
+                          onSelect={setRole}
+                        />
+                      </Box>
+                      <Box justifyContent="End">
+                        <Button
+                          type="submit"
+                          size="300"
+                          variant="Primary"
+                          radii="300"
+                          disabled={busy || !accessToken}
+                          before={<Icon src={Icons.UserPlus} size="100" />}
+                        >
+                          {busy && <Spinner variant="Primary" fill="Solid" size="200" />}
+                          <Text size="B300">Emitir ativação</Text>
+                        </Button>
+                      </Box>
                     </Box>
-                    <Box direction="Column" gap="100" grow="Yes" style={{ minWidth: 0 }}>
-                      <Text size="T300">Nome de exibição</Text>
-                      <Input
-                        name="adminCreateDisplayName"
-                        value={displayName}
-                        onChange={handleDisplayNameChange}
-                        before={<Icon src={Icons.Pencil} size="100" />}
-                        variant="Secondary"
-                        radii="300"
-                        autoComplete="off"
-                      />
-                    </Box>
-                  </Box>
-                  <Box direction="Column" gap="100">
-                    <Text size="T300">Papel</Text>
-                    <Box gap="200" wrap="Wrap">
-                      <RoleButton
-                        accountRole="user"
-                        selected={role === 'user'}
-                        onSelect={setRole}
-                      />
-                      <RoleButton
-                        accountRole="group_admin"
-                        selected={role === 'group_admin'}
-                        onSelect={setRole}
-                      />
-                    </Box>
-                  </Box>
-                  <Box justifyContent="End">
-                    <Button
-                      type="submit"
-                      size="300"
-                      variant="Primary"
-                      radii="300"
-                      before={<Icon src={Icons.UserPlus} size="100" />}
-                    >
-                      <Text size="B300">Criar</Text>
-                    </Button>
-                  </Box>
+                  </SettingTile>
                 </SequenceCard>
+                {activationUrl && (
+                  <SequenceCard
+                    className={SequenceCardStyle}
+                    variant="SurfaceVariant"
+                    direction="Column"
+                    gap="300"
+                  >
+                    <Text size="T300">Link de ativação emitido</Text>
+                    <Input
+                      readOnly
+                      value={activationUrl}
+                      name="adminActivationUrl"
+                      variant="Secondary"
+                      radii="300"
+                    />
+                  </SequenceCard>
+                )}
               </Box>
 
               {editingAccount && (
@@ -402,8 +464,8 @@ export function Administration({ requestClose }: AdministrationProps) {
                     onSubmit={handleSaveEdit}
                   >
                     <SettingTile
-                      title={editingAccount.userId}
-                      description={ROLE_LABEL[editingAccount.role]}
+                      title={editingAccount.user_id}
+                      description={ROLE_LABEL[editingAccount.role ?? 'none']}
                     >
                       <Box gap="200" wrap="Wrap">
                         <Box grow="Yes" direction="Column" style={{ minWidth: 0 }}>
@@ -415,9 +477,16 @@ export function Administration({ requestClose }: AdministrationProps) {
                             variant="Secondary"
                             radii="300"
                             autoComplete="off"
+                            disabled={busy}
                           />
                         </Box>
-                        <Button type="submit" size="300" variant="Success" radii="300">
+                        <Button
+                          type="submit"
+                          size="300"
+                          variant="Success"
+                          radii="300"
+                          disabled={busy}
+                        >
                           <Text size="B300">Salvar</Text>
                         </Button>
                         <Button
@@ -426,7 +495,60 @@ export function Administration({ requestClose }: AdministrationProps) {
                           variant="Secondary"
                           fill="Soft"
                           radii="300"
-                          onClick={() => setEditingAccountId(undefined)}
+                          disabled={busy}
+                          onClick={() => setEditingAccount(undefined)}
+                        >
+                          <Text size="B300">Cancelar</Text>
+                        </Button>
+                      </Box>
+                    </SettingTile>
+                  </SequenceCard>
+                </Box>
+              )}
+
+              {passwordAccount && (
+                <Box direction="Column" gap="100">
+                  <Text size="L400">Redefinir senha</Text>
+                  <SequenceCard
+                    as="form"
+                    className={SequenceCardStyle}
+                    variant="SurfaceVariant"
+                    direction="Column"
+                    gap="400"
+                    onSubmit={handleSavePassword}
+                  >
+                    <SettingTile title={passwordAccount.user_id}>
+                      <Box gap="200" wrap="Wrap">
+                        <Box grow="Yes" direction="Column" style={{ minWidth: 0 }}>
+                          <Input
+                            required
+                            type="password"
+                            name="adminPasswordReset"
+                            value={newPassword}
+                            onChange={handlePasswordChange}
+                            variant="Secondary"
+                            radii="300"
+                            autoComplete="new-password"
+                            disabled={busy}
+                          />
+                        </Box>
+                        <Button
+                          type="submit"
+                          size="300"
+                          variant="Warning"
+                          radii="300"
+                          disabled={busy}
+                        >
+                          <Text size="B300">Redefinir</Text>
+                        </Button>
+                        <Button
+                          type="button"
+                          size="300"
+                          variant="Secondary"
+                          fill="Soft"
+                          radii="300"
+                          disabled={busy}
+                          onClick={() => setPasswordAccount(undefined)}
                         >
                           <Text size="B300">Cancelar</Text>
                         </Button>
@@ -442,6 +564,17 @@ export function Administration({ requestClose }: AdministrationProps) {
                   <Chip as="span" variant="Secondary" fill="Soft" radii="Pill">
                     <Text size="B300">{accounts.length}</Text>
                   </Chip>
+                  <Button
+                    type="button"
+                    size="300"
+                    variant="Secondary"
+                    fill="Soft"
+                    radii="300"
+                    disabled={loading || busy}
+                    onClick={load}
+                  >
+                    <Text size="B300">Atualizar</Text>
+                  </Button>
                 </Box>
                 <Input
                   name="adminAccountSearch"
@@ -454,18 +587,38 @@ export function Administration({ requestClose }: AdministrationProps) {
                   autoComplete="off"
                 />
                 <Box direction="Column" gap="200">
-                  {filteredAccounts.map((account) => (
-                    <AccountRow
-                      key={account.id}
-                      account={account}
-                      selected={account.id === editingAccountId}
-                      onEdit={handleEdit}
-                      onPasswordReset={handlePasswordReset}
-                      onToggleStatus={handleToggleStatus}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                  {filteredAccounts.length === 0 && (
+                  {loading && (
+                    <SequenceCard
+                      className={SequenceCardStyle}
+                      variant="SurfaceVariant"
+                      direction="Column"
+                      gap="400"
+                    >
+                      <Box gap="200" alignItems="Center">
+                        <Spinner variant="Secondary" size="300" />
+                        <Text size="T300" priority="300">
+                          Carregando contas
+                        </Text>
+                      </Box>
+                    </SequenceCard>
+                  )}
+                  {!loading &&
+                    filteredAccounts.map((account) => (
+                      <AccountRow
+                        key={account.user_id}
+                        account={account}
+                        selected={
+                          account.user_id === editingAccount?.user_id ||
+                          account.user_id === passwordAccount?.user_id
+                        }
+                        disabled={busy}
+                        onEdit={handleEdit}
+                        onPasswordReset={handlePasswordReset}
+                        onToggleLocked={handleToggleLocked}
+                        onDelete={handleDelete}
+                      />
+                    ))}
+                  {!loading && filteredAccounts.length === 0 && (
                     <SequenceCard
                       className={SequenceCardStyle}
                       variant="SurfaceVariant"

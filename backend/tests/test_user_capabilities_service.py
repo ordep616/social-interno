@@ -90,6 +90,7 @@ def test_resolves_capability_exclusively_from_local_role(
     assert resolved.identity.user_id == USER_ID
     assert resolved.assignment is assignment
     assert resolved.can_manage_user_activations is expected_capability
+    assert resolved.can_manage_accounts is expected_capability
     assert repository.requested_user_id == USER_ID
     assert OPAQUE_VALUE not in repr(resolved)
 

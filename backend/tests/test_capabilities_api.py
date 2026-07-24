@@ -103,6 +103,7 @@ async def test_returns_role_and_backend_calculated_capability(
         "role": role.value,
         "capabilities": {
             "can_manage_user_activations": expected_capability,
+            "can_manage_accounts": expected_capability,
         },
     }
     assert capabilities.received_token == OPAQUE_MATRIX_VALUE

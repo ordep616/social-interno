@@ -16,6 +16,7 @@ class UserActivationCapabilitiesResponse(BaseModel):
     """Operações corporativas liberadas para a identidade."""
 
     can_manage_user_activations: bool
+    can_manage_accounts: bool
 
 
 class CurrentUserCapabilitiesResponse(BaseModel):
@@ -43,5 +44,6 @@ def get_current_user_capabilities(
         role=current_user.assignment.role,
         capabilities=UserActivationCapabilitiesResponse(
             can_manage_user_activations=current_user.can_manage_user_activations,
+            can_manage_accounts=current_user.can_manage_accounts,
         ),
     )
