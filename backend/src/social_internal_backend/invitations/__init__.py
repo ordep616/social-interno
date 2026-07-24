@@ -3,6 +3,7 @@
 from social_internal_backend.invitations.repository import InvitationRepository
 from social_internal_backend.invitations.service import (
     InvitationConflictError,
+    InvitationIdentityConflictError,
     InvitationNotFoundError,
     InvitationService,
     InvitationTransitionError,
@@ -12,6 +13,7 @@ from social_internal_backend.invitations.service import (
 
 __all__ = [
     "InvitationConflictError",
+    "InvitationIdentityConflictError",
     "InvitationNotFoundError",
     "InvitationRepository",
     "InvitationService",

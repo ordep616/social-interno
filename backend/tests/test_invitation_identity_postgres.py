@@ -8,6 +8,11 @@ from uuid import UUID
 import pytest
 from sqlalchemy import Connection, Engine, create_engine, inspect, text
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
+
+from social_internal_backend.invitations import InvitationService
+from social_internal_backend.models import Invitation, InvitationRole
+from social_internal_backend.synapse import SynapseUserNotFoundError
 
 pytestmark = pytest.mark.postgres
 
@@ -106,6 +111,14 @@ def insert_invitation(
     )
 
 
+class MissingSynapseUserLookup:
+    """Confirma disponibilidade sem realizar chamada externa no teste do banco."""
+
+    def get_user(self, user_id: str) -> object:
+        del user_id
+        raise SynapseUserNotFoundError
+
+
 def test_migration_created_target_identity_contract(postgres_engine: Engine) -> None:
     inspector = inspect(postgres_engine)
     columns = {column["name"] for column in inspector.get_columns("invitations")}
@@ -195,3 +208,23 @@ def test_target_identity_requires_matrix_user_id_shape(connection: Connection) -
             status="pending",
             target_user_id="employee without domain",
         )
+
+
+def test_service_issues_invitation_with_predefined_identity(connection: Connection) -> None:
+    with Session(bind=connection, join_transaction_mode="create_savepoint") as session:
+        issued = InvitationService(
+            session,
+            identity_provider=MissingSynapseUserLookup(),
+            matrix_server_name="localhost",
+            clock=lambda: datetime(2026, 7, 23, 12, tzinfo=UTC),
+            token_factory=lambda: "opaque-postgres-invitation-token",
+        ).issue(
+            role=InvitationRole.user,
+            created_by="@admin:localhost",
+            username="employee",
+        )
+
+        persisted = session.get(Invitation, issued.invitation.id)
+        assert persisted is not None
+        assert persisted.target_user_id == "@employee:localhost"
+        assert persisted.role is InvitationRole.user

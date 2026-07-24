@@ -34,6 +34,20 @@ class InvitationRepository:
         statement = select(Invitation).where(Invitation.token_hash == token_hash)
         return self._session.scalars(statement).one_or_none()
 
+    def get_active_by_target_user_id(self, target_user_id: str) -> Invitation | None:
+        """Busca uma reserva ativa da identidade corporativa."""
+
+        statement = select(Invitation).where(
+            Invitation.target_user_id == target_user_id,
+            Invitation.status.in_(
+                (
+                    InvitationStatus.pending,
+                    InvitationStatus.processing,
+                )
+            ),
+        )
+        return self._session.scalars(statement).one_or_none()
+
     def list(self, *, offset: int = 0, limit: int = 100) -> Sequence[Invitation]:
         """Lista convites recentes de forma determinística e limitada."""
 
