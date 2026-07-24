@@ -13,5 +13,14 @@
   "hashRouter": {
     "enabled": false,
     "basename": "/"
+  },
+
+  "matrixRTC": {
+    "rtcFoci": [
+      {
+        "type": "livekit",
+        "livekit_service_url": "http://localhost:8085"
+      }
+    ]
   }
 }
