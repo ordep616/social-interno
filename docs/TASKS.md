@@ -57,7 +57,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
   parcial por identidade ativa e estado terminal `conflicted`.
 - [x] Implementar `GET /v1/me/capabilities` sem conceder criação de usuários a
   `user` ou `group_admin`.
-- [ ] Executar prova de conceito create-only do registro administrativo por
+- [x] Executar prova de conceito create-only do registro administrativo por
   segredo compartilhado em ambiente descartável: exigir `200 OK`, comparar
   exatamente `user_id` e `target_user_id`, validar domínio e sessão por
   `whoami`, revogar o dispositivo, confirmar dispositivo ausente e token
@@ -68,7 +68,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
   restrições que impeçam conclusão sem revogação confirmada, transição atômica
   de reconciliação para `synapse_created` e proibição de persistir
   `access_token`.
-- [ ] Registrar o shared-secret registration como incompatível com MAS e exigir
+- [x] Registrar o shared-secret registration como incompatível com MAS e exigir
   nova decisão conjunta de provisionamento antes de qualquer adoção futura do
   Matrix Authentication Service.
 - [ ] Adaptar emissão, pré-validação, unidade de trabalho e orquestração ao

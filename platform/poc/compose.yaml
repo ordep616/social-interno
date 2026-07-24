@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_DB: synapse
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: ${POC_POSTGRES_PASSWORD:?POC_POSTGRES_PASSWORD is required}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U synapse -d synapse"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    networks:
+      - matrix-internal
+
+  synapse:
+    image: ghcr.io/element-hq/synapse:v1.156.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SYNAPSE_CONFIG_PATH: /data/homeserver.yaml
+    ports:
+      - "127.0.0.1:${POC_SYNAPSE_PORT:?POC_SYNAPSE_PORT is required}:8008"
+    volumes:
+      - type: bind
+        source: ${POC_RUNTIME_DIR:?POC_RUNTIME_DIR is required}
+        target: /data
+    secrets:
+      - registration_shared_secret
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8008/_matrix/client/versions')"
+      interval: 2s
+      timeout: 3s
+      retries: 60
+    networks:
+      matrix-edge:
+      matrix-internal:
+
+networks:
+  matrix-edge:
+  matrix-internal:
+    internal: true
+
+volumes:
+  postgres-data:
+
+secrets:
+  registration_shared_secret:
+    file: ${POC_REGISTRATION_SHARED_SECRET_FILE:?POC_REGISTRATION_SHARED_SECRET_FILE is required}
