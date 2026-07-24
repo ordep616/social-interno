@@ -68,6 +68,9 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
   restrições que impeçam conclusão sem revogação confirmada, transição atômica
   de reconciliação para `synapse_created` e proibição de persistir
   `access_token`.
+- [x] Implementar a unidade de trabalho local conforme `DEC-021`, `DEC-022` e
+  `DEC-023`, derivando a identidade do convite e validando reserva,
+  checkpoints, liberação, finalização e rollback em PostgreSQL isolado.
 - [x] Registrar o shared-secret registration como incompatível com MAS e exigir
   nova decisão conjunta de provisionamento antes de qualquer adoção futura do
   Matrix Authentication Service.

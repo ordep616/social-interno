@@ -58,6 +58,8 @@ A fundação inicial contém apenas:
 - repositório SQLAlchemy com paginação e transições atômicas;
 - repositório de tentativas de cadastro com consultas ativas e transições
   condicionais, sem controlar a transação externa;
+- unidade de trabalho local para reserva, checkpoints, liberação e finalização
+  em transações PostgreSQL curtas;
 - serviço interno para emissão, validação, revogação, reserva, conclusão e liberação;
 - cliente Matrix `whoami` e autorização interna exclusiva de `platform_admin`;
 - endpoint `GET /v1/me/capabilities` para consultar o papel próprio e a
@@ -120,11 +122,11 @@ durável. O desenho usa uma tentativa operacional sem segredos para impedir
 concorrência pelo mesmo convite ou identidade e para distinguir falhas
 repetíveis de estados que exigem reconciliação.
 
-A reserva do convite e a tentativa serão persistidas juntas; a chamada HTTP ao
+A reserva do convite e a tentativa são persistidas juntas; a chamada HTTP ao
 Synapse ocorrerá sem transação de banco aberta; e papel, conclusão do convite e
 conclusão da tentativa serão gravados em uma nova transação atômica. Um
-resultado ambíguo depois do `PUT` nunca libera o convite nem repete a criação
-automaticamente.
+resultado ambíguo depois de iniciar a criação nunca libera o convite nem repete
+a operação automaticamente.
 
 O modelo, as migrações e o repositório de `registration_attempts` implementam
 os campos, estados, restrições, índices parciais, consultas ativas e transições
@@ -133,10 +135,17 @@ condicionais aprovados. Conforme `DEC-023`, a criação confirmada persiste
 `provisioning_session_revoked_at` e uma tentativa não pode ser concluída sem
 ambas as evidências. A persistência também recupera atomicamente uma tentativa
 em `reconciliation_required` depois da confirmação da revogação, limpando seu
-código de falha. O repositório não executa `commit` ou `rollback`; a futura
-unidade de trabalho continuará responsável por reservar o convite e criar a
-tentativa na mesma transação. Ainda não existem serviço de orquestração,
-endpoint público ou procedimento automático de reconciliação.
+código de falha. O repositório não executa `commit` ou `rollback`.
+
+A `RegistrationUnitOfWork` controla somente transações locais: deriva a
+identidade exclusivamente de `target_user_id`, reserva convite e tentativa em
+um commit, registra checkpoints duráveis sem receber senha ou token aberto,
+libera falhas classificadas pelo futuro orquestrador como seguramente
+anteriores à criação e finaliza papel, convite e tentativa em outro commit.
+A finalização exige estado `synapse_created`, dispositivo persistido e
+revogação confirmada, além da correspondência exata de identidade e papel.
+Conflitos revertem integralmente a fase local. Ainda não existem serviço de
+orquestração, endpoint público ou procedimento automático de reconciliação.
 
 ## Autorização administrativa interna
 
@@ -211,6 +220,12 @@ restrições reais. Os testes confirmam chave estrangeira, metadados coerentes,
 códigos de falha sanitizados, exclusividade de tentativas ativas por convite e
 identidade, nova tentativa depois de uma liberação e bloqueio de conclusão sem
 evidência durável da revogação da sessão de provisionamento.
+
+A unidade de trabalho também foi validada no PostgreSQL descartável. Os testes
+confirmam identidade derivada do convite, rollback da reserva diante de
+concorrência, liberação composta, checkpoints condicionais, recuperação de
+reconciliação, bloqueio de finalização prematura e rollback de convite e
+tentativa quando a atribuição de papel conflita.
 
 Para executar apenas esses testes contra um banco próprio já migrado e
 descartável:
