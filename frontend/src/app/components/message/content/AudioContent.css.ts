@@ -140,10 +140,47 @@ export const WaveformThumb = style({
 export const TimeRow = style({
   display: 'flex',
   justifyContent: 'space-between',
+  alignItems: 'center',
   gap: config.space.S200,
   marginTop: toRem(1),
   color: 'rgba(244, 247, 251, 0.82)',
 });
+
+export const TimeAfter = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'flex-end',
+  gap: config.space.S100,
+  minWidth: 0,
+});
+
+export const PlaybackRateButton = style([
+  DefaultReset,
+  {
+    minWidth: toRem(34),
+    height: toRem(20),
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: `0 ${config.space.S100}`,
+    border: 0,
+    borderRadius: config.radii.R300,
+    background: 'rgba(244, 247, 251, 0.18)',
+    color: '#ffffff',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+
+    selectors: {
+      '&:hover': {
+        background: 'rgba(244, 247, 251, 0.28)',
+      },
+      '&:focus-visible': {
+        outline: `${config.borderWidth.B600} solid rgba(255, 255, 255, 0.55)`,
+        outlineOffset: toRem(2),
+      },
+    },
+  },
+]);
 
 export const AudioElement = style({
   display: 'none',
