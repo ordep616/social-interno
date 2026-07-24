@@ -76,6 +76,27 @@ class RegistrationAttempt(Base):
             "failure_code IS NULL OR failure_code ~ '^[a-z][a-z0-9_]{0,63}$'",
             name="ck_registration_attempts_failure_code",
         ),
+        CheckConstraint(
+            "status NOT IN ('synapse_created', 'completed') OR provisioning_device_id IS NOT NULL",
+            name="ck_registration_attempts_provisioning_device_required",
+        ),
+        CheckConstraint(
+            "status <> 'completed' OR provisioning_session_revoked_at IS NOT NULL",
+            name="ck_registration_attempts_provisioning_revocation_required",
+        ),
+        CheckConstraint(
+            "provisioning_session_revoked_at IS NULL OR "
+            "(provisioning_device_id IS NOT NULL "
+            "AND status IN ('synapse_created', 'completed') "
+            "AND provisioning_session_revoked_at >= created_at)",
+            name="ck_registration_attempts_provisioning_revocation_metadata",
+        ),
+        CheckConstraint(
+            "status NOT IN ('processing', 'released') OR "
+            "(provisioning_device_id IS NULL "
+            "AND provisioning_session_revoked_at IS NULL)",
+            name="ck_registration_attempts_unprovisioned_states",
+        ),
         Index(
             "uq_registration_attempts_active_invitation_id",
             "invitation_id",
@@ -132,6 +153,10 @@ class RegistrationAttempt(Base):
         default=lambda: datetime.now(UTC),
         server_default=func.now(),
         onupdate=func.now(),
+    )
+    provisioning_device_id: Mapped[str | None] = mapped_column(String(255))
+    provisioning_session_revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True)
     )
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     failure_code: Mapped[str | None] = mapped_column(String(64))

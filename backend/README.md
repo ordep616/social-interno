@@ -126,12 +126,17 @@ conclusão da tentativa serão gravados em uma nova transação atômica. Um
 resultado ambíguo depois do `PUT` nunca libera o convite nem repete a criação
 automaticamente.
 
-O modelo, a migração e o repositório de `registration_attempts` já implementam
+O modelo, as migrações e o repositório de `registration_attempts` implementam
 os campos, estados, restrições, índices parciais, consultas ativas e transições
-condicionais aprovados. O repositório não executa `commit` ou `rollback`; a
-futura unidade de trabalho continuará responsável por reservar o convite e
-criar a tentativa na mesma transação. Ainda não existem serviço de
-orquestração, endpoint público ou procedimento de reconciliação.
+condicionais aprovados. Conforme `DEC-023`, a criação confirmada persiste
+`provisioning_device_id`, a revogação confirmada persiste
+`provisioning_session_revoked_at` e uma tentativa não pode ser concluída sem
+ambas as evidências. A persistência também recupera atomicamente uma tentativa
+em `reconciliation_required` depois da confirmação da revogação, limpando seu
+código de falha. O repositório não executa `commit` ou `rollback`; a futura
+unidade de trabalho continuará responsável por reservar o convite e criar a
+tentativa na mesma transação. Ainda não existem serviço de orquestração,
+endpoint público ou procedimento automático de reconciliação.
 
 ## Autorização administrativa interna
 
@@ -201,10 +206,11 @@ O serviço interno também foi validado em PostgreSQL `17.6-alpine`: emissão, v
 A migração de papéis e o bootstrap foram validados no mesmo PostgreSQL com upgrade, downgrade e reaplicação. O comando foi testado de forma idempotente e duas execuções simultâneas com identidades diferentes resultaram em somente um `platform_admin` inicial.
 
 A migração de `registration_attempts` foi validada em PostgreSQL
-`17.6-alpine` com upgrade, `alembic check`, downgrade, reaplicação e oito testes
-de restrições reais. Os testes confirmam chave estrangeira, metadados
-coerentes, códigos de falha sanitizados, exclusividade de tentativas ativas por
-convite e identidade e nova tentativa depois de uma liberação.
+`17.6-alpine` com upgrade, `alembic check`, downgrade, reaplicação e testes de
+restrições reais. Os testes confirmam chave estrangeira, metadados coerentes,
+códigos de falha sanitizados, exclusividade de tentativas ativas por convite e
+identidade, nova tentativa depois de uma liberação e bloqueio de conclusão sem
+evidência durável da revogação da sessão de provisionamento.
 
 Para executar apenas esses testes contra um banco próprio já migrado e
 descartável:

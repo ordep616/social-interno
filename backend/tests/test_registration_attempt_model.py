@@ -22,6 +22,8 @@ def test_attempt_contains_only_approved_operational_fields() -> None:
         "status",
         "created_at",
         "updated_at",
+        "provisioning_device_id",
+        "provisioning_session_revoked_at",
         "completed_at",
         "failure_code",
     }
@@ -73,8 +75,12 @@ def test_attempt_has_named_constraints_and_indexes() -> None:
         "ck_registration_attempts_failure_code",
         "ck_registration_attempts_failure_state",
         "ck_registration_attempts_matrix_user_id",
+        "ck_registration_attempts_provisioning_device_required",
+        "ck_registration_attempts_provisioning_revocation_metadata",
+        "ck_registration_attempts_provisioning_revocation_required",
         "ck_registration_attempts_role",
         "ck_registration_attempts_status",
+        "ck_registration_attempts_unprovisioned_states",
         "ck_registration_attempts_updated_at",
         "fk_registration_attempts_invitation_id_invitations",
     } <= constraint_names
@@ -113,4 +119,6 @@ def test_attempt_accepts_only_operational_metadata() -> None:
     assert attempt.matrix_user_id == "@alice:localhost"
     assert attempt.role is InvitationRole.user
     assert attempt.status is RegistrationAttemptStatus.processing
+    assert attempt.provisioning_device_id is None
+    assert attempt.provisioning_session_revoked_at is None
     assert not hasattr(attempt, "password")
