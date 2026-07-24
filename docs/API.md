@@ -354,14 +354,20 @@ O fluxo terá cinco fases:
    desfaz as duas mudanças.
 2. Depois do commit, sem manter transação ou bloqueio de banco durante a
    requisição, criar a conta por um mecanismo create-only aprovado.
-3. Após confirmação `201`, persistir `synapse_created` em uma transação local
-   curta, incluindo o `provisioning_device_id` quando houver sessão criada. O
-   `access_token` nunca será persistido. Se nem o resultado mínimo puder ser
-   registrado, a tentativa permanece ambígua e exige reconciliação.
+3. Após o registro administrativo responder `200 OK`, comparar exatamente o
+   `user_id` retornado com o `target_user_id`, validar o domínio Matrix
+   configurado e chamar `whoami` com o token de provisionamento. Somente uma
+   resposta `200` com o mesmo `user_id` e `device_id` permitirá persistir
+   `synapse_created` e o `provisioning_device_id` em uma transação local curta.
+   O `access_token` nunca será persistido. Divergência, resposta inconclusiva
+   ou falha ao registrar o resultado mantém a tentativa ambígua e exige
+   reconciliação.
 4. Revogar o dispositivo de provisionamento pela
    [API administrativa suportada](https://element-hq.github.io/synapse/latest/admin_api/user_admin_api.html#delete-a-device).
-   Somente a invalidação confirmada, inclusive ausência verificada do
-   dispositivo em uma retomada, permite preencher
+   No fluxo inicial, a confirmação exige que a consulta do dispositivo retorne
+   `404` e que `whoami` com o token de provisionamento retorne `401`. Somente
+   essa invalidação confirmada, inclusive ausência verificada do dispositivo
+   em uma retomada, permite preencher
    `provisioning_session_revoked_at` em uma transação local curta. Falha,
    timeout ou resultado ambíguo mantém o campo nulo, conserva o convite
    indisponível e move a tentativa para `reconciliation_required`. Quando uma
@@ -383,8 +389,9 @@ efeito:
 - validação local, conflito transacional ou conta encontrada antes da
   requisição de criação:
   falha segura; liberar o convite e marcar a tentativa como `released`;
-- resposta `201`: registrar `synapse_created` e o identificador do dispositivo
-  de provisionamento antes de tentar encerrar a sessão;
+- resposta `200 OK` do registro, identidade e domínio exatamente esperados e
+  sessão confirmada por `whoami`: registrar `synapse_created` e o identificador
+  do dispositivo de provisionamento antes de tentar encerrar a sessão;
 - revogação confirmada do dispositivo: persistir
   `provisioning_session_revoked_at` antes de permitir a finalização local;
 - falha ou resultado ambíguo na revogação: manter
@@ -394,7 +401,7 @@ efeito:
   limpar `failure_code` e somente então permitir a finalização;
 - timeout, queda de conexão ou resposta inesperada depois de iniciar a criação:
   não liberar o convite; marcar `reconciliation_required`;
-- falha local depois do `201`: conservar o estado suficiente para retomar a
+- falha local depois do `200 OK`: conservar o estado suficiente para retomar a
   revogação e, somente depois dela, concluir a atribuição do papel sem tentar
   criar outra conta;
 - estado ambíguo: nunca repetir automaticamente a criação e nunca retornar
@@ -406,9 +413,12 @@ redefinir senhas. Antes da implementação será executada uma prova de conceito
 do [registro por segredo compartilhado](https://element-hq.github.io/synapse/latest/admin_api/register_api.html),
 sempre com `admin: false`. O segredo permanecerá no servidor. O
 `access_token` e o `device_id` retornados constituem uma sessão ativa; não
-basta descartar o token. O serviço deverá revogar o dispositivo antes de
-finalizar o convite, persistindo somente o identificador necessário para
-retomada segura. Nenhum desses valores chegará ao navegador.
+basta descartar o token. Antes da revogação, `whoami` deverá responder `200`
+com o `user_id` e o `device_id` exatos retornados e autorizados. O serviço
+deverá revogar o dispositivo, confirmar sua ausência por `404` e confirmar a
+recusa do token por `whoami` com `401` antes de finalizar o convite,
+persistindo somente o identificador necessário para retomada segura. Nenhum
+desses valores chegará ao navegador.
 
 Essa API de registro fica desabilitada quando o Matrix Authentication Service
 (MAS) está integrado. A adoção futura do MAS dependerá de outro mecanismo de
@@ -422,6 +432,15 @@ possua os limites transacionais acima. Nenhuma transação PostgreSQL permanecer
 aberta durante a requisição ao Synapse. A unidade de trabalho de finalização
 também validará a evidência de revogação; não confiará apenas na ordem de
 chamadas do orquestrador.
+
+A prova será executada somente em ambiente descartável com a versão do
+Synapse fixada pelo projeto. Os loggers de registro e autenticação do Synapse
+não operarão em `DEBUG`, e qualquer recurso de log sensível permanecerá
+desabilitado. Senha, segredo compartilhado, MAC, nonce, token de convite,
+`access_token` e corpos sensíveis serão proibidos em logs e relatórios. O
+relatório sanitizado registrará apenas códigos HTTP, identificadores
+descartáveis, estados e horários, e sua inspeção fará parte do critério de
+aceitação.
 
 Os testes da implementação deverão cobrir a matriz completa de falhas com
 clientes simulados, concorrência real no PostgreSQL, retomada após interrupção,
