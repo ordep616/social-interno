@@ -29,27 +29,6 @@ export const VoiceMessage = style([
   },
 ]);
 
-export const VoiceMeta = style({
-  display: 'flex',
-  alignItems: 'baseline',
-  gap: config.space.S100,
-  minWidth: 0,
-  marginBottom: config.space.S100,
-  opacity: 0.94,
-});
-
-export const VoiceSender = style({
-  minWidth: 0,
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-});
-
-export const VoiceTime = style({
-  flexShrink: 0,
-  opacity: 0.76,
-});
-
 export const VoiceBody = style({
   display: 'grid',
   gridTemplateColumns: `${toRem(40)} minmax(0, 1fr)`,

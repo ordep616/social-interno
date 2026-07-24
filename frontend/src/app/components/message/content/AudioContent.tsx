@@ -247,14 +247,6 @@ export function AudioContent({
 
   return (
     <div className={css.VoiceMessage} data-own={senderIsMe ? 'true' : 'false'}>
-      <div className={css.VoiceMeta}>
-        <Text className={css.VoiceSender} as="span" size="B300" truncate>
-          {displayName}
-        </Text>
-        <Text className={css.VoiceTime} as="time" size="T200">
-          {sentAt}
-        </Text>
-      </div>
       <div className={css.VoiceBody}>
         <button
           className={css.PlayButton}
