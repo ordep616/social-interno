@@ -3,13 +3,19 @@
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
+from unittest.mock import MagicMock
 from uuid import UUID, uuid4
 
 import httpx
 import pytest
+from fastapi import HTTPException
+from pydantic import SecretStr
+from sqlalchemy.orm import Session
 
+from social_internal_backend.api import dependencies as api_dependencies
 from social_internal_backend.api.dependencies import (
-    get_configured_invitation_service,
+    get_invitation_issuance_service,
+    get_invitation_service,
     get_platform_admin_authorization_service,
 )
 from social_internal_backend.application import create_app
@@ -19,6 +25,7 @@ from social_internal_backend.authorization import (
 )
 from social_internal_backend.invitations import (
     InvitationConflictError,
+    InvitationIdentityConflictError,
     InvitationNotFoundError,
     IssuedInvitation,
 )
@@ -32,10 +39,15 @@ from social_internal_backend.models import (
 from social_internal_backend.settings import Settings
 from social_internal_backend.synapse import (
     InvalidMatrixAccessTokenError,
+    InvalidSynapseAdminCredentialError,
     MatrixIdentity,
+    SynapseAdminProtocolError,
+    SynapseAdminRateLimitedError,
+    SynapseAdminUnavailableError,
     SynapseProtocolError,
     SynapseRateLimitedError,
     SynapseUnavailableError,
+    SynapseUserNotFoundError,
 )
 
 NOW = datetime(2026, 7, 23, 15, tzinfo=UTC)
@@ -108,7 +120,9 @@ class FakeInvitationService:
         self.listed: Sequence[Invitation] = [self.invitation]
         self.get_error: Exception | None = None
         self.revoke_error: Exception | None = None
-        self.issue_arguments: tuple[InvitationRole, str, str] | None = None
+        self.issue_error: Exception | None = None
+        self.omit_issued_target = False
+        self.issue_arguments: tuple[str, InvitationRole, str] | None = None
         self.list_arguments: tuple[int, int] | None = None
         self.requested_id: UUID | None = None
         self.revoked_id: UUID | None = None
@@ -118,10 +132,17 @@ class FakeInvitationService:
         *,
         role: InvitationRole,
         created_by: str,
-        username: str,
+        username: str | None = None,
     ) -> IssuedInvitation:
-        self.issue_arguments = (role, created_by, username)
+        if username is None:
+            raise AssertionError("username must be provided by the endpoint")
+        self.issue_arguments = (username, role, created_by)
+        if self.issue_error is not None:
+            raise self.issue_error
         self.invitation.role = role
+        self.invitation.target_user_id = (
+            None if self.omit_issued_target else f"@{username}:localhost"
+        )
         return IssuedInvitation(invitation=self.invitation, token=OPAQUE_INVITATION_VALUE)
 
     def list(self, *, offset: int = 0, limit: int = 100) -> Sequence[Invitation]:
@@ -157,7 +178,8 @@ async def make_client(
     def override_authorization_service() -> FakeAuthorizationService:
         return authorization
 
-    app.dependency_overrides[get_configured_invitation_service] = override_invitation_service
+    app.dependency_overrides[get_invitation_service] = override_invitation_service
+    app.dependency_overrides[get_invitation_issuance_service] = override_invitation_service
     app.dependency_overrides[get_platform_admin_authorization_service] = (
         override_authorization_service
     )
@@ -181,16 +203,17 @@ async def test_create_returns_location_single_secret_and_no_store(settings: Sett
     assert response.headers["location"] == (f"/v1/admin/invitations/{invitations.invitation.id}")
     assert response.headers["cache-control"] == "no-store"
     assert invitations.issue_arguments == (
+        "employee",
         InvitationRole.group_admin,
         ADMIN_USER_ID,
-        "employee",
     )
     assert authorization.received_token == OPAQUE_MATRIX_VALUE
     payload = response.json()
     assert payload["role"] == "group_admin"
     assert payload["status"] == "pending"
     assert payload["target_user_id"] == "@employee:localhost"
-    assert payload["invite_url"] == (f"http://127.0.0.1:5173/activate#{OPAQUE_INVITATION_VALUE}")
+    assert payload["invite_url"] == (f"http://127.0.0.1:8080/activate#{OPAQUE_INVITATION_VALUE}")
+    assert OPAQUE_INVITATION_VALUE not in payload["invite_url"].split("#", maxsplit=1)[0]
     assert "token_hash" not in payload
     assert OPAQUE_INVITATION_VALUE not in repr(invitations.invitation)
 
@@ -213,11 +236,13 @@ async def test_list_and_get_use_public_identifiers_without_hash(settings: Settin
     assert listed.headers["cache-control"] == "no-store"
     assert invitations.list_arguments == (3, 25)
     assert len(listed.json()) == 1
+    assert "target_user_id" not in listed.json()[0]
     assert "token_hash" not in listed.json()[0]
     assert fetched.status_code == 200
     assert fetched.headers["cache-control"] == "no-store"
     assert invitations.requested_id == invitations.invitation.id
     assert fetched.json()["id"] == str(invitations.invitation.id)
+    assert "target_user_id" not in fetched.json()
     assert "invite_url" not in fetched.json()
 
 
@@ -337,6 +362,11 @@ async def test_request_validation_rejects_forbidden_role_and_bad_pagination(
             headers=AUTHORIZATION_HEADER,
             json={"username": "employee", "role": "platform_admin"},
         )
+        username_response = await client.post(
+            "/v1/admin/invitations",
+            headers=AUTHORIZATION_HEADER,
+            json={"username": "Employee", "role": "user"},
+        )
         pagination_response = await client.get(
             "/v1/admin/invitations?limit=101",
             headers=AUTHORIZATION_HEADER,
@@ -346,10 +376,166 @@ async def test_request_validation_rejects_forbidden_role_and_bad_pagination(
             headers=AUTHORIZATION_HEADER,
         )
 
-    for response in (role_response, pagination_response, uuid_response):
+    for response in (role_response, username_response, pagination_response, uuid_response):
         assert response.status_code == 422
         assert response.headers["cache-control"] == "no-store"
     assert invitations.issue_arguments is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    "extra_field",
+    [
+        {"target_user_id": "@attacker:localhost"},
+        {"created_by": "@attacker:localhost"},
+        {"platform_admin": True},
+    ],
+)
+async def test_create_rejects_unapproved_request_fields(
+    settings: Settings,
+    extra_field: dict[str, object],
+) -> None:
+    invitations = FakeInvitationService()
+    authorization = FakeAuthorizationService()
+    async with make_client(settings, invitations, authorization) as client:
+        response = await client.post(
+            "/v1/admin/invitations",
+            headers=AUTHORIZATION_HEADER,
+            json={
+                "username": "employee",
+                "role": "user",
+                **extra_field,
+            },
+        )
+
+    assert response.status_code == 422
+    assert response.headers["cache-control"] == "no-store"
+    assert invitations.issue_arguments is None
+
+
+@pytest.mark.anyio
+@pytest.mark.parametrize(
+    ("error", "expected_status"),
+    [
+        (InvitationIdentityConflictError(), 409),
+        (SynapseAdminRateLimitedError(), 429),
+        (InvalidSynapseAdminCredentialError(), 503),
+        (SynapseAdminUnavailableError(), 503),
+        (SynapseAdminProtocolError(), 502),
+    ],
+)
+async def test_create_maps_identity_availability_failures_without_secret(
+    settings: Settings,
+    error: Exception,
+    expected_status: int,
+) -> None:
+    invitations = FakeInvitationService()
+    invitations.issue_error = error
+    authorization = FakeAuthorizationService()
+    async with make_client(settings, invitations, authorization) as client:
+        response = await client.post(
+            "/v1/admin/invitations",
+            headers=AUTHORIZATION_HEADER,
+            json={"username": "employee", "role": "user"},
+        )
+
+    assert response.status_code == expected_status
+    assert response.headers["cache-control"] == "no-store"
+    assert OPAQUE_INVITATION_VALUE not in response.text
+    assert OPAQUE_MATRIX_VALUE not in response.text
+
+
+@pytest.mark.anyio
+async def test_create_rejects_internal_result_without_target_identity(
+    settings: Settings,
+) -> None:
+    invitations = FakeInvitationService()
+    invitations.omit_issued_target = True
+    authorization = FakeAuthorizationService()
+    async with make_client(settings, invitations, authorization) as client:
+        response = await client.post(
+            "/v1/admin/invitations",
+            headers=AUTHORIZATION_HEADER,
+            json={"username": "employee", "role": "user"},
+        )
+
+    assert response.status_code == 500
+    assert response.headers["cache-control"] == "no-store"
+    assert OPAQUE_INVITATION_VALUE not in response.text
+
+
+def test_issuance_dependency_rejects_invalid_admin_credential(settings: Settings) -> None:
+    invalid_settings = settings.model_copy(
+        update={"synapse_admin_access_token": SecretStr("")},
+    )
+    dependency = get_invitation_issuance_service(
+        invalid_settings,
+        MagicMock(spec=Session),
+    )
+
+    with pytest.raises(HTTPException) as captured:
+        next(dependency)
+
+    assert captured.value.status_code == 503
+    assert captured.value.headers == {"Cache-Control": "no-store"}
+
+
+def test_issuance_dependency_wires_and_closes_admin_client(
+    settings: Settings,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FakeSynapseAdminClient:
+        """Confirma a composição sem abrir conexão HTTP."""
+
+        def __init__(
+            self,
+            *,
+            base_url: str,
+            timeout_seconds: float,
+            matrix_server_name: str,
+            admin_access_token: SecretStr,
+        ) -> None:
+            assert base_url == str(settings.synapse_base_url)
+            assert timeout_seconds == settings.synapse_request_timeout_seconds
+            assert matrix_server_name == settings.matrix_server_name
+            assert admin_access_token is settings.synapse_admin_access_token
+            self.requested_user_id: str | None = None
+            self.closed = False
+            clients.append(self)
+
+        def __enter__(self) -> FakeSynapseAdminClient:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            del args
+            self.closed = True
+
+        def get_user(self, user_id: str) -> object:
+            self.requested_user_id = user_id
+            raise SynapseUserNotFoundError
+
+    clients: list[FakeSynapseAdminClient] = []
+    monkeypatch.setattr(
+        api_dependencies,
+        "SynapseAdminClient",
+        FakeSynapseAdminClient,
+    )
+    session = MagicMock(spec=Session)
+    session.scalars.return_value.one_or_none.return_value = None
+    dependency = api_dependencies.get_invitation_issuance_service(settings, session)
+
+    service = next(dependency)
+    issued = service.issue(
+        role=InvitationRole.user,
+        created_by=ADMIN_USER_ID,
+        username="employee",
+    )
+    with pytest.raises(StopIteration):
+        next(dependency)
+
+    assert issued.invitation.target_user_id == "@employee:localhost"
+    assert clients[0].requested_user_id == "@employee:localhost"
+    assert clients[0].closed
 
 
 @pytest.mark.anyio

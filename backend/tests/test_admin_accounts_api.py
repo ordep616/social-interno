@@ -34,7 +34,7 @@ from social_internal_backend.synapse import (
 
 NOW = datetime(2026, 7, 24, 14, tzinfo=UTC)
 OPAQUE_MATRIX_VALUE = "opaque-matrix-value"
-OPAQUE_PASSWORD_VALUE = "opaque-password-value"
+OPAQUE_PASSWORD_VALUE = "opaque-password-value"  # noqa: S105
 ADMIN_USER_ID = "@admin:localhost"
 EMPLOYEE_USER_ID = "@employee:localhost"
 AUTHORIZATION_HEADER = {"Authorization": f"Bearer {OPAQUE_MATRIX_VALUE}"}

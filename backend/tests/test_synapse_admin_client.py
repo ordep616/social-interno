@@ -159,7 +159,7 @@ def test_create_user_preflights_and_sends_only_non_admin_account_fields() -> Non
 def test_list_users_uses_safe_filters_and_parses_page() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.method == "GET"
-        assert request.url.raw_path == b"/_synapse/admin/v2/users"
+        assert request.url.path == "/_synapse/admin/v2/users"
         params = dict(request.url.params)
         assert params == {
             "from": "3",
@@ -184,7 +184,7 @@ def test_list_users_uses_safe_filters_and_parses_page() -> None:
     assert len(page.users) == 1
     assert page.users[0].user_id == USER_ID
     assert page.total == 1
-    assert page.next_token == "28"
+    assert page.next_token == "28"  # noqa: S105
 
 
 def test_update_user_preflights_preserves_admin_flag_and_refetches() -> None:
@@ -217,9 +217,7 @@ def test_update_user_preflights_preserves_admin_flag_and_refetches() -> None:
 def test_reset_password_uses_dedicated_endpoint_without_leaking_secret() -> None:
     def handler(request: httpx.Request) -> httpx.Response:
         assert request.method == "POST"
-        assert request.url.raw_path == (
-            b"/_synapse/admin/v1/reset_password/%40alice%3Alocalhost"
-        )
+        assert request.url.raw_path == (b"/_synapse/admin/v1/reset_password/%40alice%3Alocalhost")
         assert json.loads(request.content) == {
             "new_password": OPAQUE_ACCOUNT_VALUE,
             "logout_devices": True,

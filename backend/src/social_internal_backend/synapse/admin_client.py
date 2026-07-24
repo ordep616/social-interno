@@ -12,7 +12,7 @@ from social_internal_backend.matrix import validate_matrix_user_id
 
 USER_ADMIN_PATH = "/_synapse/admin/v2/users"
 USER_DEACTIVATE_PATH = "/_synapse/admin/v1/deactivate"
-USER_RESET_PASSWORD_PATH = "/_synapse/admin/v1/reset_password"
+USER_RESET_PASSWORD_PATH = "/_synapse/admin/v1/reset_password"  # noqa: S105
 MAX_ADMIN_ACCESS_TOKEN_LENGTH = 4096
 MAX_PASSWORD_LENGTH = 512
 MAX_DISPLAY_NAME_LENGTH = 255
