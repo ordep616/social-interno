@@ -409,9 +409,11 @@ efeito:
 
 O [`PUT` administrativo de usuários](https://element-hq.github.io/synapse/latest/admin_api/user_admin_api.html#create-or-modify-account)
 não fará parte da ativação porque também modifica contas existentes e pode
-redefinir senhas. Antes da implementação será executada uma prova de conceito
+redefinir senhas. A prova de conceito
 do [registro por segredo compartilhado](https://element-hq.github.io/synapse/latest/admin_api/register_api.html),
-sempre com `admin: false`. O segredo permanecerá no servidor. O
+executada em 2026-07-24 confirmou no Synapse `1.156.0` a criação da conta-alvo
+com `admin: false`, o conflito create-only e a preservação da conta existente.
+O segredo permanecerá no servidor. O
 `access_token` e o `device_id` retornados constituem uma sessão ativa; não
 basta descartar o token. Antes da revogação, `whoami` deverá responder `200`
 com o `user_id` e o `device_id` exatos retornados e autorizados. O serviço
@@ -422,9 +424,9 @@ desses valores chegará ao navegador.
 
 Essa API de registro fica desabilitada quando o Matrix Authentication Service
 (MAS) está integrado. A adoção futura do MAS dependerá de outro mecanismo de
-provisionamento aprovado pelos dois colaboradores. A prova de conceito deverá
-confirmar comportamento create-only, conflito de identidade, revogação da
-sessão criada e compatibilidade com a configuração escolhida do Synapse.
+provisionamento aprovado pelos dois colaboradores. A prova confirmou
+comportamento create-only, conflito de identidade e revogação da sessão criada
+na configuração descartável escolhida.
 
 A orquestração não chamará métodos atuais que realizam `commit` internamente;
 as transições combinadas serão executadas por uma unidade de trabalho que
@@ -433,14 +435,13 @@ aberta durante a requisição ao Synapse. A unidade de trabalho de finalização
 também validará a evidência de revogação; não confiará apenas na ordem de
 chamadas do orquestrador.
 
-A prova será executada somente em ambiente descartável com a versão do
-Synapse fixada pelo projeto. Os loggers de registro e autenticação do Synapse
-não operarão em `DEBUG`, e qualquer recurso de log sensível permanecerá
-desabilitado. Senha, segredo compartilhado, MAC, nonce, token de convite,
-`access_token` e corpos sensíveis serão proibidos em logs e relatórios. O
-relatório sanitizado registrará apenas códigos HTTP, identificadores
-descartáveis, estados e horários, e sua inspeção fará parte do critério de
-aceitação.
+A prova foi executada somente em ambiente descartável com a versão do Synapse
+fixada pelo projeto. Os loggers de registro e autenticação do Synapse operaram
+em `INFO`, e recursos de log sensível permaneceram desabilitados. A inspeção
+automatizada não encontrou senha, segredo compartilhado, MAC, nonce ou
+`access_token` conhecidos nos logs dos contêineres. O relatório sanitizado
+registrou apenas códigos HTTP, identificadores descartáveis, estados e
+horários. O procedimento reproduzível está em `../platform/poc/`.
 
 Os testes da implementação deverão cobrir a matriz completa de falhas com
 clientes simulados, concorrência real no PostgreSQL, retomada após interrupção,

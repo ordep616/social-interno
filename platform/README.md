@@ -64,7 +64,32 @@ Não apague o volume e `runtime/` de um ambiente importante sem backup conjunto.
 
 ## Usuários de teste
 
-O cadastro público permanece desabilitado. A criação administrativa de usuários deverá usar a ferramenta oficial `register_new_matrix_user` dentro do contêiner, com o segredo local de registro. O procedimento será validado na próxima etapa da prova de conceito.
+O cadastro público permanece desabilitado. Usuários do ambiente persistente
+continuam sendo administrados separadamente e não são usados na prova
+create-only.
+
+## Prova create-only descartável
+
+A prova do registro por segredo compartilhado foi executada com sucesso em
+2026-07-24 contra Synapse `1.156.0` e PostgreSQL `17.6-alpine`. Ela confirmou:
+
+- resposta `200 OK` e identidade exata;
+- conta-alvo não administrativa;
+- sessão confirmada por `whoami`;
+- dispositivo ausente por `404` e token recusado por `401` após a revogação;
+- conflito `M_USER_IN_USE` sem mudar propriedades, dispositivos ou senha da
+  conta existente;
+- ausência dos valores sensíveis conhecidos nos logs;
+- remoção de contêineres, redes, volume e diretório temporário.
+
+O procedimento e o executor estão em `poc/`. Ele não lê `.env`, `runtime/` ou
+credenciais do ambiente persistente:
+
+```bash
+cd platform/poc
+python3 -m unittest -v test_create_only_registration.py
+python3 create_only_registration.py
+```
 
 ## Pendências antes de produção
 

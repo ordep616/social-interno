@@ -240,9 +240,12 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Provisionamento: o
   [`PUT` administrativo de usuários](https://element-hq.github.io/synapse/latest/admin_api/user_admin_api.html#create-or-modify-account)
   não será usado para ativação porque também modifica contas existentes. Será
-  feita uma prova de conceito do
+  usado o mecanismo validado pela prova de conceito do
   [registro por segredo compartilhado](https://element-hq.github.io/synapse/latest/admin_api/register_api.html),
-  com conta sempre não administrativa. A prova comparará exatamente o
+  com a conta-alvo sempre não administrativa. Em 2026-07-24, a prova
+  descartável no Synapse `1.156.0` confirmou `200 OK`, conflito
+  `M_USER_IN_USE` sem alterar a conta existente e revogação da sessão. O fluxo
+  comparará exatamente o
   `user_id` retornado com o `target_user_id` autorizado e verificará também o
   domínio Matrix configurado. O `access_token` e o `device_id` retornados
   representam uma sessão ativa: antes da revogação, `whoami` deverá responder
@@ -257,7 +260,8 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
   desabilitado quando o Matrix Authentication Service (MAS) está integrado.
   Uma futura adoção do MAS exigirá outro mecanismo de provisionamento,
   registrado em nova decisão conjunta antes de substituir esse fluxo. A adoção
-  do mecanismo inicial depende da prova de conceito, da proteção do segredo e
+  funcional do mecanismo inicial foi confirmada pela prova de conceito; sua
+  adoção fora do ambiente descartável ainda depende da proteção do segredo e
   da confirmação de compatibilidade com a configuração escolhida do Synapse.
 - Consistência: Synapse e PostgreSQL não serão descritos como uma
   transação ACID. A saga de `DEC-021` reservará convite e tentativa, fechará a
