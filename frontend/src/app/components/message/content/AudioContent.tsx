@@ -20,6 +20,10 @@ import * as css from './AudioContent.css';
 
 let activeVoiceAudioElement: HTMLAudioElement | undefined;
 
+const TIMELINE_MESSAGE_SELECTOR = '[data-message-item]';
+const VOICE_AUDIO_PLAYER_SELECTOR = '[data-voice-audio-player=true]';
+const VOICE_AUDIO_PLAY_BUTTON_SELECTOR = '[data-voice-audio-play-button=true]';
+
 const WAVEFORM_BAR_COUNT = 34;
 const MIN_BAR_SCALE = 0.16;
 const FALLBACK_WAVEFORM = [
@@ -80,12 +84,50 @@ const clampProgress = (value: number): number => Math.max(0, Math.min(1, value))
 const getFiniteDuration = (duration: number | undefined): number | undefined =>
   typeof duration === 'number' && Number.isFinite(duration) && duration > 0 ? duration : undefined;
 
+const getNextTimelineMessageElement = (messageElement: Element): HTMLElement | undefined => {
+  let nextElement = messageElement.nextElementSibling;
+  while (nextElement) {
+    if (nextElement instanceof HTMLElement && nextElement.matches(TIMELINE_MESSAGE_SELECTOR)) {
+      return nextElement;
+    }
+    nextElement = nextElement.nextElementSibling;
+  }
+  return undefined;
+};
+
+const playNextReadyVoiceMessage = (rootElement: HTMLElement | null, senderId?: string): void => {
+  if (!rootElement || !senderId) return;
+
+  const messageElement = rootElement.closest(TIMELINE_MESSAGE_SELECTOR);
+  if (!messageElement) return;
+
+  const nextMessageElement = getNextTimelineMessageElement(messageElement);
+  const nextVoiceElement = nextMessageElement?.querySelector<HTMLElement>(
+    VOICE_AUDIO_PLAYER_SELECTOR
+  );
+  if (
+    !nextVoiceElement ||
+    nextVoiceElement.dataset.voiceSenderId !== senderId ||
+    nextVoiceElement.dataset.voiceReady !== 'true'
+  ) {
+    return;
+  }
+
+  const nextPlayButton = nextVoiceElement.querySelector<HTMLButtonElement>(
+    VOICE_AUDIO_PLAY_BUTTON_SELECTOR
+  );
+  if (!nextPlayButton || nextPlayButton.disabled) return;
+
+  nextPlayButton.click();
+};
+
 export type AudioContentProps = {
   mimeType: string;
   url: string;
   info: IAudioInfo;
   encInfo?: EncryptedAttachmentInfo;
   displayName: string;
+  senderId?: string;
   ts: number;
   senderIsMe?: boolean;
 };
@@ -95,6 +137,7 @@ export function AudioContent({
   info,
   encInfo,
   displayName,
+  senderId,
   ts,
   senderIsMe,
 }: AudioContentProps) {
@@ -117,6 +160,7 @@ export function AudioContent({
   );
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
 
   const [currentTime, setCurrentTime] = useState(0);
   // duration in seconds. (NOTE: info.duration is in milliseconds)
@@ -206,23 +250,31 @@ export function AudioContent({
         activeVoiceAudioElement = undefined;
       }
     };
+    const handlePlayEnd = () => {
+      handlePlayStop();
+      playNextReadyVoiceMessage(rootRef.current, senderId);
+    };
 
     audioElement.addEventListener('play', handlePlayStart);
     audioElement.addEventListener('pause', handlePlayStop);
-    audioElement.addEventListener('ended', handlePlayStop);
+    audioElement.addEventListener('ended', handlePlayEnd);
 
     return () => {
       audioElement.removeEventListener('play', handlePlayStart);
       audioElement.removeEventListener('pause', handlePlayStop);
-      audioElement.removeEventListener('ended', handlePlayStop);
+      audioElement.removeEventListener('ended', handlePlayEnd);
       if (activeVoiceAudioElement === audioElement) {
         activeVoiceAudioElement = undefined;
       }
     };
-  }, []);
+  }, [senderId]);
 
   const handlePlay = () => {
     if (srcState.status === AsyncStatus.Success) {
+      const audioElement = audioRef.current;
+      if (!playing && audioElement?.ended) {
+        audioElement.currentTime = 0;
+      }
       setPlaying(!playing);
     } else if (srcState.status !== AsyncStatus.Loading) {
       loadSrc().catch(() => undefined);
@@ -246,10 +298,18 @@ export function AudioContent({
   );
 
   return (
-    <div className={css.VoiceMessage} data-own={senderIsMe ? 'true' : 'false'}>
+    <div
+      ref={rootRef}
+      className={css.VoiceMessage}
+      data-own={senderIsMe ? 'true' : 'false'}
+      data-voice-audio-player="true"
+      data-voice-ready={srcState.status === AsyncStatus.Success ? 'true' : 'false'}
+      data-voice-sender-id={senderId}
+    >
       <div className={css.VoiceBody}>
         <button
           className={css.PlayButton}
+          data-voice-audio-play-button="true"
           type="button"
           onClick={handlePlay}
           disabled={srcState.status === AsyncStatus.Loading || loading}
