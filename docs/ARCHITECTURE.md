@@ -84,6 +84,10 @@ cadastro público desabilitado do Synapse.
 - Qualquer sessão criada incidentalmente pelo mecanismo de provisionamento será
   revogada antes de concluir a ativação; falha ou ambiguidade bloqueará o
   convite para reconciliação.
+- Antes da revogação, o backend comparará exatamente o `user_id` retornado com
+  o `target_user_id`, validará o domínio configurado e confirmará por `whoami`
+  que o token pertence ao `device_id` esperado. Depois da exclusão, confirmará
+  a ausência do dispositivo e a recusa do token.
 - Conforme o refinamento aceito em `DEC-023`, a confirmação será persistida
   em `provisioning_session_revoked_at`; a unidade de trabalho não finalizará a
   ativação confiando somente na ordem das chamadas externas.
@@ -97,6 +101,9 @@ cadastro público desabilitado do Synapse.
 - O armazenamento de mídia segue a configuração suportada pelo Synapse.
 - Identificador e instante de revogação da sessão de provisionamento são dados
   operacionais internos e não pertencem às respostas públicas.
+- Loggers do Synapse capazes de expor dados de registro ou autenticação não
+  operarão em `DEBUG` durante a prova de conceito; senha, segredo, MAC, nonce,
+  tokens e corpos sensíveis não pertencerão a logs ou relatórios.
 - Cache e filas adicionais só serão incluídos quando houver necessidade comprovada.
 - Backup, retenção, auditoria e restauração precisam considerar banco, mídia e configuração como um conjunto.
 

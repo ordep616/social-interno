@@ -58,8 +58,11 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Implementar `GET /v1/me/capabilities` sem conceder criação de usuários a
   `user` ou `group_admin`.
 - [ ] Executar prova de conceito create-only do registro administrativo por
-  segredo compartilhado, revogar o dispositivo e o token de sessão retornados
-  antes da conclusão e comprovar que conta existente nunca é modificada.
+  segredo compartilhado em ambiente descartável: exigir `200 OK`, comparar
+  exatamente `user_id` e `target_user_id`, validar domínio e sessão por
+  `whoami`, revogar o dispositivo, confirmar dispositivo ausente e token
+  recusado, inspecionar logs sanitizados e comprovar que conta existente nunca
+  é modificada.
 - [ ] Adaptar `registration_attempts` conforme `DEC-023` para
   guardar `provisioning_device_id` e `provisioning_session_revoked_at`, com
   restrições que impeçam conclusão sem revogação confirmada, transição atômica

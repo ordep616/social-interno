@@ -176,7 +176,7 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Senha proposta: 15 a 128 caracteres, sem regras de composição, transformação, persistência ou registro. A fonte e a licença de uma lista local de senhas comuns ou comprometidas serão aprovadas antes do endpoint público.
 - Referência de senha: a proposta segue a orientação para senha de fator único do [NIST SP 800-63B](https://pages.nist.gov/800-63-4/sp800-63b.html), preservando frases-senha, espaços, Unicode e gerenciadores de senha.
 - Concorrência: a reserva do convite e a criação da tentativa ocorrerão na mesma transação. Restrições únicas parciais impedirão tentativas ativas simultâneas para o mesmo convite ou identidade.
-- Provisionamento: nenhuma transação de banco ficará aberta durante a chamada ao Synapse. Confirmação `201` permitirá a finalização local; resultados que possam ter criado uma conta serão tratados como ambíguos. A ativação não deverá modificar contas existentes.
+- Provisionamento: nenhuma transação de banco ficará aberta durante a chamada ao Synapse. Para o mecanismo aprovado em `DEC-022`, a resposta `200 OK` do registro administrativo permitirá persistir o resultado externo, mas a finalização local continuará condicionada à revogação comprovada em `DEC-023`. Resultados que possam ter criado uma conta serão tratados como ambíguos. A ativação não deverá modificar contas existentes.
 - Finalização: atribuição do papel próprio, conclusão do convite e conclusão da tentativa ocorrerão atomicamente no PostgreSQL. O convite nunca concederá `platform_admin` ou administração global do Synapse.
 - Reconciliação: falha seguramente anterior à requisição de criação poderá liberar o convite. Falha posterior ou ambígua manterá o convite indisponível e exigirá reconciliação, sem repetição automática da criação.
 - Persistência: `registration_attempts` guardará somente identificadores, papel, estado, instantes e código sanitizado de falha. Não guardará token, hash de token, senha, credencial administrativa ou corpo retornado pelo Synapse.
@@ -242,12 +242,17 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
   não será usado para ativação porque também modifica contas existentes. Será
   feita uma prova de conceito do
   [registro por segredo compartilhado](https://element-hq.github.io/synapse/latest/admin_api/register_api.html),
-  com conta sempre não administrativa. O `access_token` e o `device_id`
-  retornados representam uma sessão ativa: o token nunca será persistido ou
+  com conta sempre não administrativa. A prova comparará exatamente o
+  `user_id` retornado com o `target_user_id` autorizado e verificará também o
+  domínio Matrix configurado. O `access_token` e o `device_id` retornados
+  representam uma sessão ativa: antes da revogação, `whoami` deverá responder
+  `200`, com o mesmo `user_id` e `device_id`. O token nunca será persistido ou
   enviado ao navegador, e o dispositivo deverá ser revogado pela API
-  administrativa antes de concluir a ativação. Falha ou resultado ambíguo
-  nessa revogação levará a tentativa para `reconciliation_required`, sem
-  marcar o convite como usado.
+  administrativa antes de concluir a ativação. A confirmação exigirá
+  dispositivo ausente (`404`) e o token de provisionamento recusado por
+  `whoami` (`401`). Divergência de identidade, falha ou resultado ambíguo na
+  validação ou revogação levará a tentativa para
+  `reconciliation_required`, sem marcar o convite como usado.
 - Compatibilidade com MAS: o registro por segredo compartilhado fica
   desabilitado quando o Matrix Authentication Service (MAS) está integrado.
   Uma futura adoção do MAS exigirá outro mecanismo de provisionamento,
@@ -268,6 +273,10 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
   no-referrer`, CSP restritiva, `frame-ancestors 'none'`, nenhum analytics ou
   script de terceiro e nenhum token em storage. Corpos sensíveis serão
   omitidos de logs; auditoria e limites são obrigatórios antes da publicação.
+  Na prova de conceito, os loggers de registro e autenticação do Synapse não
+  operarão em `DEBUG`, recursos de log sensível permanecerão desabilitados e
+  senha, segredo compartilhado, MAC, nonce, tokens e corpos sensíveis não
+  poderão aparecer em logs ou relatórios.
 - Compatibilidade com o frontend: o cadastro público e o cadastro nativo do Cinny
   permanecerão indisponíveis. A ativação será uma camada corporativa anterior
   ao login e não modificará profundamente o fluxo Matrix normal do fork.
@@ -289,12 +298,18 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
   `provisioning_device_id` e `provisioning_session_revoked_at`, ambos
   inicialmente nulos. O `access_token` retornado pelo Synapse nunca será
   persistido.
-- Criação: após resposta `201`, a tentativa passará para
-  `synapse_created` e persistirá o `provisioning_device_id` antes de iniciar a
-  revogação. Falha ao registrar esse resultado será tratada como ambígua e
+- Criação: após resposta `200 OK` do registro administrativo, o serviço
+  comparará exatamente o `user_id` retornado com o `target_user_id`
+  autorizado, validará o domínio Matrix configurado e usará `whoami` para
+  comprovar que o token representa esse usuário e o `device_id` retornado.
+  Somente então a tentativa passará para `synapse_created` e persistirá o
+  `provisioning_device_id` antes de iniciar a revogação. Divergência, falha ou
+  resultado ambíguo nessa validação, assim como falha ao registrar o resultado,
   exigirá reconciliação.
-- Revogação: depois da exclusão confirmada do dispositivo, ou de sua
-  ausência verificada em uma retomada, o serviço preencherá
+- Revogação: no fluxo inicial, a exclusão somente será considerada confirmada
+  depois de o dispositivo responder como ausente (`404`) e o token de
+  provisionamento ser recusado por `whoami` (`401`). Depois dessa confirmação,
+  ou da ausência verificada do dispositivo em uma retomada, o serviço preencherá
   `provisioning_session_revoked_at` em uma transação local curta. Se a
   tentativa estiver em `reconciliation_required`, a mesma transação deverá
   movê-la condicionalmente para `synapse_created`, limpar `failure_code` e
