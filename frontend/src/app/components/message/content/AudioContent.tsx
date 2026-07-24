@@ -23,6 +23,12 @@ let activeVoiceAudioElement: HTMLAudioElement | undefined;
 const TIMELINE_MESSAGE_SELECTOR = '[data-message-item]';
 const VOICE_AUDIO_PLAYER_SELECTOR = '[data-voice-audio-player=true]';
 const VOICE_AUDIO_PLAY_BUTTON_SELECTOR = '[data-voice-audio-play-button=true]';
+const VOICE_PLAYBACK_RATES = [1, 1.5, 2] as const;
+
+type VoicePlaybackRate = typeof VOICE_PLAYBACK_RATES[number];
+
+let voicePlaybackRate: VoicePlaybackRate = 1;
+const voicePlaybackRateListeners = new Set<(rate: VoicePlaybackRate) => void>();
 
 const WAVEFORM_BAR_COUNT = 34;
 const MIN_BAR_SCALE = 0.16;
@@ -83,6 +89,18 @@ const clampProgress = (value: number): number => Math.max(0, Math.min(1, value))
 
 const getFiniteDuration = (duration: number | undefined): number | undefined =>
   typeof duration === 'number' && Number.isFinite(duration) && duration > 0 ? duration : undefined;
+
+const getPlaybackRateLabel = (rate: VoicePlaybackRate): string => `${rate}x`;
+
+const getNextPlaybackRate = (rate: VoicePlaybackRate): VoicePlaybackRate => {
+  const rateIndex = VOICE_PLAYBACK_RATES.indexOf(rate);
+  return VOICE_PLAYBACK_RATES[(rateIndex + 1) % VOICE_PLAYBACK_RATES.length];
+};
+
+const setVoicePlaybackRate = (rate: VoicePlaybackRate): void => {
+  voicePlaybackRate = rate;
+  voicePlaybackRateListeners.forEach((listener) => listener(rate));
+};
 
 const getNextTimelineMessageElement = (messageElement: Element): HTMLElement | undefined => {
   let nextElement = messageElement.nextElementSibling;
@@ -163,6 +181,7 @@ export function AudioContent({
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   const [currentTime, setCurrentTime] = useState(0);
+  const [playbackRate, setPlaybackRate] = useState<VoicePlaybackRate>(voicePlaybackRate);
   // duration in seconds. (NOTE: info.duration is in milliseconds)
   const infoDuration = info.duration ?? 0;
   const infoDurationSeconds = (infoDuration >= 0 ? infoDuration : 0) / 1000;
@@ -174,6 +193,7 @@ export function AudioContent({
   const { seek } = useMediaSeek(getAudioRef);
   const sourceUrl =
     srcState.status === AsyncStatus.Success ? (srcState.data as AudioContentData).src : undefined;
+  const playbackRateLabel = getPlaybackRateLabel(playbackRate);
 
   const syncAudioProgress = useCallback(() => {
     const audioElement = audioRef.current;
@@ -220,6 +240,24 @@ export function AudioContent({
     animationFrameId = window.requestAnimationFrame(syncPlayProgress);
     return () => window.cancelAnimationFrame(animationFrameId);
   }, [playing, syncAudioProgress]);
+
+  useEffect(() => {
+    const handlePlaybackRateChange = (rate: VoicePlaybackRate) => {
+      setPlaybackRate(rate);
+    };
+
+    voicePlaybackRateListeners.add(handlePlaybackRateChange);
+    return () => {
+      voicePlaybackRateListeners.delete(handlePlaybackRateChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const audioElement = audioRef.current;
+    if (audioElement) {
+      audioElement.playbackRate = playbackRate;
+    }
+  }, [playbackRate, sourceUrl]);
 
   useEffect(() => {
     if (srcState.status === AsyncStatus.Idle) {
@@ -279,6 +317,10 @@ export function AudioContent({
     } else if (srcState.status !== AsyncStatus.Loading) {
       loadSrc().catch(() => undefined);
     }
+  };
+
+  const handlePlaybackRate = () => {
+    setVoicePlaybackRate(getNextPlaybackRate(playbackRate));
   };
 
   const waveform =
@@ -370,9 +412,22 @@ export function AudioContent({
             <Text as="span" size="T200">
               {secondsToMinutesAndSeconds(currentTime)}
             </Text>
-            <Text as="span" size="T200">
-              {secondsToMinutesAndSeconds(duration)}
-            </Text>
+            <div className={css.TimeAfter}>
+              <Text as="span" size="T200">
+                {secondsToMinutesAndSeconds(duration)}
+              </Text>
+              <button
+                className={css.PlaybackRateButton}
+                type="button"
+                onClick={handlePlaybackRate}
+                aria-label={`Alterar velocidade do audio. Atual: ${playbackRateLabel}`}
+                title={`Velocidade ${playbackRateLabel}`}
+              >
+                <Text as="span" size="B300">
+                  {playbackRateLabel}
+                </Text>
+              </button>
+            </div>
           </div>
         </div>
       </div>
