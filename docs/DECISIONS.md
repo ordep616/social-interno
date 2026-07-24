@@ -219,7 +219,10 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Capacidades: `GET /v1/me/capabilities` validará a credencial
   Matrix por `whoami` e retornará o papel próprio e a capacidade
   `can_manage_user_activations`. A rota administrativa verificará
-  `platform_admin` novamente em cada operação.
+  `platform_admin` novamente em cada operação. `user` e `group_admin`
+  receberão a capacidade falsa; convidado Matrix ou identidade sem papel
+  próprio receberá `403`. O frontend permanecerá fechado diante de qualquer
+  erro e não confundirá esse contrato com as capacidades nativas Matrix.
 - Persistência: `invitations` receberá `target_user_id`; um índice
   único parcial impedirá dois convites ativos para a mesma identidade. O
   estado terminal `conflicted` representará identidade confirmadamente

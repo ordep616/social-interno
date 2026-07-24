@@ -87,7 +87,12 @@ Exemplo de resposta:
 
 A rota exige uma credencial Matrix válida. `user` e `group_admin` recebem a
 capacidade falsa. O frontend nasce com o painel fechado e só mostra
-“Gerenciamento” depois dessa confirmação.
+“Gerenciamento” depois dessa confirmação. Convidado Matrix ou identidade sem
+papel próprio recebe `403`; credencial ausente ou inválida recebe `401`;
+indisponibilidade ou limitação do Synapse recebe `503`; e resposta fora do
+contrato Matrix recebe `502`. Sucesso e erro usam `Cache-Control: no-store`.
+Esse contrato corporativo permanece separado das capacidades nativas Matrix
+já consumidas pelo Cinny.
 
 ### Convite
 
