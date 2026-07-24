@@ -1,8 +1,10 @@
 """Fábrica da aplicação FastAPI."""
 
 from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import RequestResponseEndpoint
 
+from social_internal_backend.api.admin_accounts import router as admin_accounts_router
 from social_internal_backend.api.admin_invitations import router as admin_invitations_router
 from social_internal_backend.api.capabilities import router as capabilities_router
 from social_internal_backend.api.dependencies import NO_STORE_HEADERS
@@ -11,6 +13,7 @@ from social_internal_backend.database import build_engine, build_session_factory
 from social_internal_backend.settings import Settings, get_settings
 
 ADMIN_INVITATIONS_PATH = "/v1/admin/invitations"
+ADMIN_ACCOUNTS_PATH = "/v1/admin/accounts"
 CURRENT_USER_CAPABILITIES_PATH = "/v1/me/capabilities"
 
 
@@ -25,6 +28,8 @@ async def add_sensitive_response_cache_control(
         request.url.path == CURRENT_USER_CAPABILITIES_PATH
         or request.url.path == ADMIN_INVITATIONS_PATH
         or request.url.path.startswith(f"{ADMIN_INVITATIONS_PATH}/")
+        or request.url.path == ADMIN_ACCOUNTS_PATH
+        or request.url.path.startswith(f"{ADMIN_ACCOUNTS_PATH}/")
     ):
         response.headers.update(NO_STORE_HEADERS)
     return response
@@ -43,8 +48,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = resolved_settings
     app.state.engine = engine
     app.state.session_factory = build_session_factory(engine)
+    if resolved_settings.cors_allowed_origins:
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=list(resolved_settings.cors_allowed_origins),
+            allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+            allow_headers=["Authorization", "Content-Type"],
+        )
     app.middleware("http")(add_sensitive_response_cache_control)
     app.include_router(health_router)
     app.include_router(capabilities_router)
     app.include_router(admin_invitations_router)
+    app.include_router(admin_accounts_router)
     return app

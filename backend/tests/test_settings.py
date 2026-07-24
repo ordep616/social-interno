@@ -24,7 +24,7 @@ def configure_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     monkeypatch.setenv(
         "BACKEND_INVITATION_PUBLIC_BASE_URL",
-        "http://127.0.0.1:8080/register",
+        "http://127.0.0.1:5173/activate",
     )
 
 
@@ -40,7 +40,8 @@ def test_settings_load_prefixed_environment(monkeypatch: pytest.MonkeyPatch) -> 
         "opaque-admin-value-for-tests"
     )
     assert "opaque-admin-value-for-tests" not in repr(settings)
-    assert str(settings.invitation_public_base_url).endswith("/register")
+    assert str(settings.invitation_public_base_url).endswith("/activate")
+    assert "http://127.0.0.1:5173" in settings.cors_allowed_origins
 
 
 def test_settings_reject_invalid_synapse_timeout(monkeypatch: pytest.MonkeyPatch) -> None:

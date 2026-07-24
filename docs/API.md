@@ -80,15 +80,16 @@ Exemplo de resposta:
   "user_id": "@admin:localhost",
   "role": "platform_admin",
   "capabilities": {
-    "can_manage_user_activations": true
+    "can_manage_user_activations": true,
+    "can_manage_accounts": true
   }
 }
 ```
 
 A rota exige uma credencial Matrix válida. `user` e `group_admin` recebem a
-capacidade falsa. O frontend nasce com o painel fechado e só mostra
-“Gerenciamento” depois dessa confirmação. Convidado Matrix ou identidade sem
-papel próprio recebe `403`; credencial ausente ou inválida recebe `401`;
+capacidade falsa para as duas operações. O frontend nasce com o painel fechado
+e só mostra “Administração” depois dessa confirmação. Convidado Matrix ou
+identidade sem papel próprio recebe `403`; credencial ausente ou inválida recebe `401`;
 indisponibilidade ou limitação do Synapse recebe `503`; e resposta fora do
 contrato Matrix recebe `502`. Sucesso e erro usam `Cache-Control: no-store`.
 Esse contrato corporativo permanece separado das capacidades nativas Matrix
@@ -189,6 +190,75 @@ separado.
 Respostas esperadas: criação `201`, listagem e consulta `200` e revogação idempotente `204`.
 
 A listagem, consulta e revogação usam o identificador público do convite e nunca retornam `token_hash` ou o token original. `DELETE` realiza revogação lógica: preenche `revoked_at`, muda o estado para `revoked` e preserva o registro para auditoria. Revogar um convite já revogado é uma operação idempotente. Identificador administrativo inexistente retorna `404`; convite em processamento ou já usado não pode ser revogado e retorna `409`.
+
+### Contas administrativas
+
+O painel de Administração consome um contrato REST próprio para o ciclo de vida
+de contas. O navegador envia apenas o token Matrix do usuário logado; o token
+administrativo do Synapse permanece no backend. A implementação usa APIs
+administrativas suportadas do Synapse, sem acesso direto ao banco do
+homeserver.
+
+```text
+GET    /v1/admin/accounts
+PATCH  /v1/admin/accounts/{user_id}
+POST   /v1/admin/accounts/{user_id}/password-reset
+DELETE /v1/admin/accounts/{user_id}
+```
+
+`GET /v1/admin/accounts` aceita `offset`, `limit` e `query`, retorna contas
+locais não administrativas e usa `Cache-Control: no-store`:
+
+```json
+{
+  "accounts": [
+    {
+      "user_id": "@pedro:localhost",
+      "display_name": "Pedro",
+      "role": null,
+      "admin": false,
+      "deactivated": false,
+      "locked": false,
+      "suspended": false
+    }
+  ],
+  "total": 1,
+  "next_token": null
+}
+```
+
+`PATCH /v1/admin/accounts/{user_id}` aceita alteração parcial de
+`display_name` e `locked`. O bloqueio administrativo inicial usa `locked`;
+desativação definitiva continua separada.
+
+```json
+{
+  "display_name": "Pedro Alves",
+  "locked": true
+}
+```
+
+`POST /v1/admin/accounts/{user_id}/password-reset` recebe `new_password` e
+`logout_devices`. A senha é encaminhada ao Synapse e não deve ser persistida,
+registrada em log ou retornada.
+
+```json
+{
+  "new_password": "senha-temporaria",
+  "logout_devices": true
+}
+```
+
+`DELETE /v1/admin/accounts/{user_id}?erase=true` executa a desativação suportada
+pelo Synapse. No painel, isso representa exclusão lógica forte: tokens e
+dispositivos são revogados pelo homeserver, e `erase=true` remove dados de
+perfil quando suportado. Mensagens e mídia já enviadas seguem a política do
+Synapse e da sala.
+
+Respostas esperadas: listagem e edição `200`, redefinição e desativação `204`.
+Conta inexistente retorna `404`; conflito retorna `409`; limitação ou
+indisponibilidade do Synapse retorna `503`; resposta administrativa inválida
+retorna `502`; e validação local retorna `422`.
 
 ### Endpoints de ativação
 

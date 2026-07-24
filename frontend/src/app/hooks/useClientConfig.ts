@@ -11,6 +11,7 @@ export type ClientConfig = {
   defaultHomeserver?: number;
   homeserverList?: string[];
   allowCustomHomeservers?: boolean;
+  backendUrl?: string;
 
   featuredCommunities?: {
     openAsDefault?: boolean;
