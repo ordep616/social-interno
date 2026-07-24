@@ -118,13 +118,7 @@ function DirectPresenceStatus({ userId, hour24Clock }: DirectPresenceStatusProps
   const online = presence?.presence === Presence.Online;
 
   return (
-    <Text
-      className={css.HeaderPresence}
-      data-online={online}
-      size="T200"
-      priority="300"
-      truncate
-    >
+    <Text className={css.HeaderPresence} data-online={online} size="T200" priority="300" truncate>
       {getDirectPresenceLabel(presence, hour24Clock)}
     </Text>
   );
@@ -314,16 +308,31 @@ const RoomMenu = forwardRef<HTMLDivElement, RoomMenuProps>(({ room, requestClose
   );
 });
 
-function AudioCallButton() {
+type AudioCallButtonProps = {
+  disabledReason?: string;
+};
+
+function AudioCallButton({ disabledReason }: AudioCallButtonProps) {
   const room = useRoom();
   const direct = useIsDirectRoom();
 
   const callEmbed = useCallEmbed();
   const startCall = useCallStart(direct);
-  const callStarted = callEmbed && callEmbed.roomId === room.roomId;
-  const inAnotherCall = callEmbed && !callStarted;
+  const callStarted = !!callEmbed && callEmbed.roomId === room.roomId;
+  const inAnotherCall = !!callEmbed && !callStarted;
+  const disabled = !!disabledReason || inAnotherCall || callStarted;
+
+  let tooltipText = disabledReason ?? 'Iniciar chamada de áudio';
+  if (callStarted) {
+    tooltipText = 'Chamada de áudio em andamento.';
+  }
+  if (inAnotherCall) {
+    tooltipText = 'Você já está em outra chamada. Encerre a atual para iniciar outra.';
+  }
 
   const handleStartAudioCall = () => {
+    if (disabled) return;
+
     startCall(room, {
       microphone: true,
       video: false,
@@ -337,25 +346,22 @@ function AudioCallButton() {
       offset={4}
       tooltip={
         <Tooltip>
-          {inAnotherCall ? (
-            <Text size="L400">Você já está em outra chamada. Encerre a atual para entrar.</Text>
-          ) : (
-            <Text>Iniciar chamada de áudio</Text>
-          )}
+          <Text size="L400">{tooltipText}</Text>
         </Tooltip>
       }
     >
       {(triggerRef) => (
-        <IconButton
-          variant="Surface"
-          fill="None"
-          ref={triggerRef}
-          onClick={handleStartAudioCall}
-          disabled={inAnotherCall || callStarted}
-          aria-label="Iniciar chamada de áudio"
-        >
-          <Icon size="400" src={Icons.Phone} filled />
-        </IconButton>
+        <Box as="span" ref={triggerRef} shrink="No">
+          <IconButton
+            variant="Surface"
+            fill="None"
+            onClick={handleStartAudioCall}
+            disabled={disabled}
+            aria-label="Iniciar chamada de áudio"
+          >
+            <Icon size="400" src={Icons.Phone} filled />
+          </IconButton>
+        </Box>
       )}
     </TooltipProvider>
   );
@@ -373,12 +379,17 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
   const permissions = useRoomPermissions(creators, powerLevels);
   const myUserId = mx.getSafeUserId();
 
-  const hasCallPermission = permissions.stateEvent(
-    StateEvent.GroupCallMemberPrefix,
-    myUserId
-  );
+  const hasCallPermission = permissions.stateEvent(StateEvent.GroupCallMemberPrefix, myUserId);
   const livekitSupported = useLivekitSupport();
   const rtcSupported = webRTCSupported();
+  let audioCallDisabledReason: string | undefined;
+  if (!livekitSupported) {
+    audioCallDisabledReason = 'Chamadas de áudio indisponíveis neste servidor.';
+  } else if (!rtcSupported) {
+    audioCallDisabledReason = 'Seu navegador não oferece suporte a chamadas de áudio.';
+  } else if (!hasCallPermission) {
+    audioCallDisabledReason = 'Você não tem permissão para iniciar chamada nesta conversa.';
+  }
 
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
   const [pinMenuAnchor, setPinMenuAnchor] = useState<RectCords>();
@@ -391,8 +402,7 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
   const name = useRoomName(room);
   const topic = useRoomTopic(room);
   const directUserId = direct ? guessDmRoomUserId(room, myUserId) : undefined;
-  const directPresenceUserId =
-    directUserId && directUserId !== myUserId ? directUserId : undefined;
+  const directPresenceUserId = directUserId && directUserId !== myUserId ? directUserId : undefined;
   const headerHasSubtitle = !!directPresenceUserId || !!topic;
   const avatarUrl = avatarMxc
     ? mxcUrlToHttp(mx, avatarMxc, useAuthentication, 96, 96, 'crop') ?? undefined
@@ -587,8 +597,8 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               </FocusTrap>
             }
           />
-          {!room.isCallRoom() && livekitSupported && rtcSupported && hasCallPermission && (
-            <AudioCallButton />
+          {direct && !room.isCallRoom() && (
+            <AudioCallButton disabledReason={audioCallDisabledReason} />
           )}
           {screenSize === ScreenSize.Desktop && (
             <TooltipProvider
