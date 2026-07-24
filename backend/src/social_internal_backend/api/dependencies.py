@@ -20,6 +20,8 @@ from social_internal_backend.invitations import InvitationService
 from social_internal_backend.settings import Settings
 from social_internal_backend.synapse import (
     InvalidMatrixAccessTokenError,
+    InvalidSynapseAdminCredentialError,
+    SynapseAdminClient,
     SynapseClient,
     SynapseProtocolError,
     SynapseRateLimitedError,
@@ -62,6 +64,40 @@ def get_invitation_service(session: DatabaseSession) -> InvitationService:
 
 
 InvitationServiceDependency = Annotated[InvitationService, Depends(get_invitation_service)]
+
+
+def get_invitation_issuance_service(
+    settings: AppSettings,
+    session: DatabaseSession,
+) -> Iterator[InvitationService]:
+    """Monta a emissão com a credencial administrativa somente no `POST`."""
+
+    try:
+        client = SynapseAdminClient(
+            base_url=str(settings.synapse_base_url),
+            timeout_seconds=settings.synapse_request_timeout_seconds,
+            matrix_server_name=settings.matrix_server_name,
+            admin_access_token=settings.synapse_admin_access_token,
+        )
+    except InvalidSynapseAdminCredentialError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Identity availability check is not configured",
+            headers=NO_STORE_HEADERS,
+        ) from None
+
+    with client:
+        yield InvitationService(
+            session,
+            identity_provider=client,
+            matrix_server_name=settings.matrix_server_name,
+        )
+
+
+InvitationIssuanceServiceDependency = Annotated[
+    InvitationService,
+    Depends(get_invitation_issuance_service),
+]
 
 
 def get_platform_admin_authorization_service(

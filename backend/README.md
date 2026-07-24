@@ -73,9 +73,11 @@ O token aberto existe apenas no retorno da emissão e não aparece no `repr` do 
 Os endpoints administrativos aplicam autenticação Matrix por `Authorization:
 Bearer`, consultam o papel próprio e permitem acesso somente a
 `platform_admin`. A criação retorna `invite_url` uma única vez e utiliza
-`BACKEND_INVITATION_PUBLIC_BASE_URL` como prefixo configurável; o token é
-acrescentado como último segmento do endereço. Listagem, consulta e revogação
-não retornam o token nem seu hash.
+`BACKEND_INVITATION_PUBLIC_BASE_URL` como endereço configurável da rota
+`/activate`; o token é acrescentado somente no fragmento. A criação recebe
+`username` e papel, retorna `target_user_id` e consulta a disponibilidade da
+identidade usando a credencial administrativa mantida no backend. Listagem,
+consulta e revogação não retornam o token nem seu hash.
 
 Endpoints públicos, limites de tentativa, auditoria e a orquestração do
 provisionamento ainda não foram implementados.
@@ -93,9 +95,10 @@ conflito tanto uma conta existente quanto outro convite ativo para a mesma
 identidade. A consulta externa ocorre sem transação PostgreSQL aberta, e o
 índice parcial continua protegendo contra corridas na inserção.
 
-Os endpoints administrativos ainda não fornecem `username` ao serviço nem
-retornam `target_user_id`. Portanto, esta revisão intermediária não deve ser
-usada para emitir novos convites até a adaptação específica do contrato HTTP.
+O endpoint administrativo de criação já fornece `username` ao serviço, retorna
+`target_user_id` e produz `/activate#<token>`. Os endpoints públicos de
+pré-validação e ativação ainda não existem; por isso, o link emitido ainda não
+conclui o cadastro até essas etapas posteriores.
 
 ## Cliente administrativo do Synapse
 

@@ -3,8 +3,10 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import AnyHttpUrl, Field, PostgresDsn, SecretStr
+from pydantic import AnyHttpUrl, Field, PostgresDsn, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from social_internal_backend.matrix import validate_matrix_server_name
 
 
 class Settings(BaseSettings):
@@ -25,6 +27,26 @@ class Settings(BaseSettings):
     synapse_admin_access_token: SecretStr
     invitation_public_base_url: AnyHttpUrl
     service_name: str = "social-interno-backend"
+
+    @field_validator("matrix_server_name")
+    @classmethod
+    def validate_configured_matrix_server_name(cls, value: str) -> str:
+        """Reutiliza a validação aplicada ao identificador corporativo."""
+
+        return validate_matrix_server_name(value)
+
+    @field_validator("invitation_public_base_url")
+    @classmethod
+    def validate_invitation_public_url(cls, value: AnyHttpUrl) -> AnyHttpUrl:
+        """Reserva query e fragmento exclusivamente para o fluxo de ativação."""
+
+        if value.query is not None or value.fragment is not None:
+            raise ValueError("invitation public base URL must not contain query or fragment")
+        if value.username is not None or value.password is not None:
+            raise ValueError("invitation public base URL must not contain credentials")
+        if not (value.path or "").rstrip("/").endswith("/activate"):
+            raise ValueError("invitation public base URL must point to the activation route")
+        return value
 
 
 @lru_cache
