@@ -9,8 +9,11 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from social_internal_backend.authorization import (
     AuthorizedPlatformAdmin,
+    CorporateUserAccessDeniedError,
     PlatformAdminAccessDeniedError,
     PlatformAdminAuthorizationService,
+    UserCapabilitiesContext,
+    UserCapabilitiesService,
     UserRoleAssignmentRepository,
 )
 from social_internal_backend.invitations import InvitationService
@@ -81,6 +84,28 @@ PlatformAdminAuthorization = Annotated[
     PlatformAdminAuthorizationService,
     Depends(get_platform_admin_authorization_service),
 ]
+
+
+def get_user_capabilities_service(
+    settings: AppSettings,
+    session: DatabaseSession,
+) -> Iterator[UserCapabilitiesService]:
+    """Monta e encerra o cliente usado para resolver capacidades corporativas."""
+
+    with SynapseClient(
+        base_url=str(settings.synapse_base_url),
+        timeout_seconds=settings.synapse_request_timeout_seconds,
+    ) as client:
+        yield UserCapabilitiesService(
+            identity_provider=client,
+            role_repository=UserRoleAssignmentRepository(session),
+        )
+
+
+UserCapabilities = Annotated[
+    UserCapabilitiesService,
+    Depends(get_user_capabilities_service),
+]
 BearerCredentials = Annotated[
     HTTPAuthorizationCredentials | None,
     Depends(bearer_scheme),
@@ -129,3 +154,50 @@ def require_platform_admin(
 
 
 PlatformAdmin = Annotated[AuthorizedPlatformAdmin, Depends(require_platform_admin)]
+
+
+def require_user_capabilities(
+    credentials: BearerCredentials,
+    service: UserCapabilities,
+) -> UserCapabilitiesContext:
+    """Exige sessão Matrix válida associada a um papel corporativo local."""
+
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Matrix authentication required",
+            headers=BEARER_CHALLENGE_HEADERS,
+        )
+
+    try:
+        return service.resolve(credentials.credentials)
+    except InvalidMatrixAccessTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Matrix authentication",
+            headers=BEARER_CHALLENGE_HEADERS,
+        ) from None
+    except CorporateUserAccessDeniedError:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Corporate user role required",
+            headers=NO_STORE_HEADERS,
+        ) from None
+    except SynapseRateLimitedError, SynapseUnavailableError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Matrix authentication temporarily unavailable",
+            headers=NO_STORE_HEADERS,
+        ) from None
+    except SynapseProtocolError:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Invalid response from Matrix authentication service",
+            headers=NO_STORE_HEADERS,
+        ) from None
+
+
+CurrentUserCapabilities = Annotated[
+    UserCapabilitiesContext,
+    Depends(require_user_capabilities),
+]

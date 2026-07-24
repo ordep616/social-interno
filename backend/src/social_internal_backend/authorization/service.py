@@ -23,12 +23,56 @@ class PlatformAdminAccessDeniedError(Exception):
     """A identidade é válida, mas não possui administração da plataforma."""
 
 
+class CorporateUserAccessDeniedError(Exception):
+    """A identidade não pertence a uma conta corporativa autorizada."""
+
+
+@dataclass(frozen=True, slots=True)
+class UserCapabilitiesContext:
+    """Papel e capacidades calculados sem conservar a credencial Matrix."""
+
+    identity: MatrixIdentity
+    assignment: UserRoleAssignment
+
+    @property
+    def can_manage_user_activations(self) -> bool:
+        """Permite gerenciamento somente ao papel administrativo da plataforma."""
+
+        return self.assignment.role is UserRole.platform_admin
+
+
 @dataclass(frozen=True, slots=True)
 class AuthorizedPlatformAdmin:
     """Contexto autorizado sem conservar a credencial Matrix."""
 
     identity: MatrixIdentity
     assignment: UserRoleAssignment
+
+
+class UserCapabilitiesService:
+    """Resolve o papel corporativo da identidade confirmada pelo Synapse."""
+
+    def __init__(
+        self,
+        *,
+        identity_provider: IdentityProvider,
+        role_repository: UserRoleRepositoryPort,
+    ) -> None:
+        self._identity_provider = identity_provider
+        self._role_repository = role_repository
+
+    def resolve(self, access_token: str) -> UserCapabilitiesContext:
+        """Retorna capacidades para usuário não convidado com papel local."""
+
+        identity = self._identity_provider.whoami(access_token)
+        if identity.is_guest:
+            raise CorporateUserAccessDeniedError
+
+        assignment = self._role_repository.get(identity.user_id)
+        if assignment is None:
+            raise CorporateUserAccessDeniedError
+
+        return UserCapabilitiesContext(identity=identity, assignment=assignment)
 
 
 class PlatformAdminAuthorizationService:

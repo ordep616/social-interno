@@ -60,6 +60,8 @@ A fundação inicial contém apenas:
   condicionais, sem controlar a transação externa;
 - serviço interno para emissão, validação, revogação, reserva, conclusão e liberação;
 - cliente Matrix `whoami` e autorização interna exclusiva de `platform_admin`;
+- endpoint `GET /v1/me/capabilities` para consultar o papel próprio e a
+  capacidade de gerenciar ativações;
 - cliente administrativo mínimo para consultar e criar contas locais no Synapse;
 - endpoints REST administrativos para criar, listar, consultar e revogar convites;
 - testes de saúde, configuração, banco, convite e ponto de entrada ASGI.
@@ -138,6 +140,13 @@ O cliente do Synapse valida a sessão em `GET /_matrix/client/v3/account/whoami`
 Respostas `401` e `403` são tratadas como credencial recusada, `429` como limitação do Synapse, respostas `5xx` ou falhas de rede como indisponibilidade e respostas inesperadas como erro de protocolo. Os erros internos não incluem o token, o corpo retornado ou a requisição HTTP original.
 
 Depois do `whoami`, o serviço consulta `UserRoleAssignment` pelo `user_id` exato. Convidados, identidades sem atribuição, `user` e `group_admin` são recusados; somente `platform_admin` produz um contexto autorizado sem armazenar a credencial. Essa camada protege as rotas em `/v1/admin/invitations`.
+
+O endpoint `GET /v1/me/capabilities` usa a mesma validação Matrix, mas aceita
+os três papéis corporativos. Apenas `platform_admin` recebe
+`can_manage_user_activations: true`; `user` e `group_admin` recebem `false`.
+Convidados e identidades sem papel próprio são recusados. A resposta não
+substitui a autorização dos endpoints administrativos e usa
+`Cache-Control: no-store`.
 
 ## Bootstrap do primeiro administrador
 
