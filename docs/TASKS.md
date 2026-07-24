@@ -177,16 +177,16 @@ atuais. Matrix, Synapse e o repositório de mídia continuam sendo o caminho dos
 - [x] Escolher MatrixRTC, Element Call, LiveKit, `lk-jwt-service` e coturn para a futura prova de conceito, sem desenvolver WebRTC próprio.
 - [x] Definir limite inicial de 5 minutos e 10 MB por mensagem de voz, com WebM/Opus preferencial e MP4/AAC alternativo.
 - [x] Fazer mensagens de voz e chamadas herdarem a política de criptografia e retenção da sala.
-- [ ] Aprovar e registrar versões, commits, imagens, arquivos incorporados e licenças antes de adicionar componentes de chamada à plataforma.
+- [~] Aprovar e registrar versões, commits, imagens, arquivos incorporados e licenças antes de adicionar componentes de chamada à plataforma; inventário inicial da POC local registrado, revisão conjunta e jurídica pendentes.
 - [ ] Aprovar os nomes públicos, domínio e endereços de Matrix, MatrixRTC e TURN antes de qualquer implantação externa.
 
 ### Colaborador 1 — Plataforma, mídia e infraestrutura
 
 - [ ] Confirmar no Synapse os MIME types, o limite de 10 MB e a retenção aplicáveis às mensagens de voz sem reduzir indevidamente o limite dos demais arquivos.
 - [ ] Validar upload, download, autenticação de mídia, E2EE, backup e restauração de eventos `m.audio`.
-- [ ] Preparar uma prova de conceito isolada de MatrixRTC com LiveKit e `lk-jwt-service`, sem reabrir federação pública.
-- [ ] Configurar os recursos exigidos pelo MatrixRTC no Synapse e anunciar o backend por `.well-known/matrix/client`.
-- [ ] Implantar coturn com IP público, credenciais temporárias, cotas e bloqueio de acesso a redes internas.
+- [~] Preparar uma prova de conceito isolada de MatrixRTC com LiveKit e `lk-jwt-service`, sem reabrir federação pública; Compose local preparado, execução ponta a ponta pendente.
+- [~] Configurar os recursos exigidos pelo MatrixRTC no Synapse e anunciar o backend por `.well-known/matrix/client`; template local preparado, validação com cliente pendente.
+- [~] Implantar coturn com IP público, credenciais temporárias, cotas e bloqueio de acesso a redes internas; coturn local preparado, IP público e endurecimento de produção pendentes.
 - [ ] Definir TLS, proxy reverso, WebSocket, portas UDP/TCP e regras de firewall para MatrixRTC e TURN.
 - [ ] Adicionar métricas, logs sem credenciais, alertas e limites contra abuso dos serviços de chamada.
 - [ ] Testar uma chamada entre duas contas em redes diferentes, incluindo computador e celular, reconexão e falha do TURN.
@@ -200,7 +200,7 @@ atuais. Matrix, Synapse e o repositório de mídia continuam sendo o caminho dos
 - [ ] Incluir duração, tamanho, progresso, limite, falha, repetição e estado de permissão negada.
 - [ ] Garantir acessibilidade, descarte do áudio cancelado e liberação imediata do microfone ao terminar.
 - [ ] Testar gravação e reprodução em Chrome, Safari, Android e iPhone.
-- [ ] Validar o Element Call incorporado ao Cinny e manter os controles de chamada ocultos quando MatrixRTC não estiver anunciado.
+- [~] Validar o Element Call incorporado ao Cinny e manter os controles de chamada ocultos quando MatrixRTC não estiver anunciado; cliente passa a consumir `.well-known` do homeserver configurado e o cabeçalho da sala inicia chamada de áudio, validação visual pendente.
 - [ ] Preparar estados de chamada recebida, saída, conectando, mute, reconexão, encerramento e indisponibilidade, sem liberar chamadas no MVP.
 
 Aceitação das mensagens de voz: duas contas gravam, enviam, recebem, descriptografam

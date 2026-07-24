@@ -1,0 +1,22 @@
+port: 7880
+bind_addresses:
+  - 0.0.0.0
+
+log_level: info
+
+keys:
+  __LIVEKIT_KEY__: "__LIVEKIT_SECRET__"
+
+room:
+  auto_create: false
+
+rtc:
+  node_ip: "__LIVEKIT_NODE_IP__"
+  tcp_port: __LIVEKIT_RTC_TCP_PORT__
+  udp_port: __LIVEKIT_RTC_UDP_PORT__
+  use_external_ip: false
+
+webhook:
+  api_key: "__LIVEKIT_KEY__"
+  urls:
+    - "__LIVEKIT_JWT_INTERNAL_WEBHOOK_URL__"
