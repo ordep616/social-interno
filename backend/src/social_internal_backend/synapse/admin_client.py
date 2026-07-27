@@ -252,6 +252,31 @@ class SynapseAdminClient:
             raise SynapseUserNotFoundError
         self._raise_common_error(response, expected_status=200)
 
+    def get_device(self, *, user_id: str, device_id: str) -> None:
+        """Confirma que o dispositivo pertence à conta provisionada."""
+
+        response = self._request("GET", self._device_path(user_id, device_id))
+        if response.status_code == 404:
+            raise SynapseUserNotFoundError
+        self._raise_common_error(response, expected_status=200)
+        payload = response.json()
+        if (
+            not isinstance(payload, dict)
+            or payload.get("user_id") != user_id
+            or payload.get("device_id") != device_id
+        ):
+            raise SynapseAdminProtocolError
+
+    def delete_device(self, *, user_id: str, device_id: str) -> None:
+        """Revoga uma sessão de provisionamento pela API administrativa."""
+
+        response = self._request(
+            "DELETE",
+            self._device_path(user_id, device_id),
+            json={},
+        )
+        self._raise_common_error(response, expected_status=200)
+
     def _request(
         self,
         method: str,
@@ -294,6 +319,12 @@ class SynapseAdminClient:
         if server_name != self._matrix_server_name:
             raise ValueError("Matrix user ID does not belong to the configured server")
         return validated_user_id
+
+    def _device_path(self, user_id: str, device_id: str) -> str:
+        validated_user_id = self._validate_local_user_id(user_id)
+        if not device_id or len(device_id) > 255:
+            raise ValueError("invalid device ID")
+        return f"{self._user_path(validated_user_id)}/devices/{quote(device_id, safe='')}"
 
     @staticmethod
     def _validate_server_name(server_name: str) -> str:

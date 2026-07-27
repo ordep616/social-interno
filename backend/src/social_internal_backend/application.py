@@ -22,6 +22,7 @@ from social_internal_backend.api.admin_invitations import router as admin_invita
 from social_internal_backend.api.capabilities import router as capabilities_router
 from social_internal_backend.api.dependencies import NO_STORE_HEADERS
 from social_internal_backend.api.health import router as health_router
+from social_internal_backend.api.registrations import router as registrations_router
 from social_internal_backend.database import build_engine, build_session_factory
 from social_internal_backend.settings import Settings, get_settings
 
@@ -29,6 +30,7 @@ ADMIN_INVITATIONS_PATH = "/v1/admin/invitations"
 ADMIN_ACCOUNTS_PATH = "/v1/admin/accounts"
 CURRENT_USER_CAPABILITIES_PATH = "/v1/me/capabilities"
 ACTIVATION_VALIDATIONS_PATH = "/v1/activation-validations"
+REGISTRATIONS_PATH = "/v1/registrations"
 
 ACTIVATION_ERROR_CODES = {
     status.HTTP_404_NOT_FOUND: "activation_not_found",
@@ -47,6 +49,8 @@ def is_activation_validation_path(path: str) -> bool:
     return path in {
         ACTIVATION_VALIDATIONS_PATH,
         f"{ACTIVATION_VALIDATIONS_PATH}/",
+        REGISTRATIONS_PATH,
+        f"{REGISTRATIONS_PATH}/",
     }
 
 
@@ -79,6 +83,11 @@ async def handle_http_exception(
         if error_code is not None:
             retry_after = (
                 exception.headers.get("Retry-After") if exception.headers is not None else None
+            )
+            error_code = (
+                exception.headers.get("X-Activation-Error-Code", error_code)
+                if exception.headers is not None
+                else error_code
             )
             return activation_error_response(
                 exception.status_code,
@@ -160,6 +169,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.middleware("http")(add_sensitive_response_cache_control)
     app.include_router(health_router)
     app.include_router(activation_validations_router)
+    app.include_router(registrations_router)
     app.include_router(capabilities_router)
     app.include_router(admin_invitations_router)
     app.include_router(admin_accounts_router)

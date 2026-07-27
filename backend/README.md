@@ -102,10 +102,10 @@ identidade. A consulta externa ocorre sem transação PostgreSQL aberta, e o
 índice parcial continua protegendo contra corridas na inserção.
 
 O endpoint administrativo de criação já fornece `username` ao serviço, retorna
-`target_user_id` e produz `/activate#<token>`. A pré-validação pública já
-confirma localmente o convite e a ausência da conta, sem alterar o convite. O
-endpoint de cadastro ainda não existe; por isso, o link emitido ainda não
-conclui a criação da conta.
+`target_user_id` e produz `/activate#<token>`. A pré-validação pública confirma
+localmente o convite e a ausência da conta, sem alterá-lo. O endpoint
+`POST /v1/registrations` recebe somente token e senha, cria a identidade
+predefinida e retorna apenas o `user_id`.
 
 ## Cliente administrativo do Synapse
 
@@ -124,13 +124,15 @@ nunca deve ser entregue ao navegador. Em homologação e produção, a credencia
 deverá pertencer a uma conta técnica dedicada e ser fornecida por um mecanismo
 externo de segredos.
 
-Os testes dessa fundação usam `httpx.MockTransport`: nenhuma conta é criada e
-nenhuma requisição alcança o Synapse real. A integração com o fluxo público de
-cadastro, a serialização transacional por `user_id`, aplicação do papel,
-auditoria, limites, bloqueio, redefinição de senha e desligamento permanecem
-fora desta etapa.
+O cadastro não usa esse `PUT`, pois ele também poderia modificar uma conta
+existente. O `SynapseRegistrationClient` usa exclusivamente o registro
+create-only por segredo compartilhado configurado em
+`BACKEND_SYNAPSE_REGISTRATION_SHARED_SECRET`. A sessão efêmera retornada é
+validada por `whoami`, revogada pela API administrativa e confirmada como
+inválida antes da conclusão local. O token de provisionamento nunca é
+persistido ou devolvido ao navegador.
 
-## Orquestração planejada
+## Orquestração do cadastro
 
 `DEC-021` propõe coordenar convite, conta Matrix e papel próprio como uma saga
 durável. O desenho usa uma tentativa operacional sem segredos para impedir
@@ -138,8 +140,8 @@ concorrência pelo mesmo convite ou identidade e para distinguir falhas
 repetíveis de estados que exigem reconciliação.
 
 A reserva do convite e a tentativa são persistidas juntas; a chamada HTTP ao
-Synapse ocorrerá sem transação de banco aberta; e papel, conclusão do convite e
-conclusão da tentativa serão gravados em uma nova transação atômica. Um
+Synapse ocorre sem transação de banco aberta; e papel, conclusão do convite e
+conclusão da tentativa são gravados em uma nova transação atômica. Um
 resultado ambíguo depois de iniciar a criação nunca libera o convite nem repete
 a operação automaticamente.
 
@@ -159,8 +161,52 @@ libera falhas classificadas pelo futuro orquestrador como seguramente
 anteriores à criação e finaliza papel, convite e tentativa em outro commit.
 A finalização exige estado `synapse_created`, dispositivo persistido e
 revogação confirmada, além da correspondência exata de identidade e papel.
-Conflitos revertem integralmente a fase local. Ainda não existem serviço de
-orquestração, endpoint público ou procedimento automático de reconciliação.
+Conflitos revertem integralmente a fase local. O `RegistrationService` conecta
+essas fases ao mecanismo create-only e ao endpoint público. Resultados
+ambíguos permanecem em `reconciliation_required`. O procedimento
+administrativo local nunca repete a criação: exige o `device_id` persistido,
+confirma sua ausência no Synapse e somente então grava a revogação e finaliza.
+
+Depois de aplicar as migrações, uma tentativa bloqueada pode ser retomada por:
+
+```bash
+uv run python -m social_internal_backend.commands.reconcile_registration \
+  00000000-0000-0000-0000-000000000000
+```
+
+Substitua o UUID pelo `id` da tentativa em `reconciliation_required`. O comando
+usa somente as variáveis `BACKEND_*` do servidor. Ele não recebe senha, token
+de convite ou token Matrix e recusa tentativas sem dispositivo conhecido.
+
+## Auditoria administrativa
+
+A migração `20260727_0008` cria `audit_events`. Cada registro possui somente
+ator, ação, alvo, resultado e instante UTC. Não existe campo de texto livre,
+corpo ou metadado em que token, senha ou credencial possam ser gravados.
+
+São auditadas a emissão e revogação de convites, conclusão de ativações, falhas
+de provisionamento, bloqueio e desbloqueio, redefinição de senha e desativação.
+Os eventos locais de convite e ativação participam da mesma transação do caso
+de uso. Operações administrativas executadas no Synapse gravam o resultado
+imediatamente após a chamada externa.
+
+A migração e as restrições de auditoria foram validadas no PostgreSQL
+`17.6-alpine`: somente as colunas e índices aprovados foram criados, e ação,
+resultado ou alvo fora do contrato foram recusados pelo próprio banco.
+
+Em 2026-07-27, o fluxo local ponta a ponta foi validado com uma identidade
+descartável: sessão temporária de `platform_admin`, emissão e pré-validação do
+convite, registro create-only, login Matrix normal, atribuição do papel `user`,
+auditoria e ausência confirmada do dispositivo de provisionamento. As sessões
+temporárias foram encerradas ao final; nenhuma senha ou token foi registrado.
+
+Na mesma data, a matriz local de recusas confirmou `403` para emissão por
+`user` e `group_admin`, `410` para reutilização de convite usado e ativação de
+convite revogado, e `409` para identidade já existente sem alteração da conta.
+O convite revogado não criou usuário, as sessões temporárias foram recusadas
+por `whoami` depois do logout e os segredos gerados não apareceram nos logs do
+Synapse. Foram usadas as contas descartáveis `@denyuser06289f:localhost` e
+`@denygroup17982c:localhost`; `@denyrevbe2580:localhost` permaneceu ausente.
 
 ## Autorização administrativa interna
 

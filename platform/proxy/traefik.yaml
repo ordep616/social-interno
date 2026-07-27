@@ -1,0 +1,26 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+entryPoints:
+  web:
+    address: ":8080"
+    forwardedHeaders:
+      trustedIPs:
+        - "127.0.0.1/32"
+        - "::1/128"
+
+providers:
+  file:
+    filename: /etc/traefik/dynamic.yaml
+    watch: false
+
+api:
+  dashboard: false
+
+ping:
+  entryPoint: web
+
+log:
+  level: INFO
+  format: common

@@ -20,6 +20,14 @@ from social_internal_backend.synapse.client import (
     SynapseRateLimitedError,
     SynapseUnavailableError,
 )
+from social_internal_backend.synapse.registration_client import (
+    ProvisioningSession,
+    SynapseRegistrationClient,
+    SynapseRegistrationConflictError,
+    SynapseRegistrationProtocolError,
+    SynapseRegistrationUnavailableError,
+    compute_registration_mac,
+)
 
 __all__ = [
     "CreatedSynapseUser",
@@ -32,10 +40,16 @@ __all__ = [
     "SynapseAdminUnavailableError",
     "SynapseClient",
     "SynapseProtocolError",
+    "ProvisioningSession",
+    "SynapseRegistrationClient",
+    "SynapseRegistrationConflictError",
+    "SynapseRegistrationProtocolError",
+    "SynapseRegistrationUnavailableError",
     "SynapseRateLimitedError",
     "SynapseUnavailableError",
     "SynapseUser",
     "SynapseUserAlreadyExistsError",
     "SynapseUserNotFoundError",
     "SynapseUserPage",
+    "compute_registration_mac",
 ]

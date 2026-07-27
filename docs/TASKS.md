@@ -39,10 +39,16 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Aprovar contrato REST e fundação técnica reproduzível para o serviço FastAPI de convites.
 - [x] Implementar a fundação executável do FastAPI com saúde, configuração, PostgreSQL/Alembic e verificações de qualidade.
 - [x] Criar o modelo e a migração reversível de convites e validar suas restrições em PostgreSQL isolado.
-- [~] Implementar o serviço FastAPI de convites administrativos de uso único, com validade de 24 horas; geração segura, repositório, ciclo de vida interno, endpoints administrativos e controle de acesso concluídos; endpoints públicos, limites e auditoria pendentes.
+- [~] Implementar o serviço FastAPI de convites administrativos de uso único,
+  com validade de 24 horas; geração segura, repositório, ciclo de vida,
+  endpoints, limites persistentes e auditoria concluídos; controles de borda e
+  publicação permanecem pendentes.
 - [x] Criar armazenamento próprio de papéis e procedimento local, idempotente e serializado para o primeiro `platform_admin`.
 - [x] Implementar cliente Matrix `whoami` e autorização interna de `platform_admin`, sem persistir ou registrar o token.
 - [~] Implementar provisionamento, bloqueio, redefinição de senha e desligamento
+  de usuários; mecanismo create-only, orquestração, revogação confirmada,
+  reconciliação local e auditoria concluídos; validação operacional integrada e
+  controles de publicação permanecem pendentes.
   de usuários; listagem, atualização de `display_name`, bloqueio por `locked`,
   redefinição de senha e desativação foram implementados via endpoints
   administrativos próprios e cliente Synapse suportado; o provisionamento
@@ -75,6 +81,28 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Registrar o shared-secret registration como incompatível com MAS e exigir
   nova decisão conjunta de provisionamento antes de qualquer adoção futura do
   Matrix Authentication Service.
+- [x] Adaptar a emissão administrativa ao contrato aprovado, definindo
+  `username`, `target_user_id` e papel antes de entregar o link.
+- [x] Registrar e aprovar conjuntamente a pré-validação segura em `DEC-024`.
+- [x] Implementar o modelo e a migração reversível do limitador persistente
+  conforme `DEC-024`, com contadores separados, retenção limitada e limpeza
+  obrigatória.
+- [x] Implementar `POST /v1/activation-validations` sem aceitar `username` do
+  funcionário; a publicação externa permanece bloqueada até a conclusão dos
+  controles de segurança.
+- [x] Adaptar a orquestração do cadastro ao contrato aprovado, conectando a
+  unidade de trabalho, o mecanismo create-only e a revogação confirmada.
+- [~] Implementar limites, auditoria e cabeçalhos de segurança antes de
+  publicar a ativação; limites persistentes, auditoria, borda local Traefik,
+  limite por origem, limite de corpo e cabeçalhos locais concluídos. TLS,
+  topologia e parâmetros definitivos, homologação e publicação permanecem
+  pendentes.
+- [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
+- [ ] Avaliar OIDC como evolução posterior, sem bloquear o MVP baseado em convite.
+- [x] Testar acessos negados e revogação de sessão: `user` e `group_admin`
+  recusados na emissão, convites usados e revogados indisponíveis, identidade
+  existente preservada, convite revogado sem conta, sessões temporárias
+  recusadas após logout e segredos ausentes dos logs do Synapse.
 
 - [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
 - [ ] Avaliar OIDC como evolução posterior, sem bloquear o MVP baseado em convite.
@@ -97,7 +125,10 @@ Aceitação: dados e anexos podem ser restaurados e respeitam limites documentad
 
 ### P4 — Operação e segurança
 
-- [ ] Configurar TLS, proxy reverso e cabeçalhos de segurança.
+- [~] Configurar TLS, proxy reverso e cabeçalhos de segurança; proxy e
+  cabeçalhos locais concluídos e perfil TLS interno descartável validado em
+  loopback; instalação da CA nos dispositivos, teste pela rede/VPN e
+  homologação definitiva pendentes.
 - [ ] Configurar métricas, logs, alertas e trilha administrativa.
 - [ ] Definir processo de atualização e correção de vulnerabilidades.
 - [ ] Executar testes de carga e limites do piloto.

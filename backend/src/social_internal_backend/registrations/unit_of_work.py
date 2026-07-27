@@ -9,11 +9,14 @@ from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from social_internal_backend.audit import AuditEventRepository
 from social_internal_backend.authorization.repository import (
     UserRoleAssignmentRepository,
 )
 from social_internal_backend.invitations.repository import InvitationRepository
 from social_internal_backend.models import (
+    AuditAction,
+    AuditResult,
     Invitation,
     InvitationRole,
     InvitationStatus,
@@ -50,6 +53,8 @@ class InvitationRepositoryPort(Protocol):
         invitation_id: UUID,
         now: datetime,
     ) -> Invitation | None: ...
+
+    def conflict_processing(self, invitation_id: UUID) -> Invitation | None: ...
 
 
 class RegistrationAttemptRepositoryPort(Protocol):
@@ -104,6 +109,18 @@ class UserRoleAssignmentRepositoryPort(Protocol):
     def add(self, assignment: UserRoleAssignment) -> UserRoleAssignment: ...
 
 
+class AuditEventRepositoryPort(Protocol):
+    def add(
+        self,
+        *,
+        actor_user_id: str,
+        action: AuditAction,
+        target: str,
+        result: AuditResult,
+        occurred_at: datetime,
+    ) -> object: ...
+
+
 class RegistrationTransactionConflictError(Exception):
     """Uma transação local não satisfez suas pré-condições."""
 
@@ -118,6 +135,10 @@ class RegistrationCheckpointConflictError(RegistrationTransactionConflictError):
 
 class RegistrationReleaseConflictError(RegistrationTransactionConflictError):
     """Convite e tentativa não puderam ser liberados juntos."""
+
+
+class RegistrationIdentityConflictError(RegistrationTransactionConflictError):
+    """Convite e tentativa não puderam ser encerrados como conflito."""
 
 
 class RegistrationFinalizationConflictError(RegistrationTransactionConflictError):
@@ -165,6 +186,7 @@ class RegistrationUnitOfWork:
         invitation_repository: InvitationRepositoryPort | None = None,
         attempt_repository: RegistrationAttemptRepositoryPort | None = None,
         role_repository: UserRoleAssignmentRepositoryPort | None = None,
+        audit_repository: AuditEventRepositoryPort | None = None,
     ) -> None:
         self._session = session
         self._invitations = (
@@ -181,6 +203,9 @@ class RegistrationUnitOfWork:
             role_repository
             if role_repository is not None
             else UserRoleAssignmentRepository(session)
+        )
+        self._audit = (
+            audit_repository if audit_repository is not None else AuditEventRepository(session)
         )
 
     def reserve(
@@ -274,6 +299,16 @@ class RegistrationUnitOfWork:
             )
             if attempt is None:
                 raise RegistrationCheckpointConflictError
+            invitation = self._invitations.get(attempt.invitation_id)
+            if invitation is None:
+                raise RegistrationCheckpointConflictError
+            self._audit.add(
+                actor_user_id=invitation.created_by,
+                action=AuditAction.provisioning_failed,
+                target=attempt.matrix_user_id,
+                result=AuditResult.failure,
+                occurred_at=now,
+            )
             self._session.commit()
         except RegistrationCheckpointConflictError:
             self._session.rollback()
@@ -364,6 +399,45 @@ class RegistrationUnitOfWork:
             attempt=released_attempt,
         )
 
+    def conflict_identity(
+        self,
+        *,
+        attempt_id: UUID,
+        now: datetime,
+    ) -> RegistrationRelease:
+        """Encerra permanentemente uma identidade ocupada sem modificá-la."""
+
+        self._validate_timestamp(now)
+        try:
+            attempt = self._attempts.get(attempt_id)
+            if attempt is None or attempt.status is not RegistrationAttemptStatus.processing:
+                raise RegistrationIdentityConflictError
+            invitation = self._invitations.get(attempt.invitation_id)
+            if not self._matches_processing_invitation(invitation, attempt):
+                raise RegistrationIdentityConflictError
+            released_attempt = self._attempts.mark_released(
+                attempt.id,
+                failure_code="identity_conflict",
+                now=now,
+            )
+            conflicted_invitation = self._invitations.conflict_processing(attempt.invitation_id)
+            if released_attempt is None or conflicted_invitation is None:
+                raise RegistrationIdentityConflictError
+            self._session.commit()
+        except RegistrationIdentityConflictError:
+            self._session.rollback()
+            raise
+        except IntegrityError:
+            self._session.rollback()
+            raise RegistrationIdentityConflictError from None
+        except Exception:
+            self._session.rollback()
+            raise
+        return RegistrationRelease(
+            invitation=conflicted_invitation,
+            attempt=released_attempt,
+        )
+
     def finalize(
         self,
         *,
@@ -406,6 +480,13 @@ class RegistrationUnitOfWork:
                 granted_by=invitation.created_by,
             )
             self._roles.add(role_assignment)
+            self._audit.add(
+                actor_user_id=invitation.created_by,
+                action=AuditAction.activation_completed,
+                target=invitation.target_user_id,
+                result=AuditResult.success,
+                occurred_at=now,
+            )
             self._session.commit()
         except RegistrationFinalizationConflictError:
             self._session.rollback()

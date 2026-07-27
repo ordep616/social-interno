@@ -434,6 +434,52 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
   recebe senha, implementa a saga de cadastro, altera o Synapse ou substitui
   `DEC-021`, `DEC-022` e `DEC-023`.
 
+## DEC-025 — Traefik como borda local da ativação
+
+- Status: aceita pelos dois colaboradores em 2026-07-27.
+- Tecnologia: Traefik `v3.7.1`, origem `traefik/traefik`, commit
+  `fa49e2b`, licença MIT e imagem versionada `traefik:v3.7.1`.
+- Isolamento: a prova local usa exclusivamente o file provider, não monta o
+  socket Docker, desabilita dashboard e telemetria e publica somente
+  `127.0.0.1:8082`.
+- Destino: o único upstream aprovado nesta etapa é o FastAPI local em
+  `host.docker.internal:8081`.
+- Ativação: `POST /v1/activation-validations` e `POST /v1/registrations`
+  recebem limite de 100 requisições por origem no período de 15 minutos e
+  corpo máximo de 1 KiB antes do backend.
+- Cabeçalhos: todas as respostas da borda recebem `Cache-Control: no-store`,
+  CSP restritiva, `Referrer-Policy: no-referrer`, bloqueio de frames,
+  `X-Content-Type-Options: nosniff`, política de permissões e
+  `X-Robots-Tag`.
+- Confiança: cabeçalhos encaminhados só serão aceitos de CIDRs configurados
+  explicitamente. Os endereços definitivos dependem da topologia de
+  homologação.
+- Logs: access log permanece desabilitado nesta etapa para reduzir exposição
+  de metadados. O log operacional usa nível `INFO` e não recebe corpos.
+- Limite: esta decisão aprova somente a borda local. TLS, domínio, publicação,
+  proxy anterior, parâmetros definitivos e alta disponibilidade exigem nova
+  validação.
+
+## DEC-026 — TLS interno e descartável para homologação
+
+- Status: autorizado pelo Colaborador 1 em 2026-07-27 dentro de sua
+  responsabilidade de plataforma; não define convenções Matrix compartilhadas.
+- Nome provisório: `matrix-hml.expbetweenus`, resolvido exclusivamente por
+  arquivo `hosts`, DNS interno ou VPN, sem provedor DNS público.
+- Certificado: CA local exclusiva e certificado gerados com `mkcert v1.4.4`.
+  Certificados, CA e chave ficam fora do Git em `platform/runtime/tls/`.
+- Exposição: o bind padrão permanece em `127.0.0.1`. Acesso por rede interna ou
+  VPN exige escolher explicitamente um IP privado e revisar o firewall.
+- Isolamento: somente a borda Traefik recebe HTTPS. Synapse não será publicado
+  diretamente na internet, e Let’s Encrypt não será usado nesta etapa.
+- Reversão: parar o perfil `homologation`, remover a CA dos dispositivos,
+  executar `mkcert -uninstall` com o `CAROOT` da homologação e descartar os
+  arquivos locais.
+- Limite: o nome é descartável e não altera `MATRIX_SERVER_NAME`, o
+  `server_name` do Synapse, identificadores Matrix ou convenções compartilhadas.
+  Qualquer mudança permanente continua sujeita à aprovação dos dois
+  colaboradores.
+
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.
 - Aprovação das versões da prova de conceito para homologação e produção.

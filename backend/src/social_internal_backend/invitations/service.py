@@ -9,13 +9,20 @@ from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from social_internal_backend.audit import AuditEventRepository
 from social_internal_backend.invitations.repository import InvitationRepository
 from social_internal_backend.invitations.tokens import (
     generate_invitation_token,
     hash_invitation_token,
 )
 from social_internal_backend.matrix import build_local_matrix_user_id
-from social_internal_backend.models import Invitation, InvitationRole, InvitationStatus
+from social_internal_backend.models import (
+    AuditAction,
+    AuditResult,
+    Invitation,
+    InvitationRole,
+    InvitationStatus,
+)
 from social_internal_backend.synapse import SynapseUserNotFoundError
 
 INVITATION_LIFETIME = timedelta(hours=24)
@@ -111,6 +118,7 @@ class InvitationService:
     ) -> None:
         self._session = session
         self._repository = repository if repository is not None else InvitationRepository(session)
+        self._audit = AuditEventRepository(session)
         self._identity_provider = identity_provider
         self._matrix_server_name = matrix_server_name
         self._clock = clock
@@ -167,6 +175,13 @@ class InvitationService:
         )
         try:
             self._repository.add(invitation)
+            self._audit.add(
+                actor_user_id=created_by,
+                action=AuditAction.invitation_created,
+                target=target_user_id,
+                result=AuditResult.success,
+                occurred_at=now,
+            )
             self._session.commit()
         except IntegrityError as error:
             self._session.rollback()
@@ -211,12 +226,24 @@ class InvitationService:
             raise InvitationUnavailableError
         return invitation
 
-    def revoke(self, invitation_id: UUID) -> Invitation:
+    def revoke(
+        self,
+        invitation_id: UUID,
+        *,
+        actor_user_id: str | None = None,
+    ) -> Invitation:
         """Revoga um convite pendente; revogado ou expirado é idempotente."""
 
         now = self._now()
         revoked = self._repository.revoke_pending(invitation_id, now)
         if revoked is not None:
+            self._audit.add(
+                actor_user_id=actor_user_id or revoked.created_by,
+                action=AuditAction.invitation_revoked,
+                target=revoked.target_user_id or str(revoked.id),
+                result=AuditResult.success,
+                occurred_at=now,
+            )
             self._session.commit()
             return revoked
 

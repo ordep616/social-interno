@@ -1,6 +1,49 @@
 name: social-interno
 
 services:
+  traefik:
+    image: traefik:v3.7.1
+    restart: unless-stopped
+    command:
+      - --configFile=/etc/traefik/traefik.yaml
+    ports:
+      - "127.0.0.1:${TRAEFIK_PORT:-8082}:8080"
+    volumes:
+      - ./proxy/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./proxy/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - matrix-edge
+
+  traefik-hml:
+    profiles:
+      - homologation
+    image: traefik:v3.7.1
+    restart: unless-stopped
+    command:
+      - --configFile=/etc/traefik/traefik.yaml
+    ports:
+      - "${TRAEFIK_HML_BIND_ADDRESS:-127.0.0.1}:${TRAEFIK_HML_HTTPS_PORT:-8443}:8443"
+    volumes:
+      - ./proxy/homologation/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./proxy/homologation/dynamic.yaml:/etc/traefik/dynamic.yaml:ro
+      - ./runtime/tls/matrix-hml.expbetweenus:/certs:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - matrix-edge
+
   postgres:
     image: postgres:17.6-alpine
     restart: unless-stopped

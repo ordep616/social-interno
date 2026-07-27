@@ -218,9 +218,8 @@ def revoke_invitation(
 ) -> None:
     """Realiza revogação lógica idempotente quando o estado permite."""
 
-    del admin
     try:
-        service.revoke(invitation_id)
+        service.revoke(invitation_id, actor_user_id=admin.identity.user_id)
     except InvitationNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

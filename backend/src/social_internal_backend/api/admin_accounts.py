@@ -6,9 +6,10 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
 from social_internal_backend.api.dependencies import (
     NO_STORE_HEADERS,
     AccountServiceDependency,
+    AuditServiceDependency,
     PlatformAdmin,
 )
-from social_internal_backend.models import UserRole
+from social_internal_backend.models import AuditAction, AuditResult, UserRole
 from social_internal_backend.synapse import (
     InvalidSynapseAdminCredentialError,
     SynapseAdminProtocolError,
@@ -160,10 +161,10 @@ def update_account(
     response: Response,
     admin: PlatformAdmin,
     service: AccountServiceDependency,
+    audit: AuditServiceDependency,
 ) -> AccountAdminResponse:
     """Atualiza nome de exibição e bloqueio sem entregar token administrativo ao navegador."""
 
-    del admin
     try:
         account = service.update(
             user_id=user_id,
@@ -171,7 +172,24 @@ def update_account(
             locked=payload.locked,
         )
     except Exception as error:
+        if payload.locked is not None:
+            audit.record(
+                actor_user_id=admin.identity.user_id,
+                action=(
+                    AuditAction.account_locked if payload.locked else AuditAction.account_unlocked
+                ),
+                target=user_id,
+                result=AuditResult.failure,
+            )
         raise map_synapse_admin_error(error) from None
+
+    if payload.locked is not None:
+        audit.record(
+            actor_user_id=admin.identity.user_id,
+            action=(AuditAction.account_locked if payload.locked else AuditAction.account_unlocked),
+            target=user_id,
+            result=AuditResult.success,
+        )
 
     set_no_store(response)
     return serialize_account(account)
@@ -188,10 +206,10 @@ def reset_account_password(
     response: Response,
     admin: PlatformAdmin,
     service: AccountServiceDependency,
+    audit: AuditServiceDependency,
 ) -> None:
     """Redefine senha pelo backend sem persistir o segredo."""
 
-    del admin
     try:
         service.reset_password(
             user_id=user_id,
@@ -199,7 +217,19 @@ def reset_account_password(
             logout_devices=payload.logout_devices,
         )
     except Exception as error:
+        audit.record(
+            actor_user_id=admin.identity.user_id,
+            action=AuditAction.password_reset,
+            target=user_id,
+            result=AuditResult.failure,
+        )
         raise map_synapse_admin_error(error) from None
+    audit.record(
+        actor_user_id=admin.identity.user_id,
+        action=AuditAction.password_reset,
+        target=user_id,
+        result=AuditResult.success,
+    )
     set_no_store(response)
 
 
@@ -213,13 +243,25 @@ def deactivate_account(
     response: Response,
     admin: PlatformAdmin,
     service: AccountServiceDependency,
+    audit: AuditServiceDependency,
     erase: bool = Query(default=True),
 ) -> None:
     """Executa exclusão lógica por desativação suportada pelo Synapse."""
 
-    del admin
     try:
         service.deactivate(user_id=user_id, erase=erase)
     except Exception as error:
+        audit.record(
+            actor_user_id=admin.identity.user_id,
+            action=AuditAction.account_deactivated,
+            target=user_id,
+            result=AuditResult.failure,
+        )
         raise map_synapse_admin_error(error) from None
+    audit.record(
+        actor_user_id=admin.identity.user_id,
+        action=AuditAction.account_deactivated,
+        target=user_id,
+        result=AuditResult.success,
+    )
     set_no_store(response)
