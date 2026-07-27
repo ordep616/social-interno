@@ -7,6 +7,8 @@ export type LoginPathSearchParams = {
 };
 export const LOGIN_PATH = '/login/:server?/';
 
+export const ACTIVATE_PATH = '/activate';
+
 export type RegisterPathSearchParams = {
   username?: string;
   email?: string;

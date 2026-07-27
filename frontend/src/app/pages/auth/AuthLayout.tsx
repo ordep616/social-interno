@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { ReactNode, useEffect, useMemo } from 'react';
 import { Box, Header, Scroll, Spinner, Text, color } from 'folds';
 import { Outlet, matchPath, useLocation, useNavigate, useParams } from 'react-router-dom';
 
@@ -48,6 +48,36 @@ function AuthLayoutError({ message }: { message: string }) {
   );
 }
 
+type AuthPageFrameProps = {
+  children: ReactNode;
+};
+export function AuthPageFrame({ children }: AuthPageFrameProps) {
+  return (
+    <Scroll variant="Background" visibility="Hover" size="300" hideTrack>
+      <Box
+        className={css.AuthLayout}
+        style={{ backgroundImage: `url(${WelcomeBackground})` }}
+        direction="Column"
+        alignItems="Center"
+        justifyContent="SpaceBetween"
+        gap="400"
+      >
+        <Box direction="Column" className={css.AuthCard}>
+          <Header className={css.AuthHeader} size="600" variant="Surface">
+            <Box grow="Yes" direction="Row" gap="300" alignItems="Center">
+              <Text size="H3">Comunicação Interna</Text>
+            </Box>
+          </Header>
+          <Box className={css.AuthCardContent} direction="Column">
+            {children}
+          </Box>
+        </Box>
+        <AuthFooter />
+      </Box>
+    </Scroll>
+  );
+}
+
 export function AuthLayout() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,56 +103,37 @@ export function AuthLayout() {
   }, [urlEncodedServer, navigate, location]);
 
   return (
-    <Scroll variant="Background" visibility="Hover" size="300" hideTrack>
-      <Box
-        className={css.AuthLayout}
-        style={{ backgroundImage: `url(${WelcomeBackground})` }}
-        direction="Column"
-        alignItems="Center"
-        justifyContent="SpaceBetween"
-        gap="400"
-      >
-        <Box direction="Column" className={css.AuthCard}>
-          <Header className={css.AuthHeader} size="600" variant="Surface">
-            <Box grow="Yes" direction="Row" gap="300" alignItems="Center">
-              <Text size="H3">Comunicação Interna</Text>
-            </Box>
-          </Header>
-          <Box className={css.AuthCardContent} direction="Column">
-            <AuthServerProvider value={serverName}>
-              <AutoDiscoveryInfoProvider value={autoDiscoveryInfo}>
-                <SpecVersionsLoader
-                  baseUrl={baseUrl}
-                  fallback={() => <AuthLayoutLoading message="Conectando ao homeserver..." />}
+    <AuthPageFrame>
+      <AuthServerProvider value={serverName}>
+        <AutoDiscoveryInfoProvider value={autoDiscoveryInfo}>
+          <SpecVersionsLoader
+            baseUrl={baseUrl}
+            fallback={() => <AuthLayoutLoading message="Conectando ao homeserver..." />}
+            error={() => (
+              <AuthLayoutError message="Falha ao conectar. O homeserver está indisponível no momento ou não existe." />
+            )}
+          >
+            {(specVersions) => (
+              <SpecVersionsProvider value={specVersions}>
+                <AuthFlowsLoader
+                  fallback={() => (
+                    <AuthLayoutLoading message="Carregando fluxo de autenticação..." />
+                  )}
                   error={() => (
-                    <AuthLayoutError message="Falha ao conectar. O homeserver está indisponível no momento ou não existe." />
+                    <AuthLayoutError message="Falha ao obter informações do fluxo de autenticação." />
                   )}
                 >
-                  {(specVersions) => (
-                    <SpecVersionsProvider value={specVersions}>
-                      <AuthFlowsLoader
-                        fallback={() => (
-                          <AuthLayoutLoading message="Carregando fluxo de autenticação..." />
-                        )}
-                        error={() => (
-                          <AuthLayoutError message="Falha ao obter informações do fluxo de autenticação." />
-                        )}
-                      >
-                        {(authFlows) => (
-                          <AuthFlowsProvider value={authFlows}>
-                            <Outlet />
-                          </AuthFlowsProvider>
-                        )}
-                      </AuthFlowsLoader>
-                    </SpecVersionsProvider>
+                  {(authFlows) => (
+                    <AuthFlowsProvider value={authFlows}>
+                      <Outlet />
+                    </AuthFlowsProvider>
                   )}
-                </SpecVersionsLoader>
-              </AutoDiscoveryInfoProvider>
-            </AuthServerProvider>
-          </Box>
-        </Box>
-        <AuthFooter />
-      </Box>
-    </Scroll>
+                </AuthFlowsLoader>
+              </SpecVersionsProvider>
+            )}
+          </SpecVersionsLoader>
+        </AutoDiscoveryInfoProvider>
+      </AuthServerProvider>
+    </AuthPageFrame>
   );
 }
