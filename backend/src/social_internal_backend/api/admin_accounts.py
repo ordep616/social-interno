@@ -4,8 +4,8 @@ from fastapi import APIRouter, HTTPException, Query, Response, status
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
 
 from social_internal_backend.api.dependencies import (
-    AccountServiceDependency,
     NO_STORE_HEADERS,
+    AccountServiceDependency,
     PlatformAdmin,
 )
 from social_internal_backend.models import UserRole
@@ -51,7 +51,7 @@ class AccountUpdateRequest(BaseModel):
     locked: bool | None = None
 
     @model_validator(mode="after")
-    def require_change(self) -> "AccountUpdateRequest":
+    def require_change(self) -> AccountUpdateRequest:
         if self.display_name is None and self.locked is None:
             raise ValueError("at least one account field must be provided")
         return self
@@ -99,7 +99,7 @@ def map_synapse_admin_error(error: Exception) -> HTTPException:
         )
     if isinstance(error, ValueError):
         return HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Invalid account administration request",
             headers=NO_STORE_HEADERS,
         )
@@ -143,11 +143,7 @@ def list_accounts(
 
     set_no_store(response)
     return AccountListResponse(
-        accounts=[
-            serialize_account(account)
-            for account in page.users
-            if not account.admin
-        ],
+        accounts=[serialize_account(account) for account in page.users if not account.admin],
         total=page.total,
         next_token=page.next_token,
     )

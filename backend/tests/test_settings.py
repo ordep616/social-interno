@@ -24,7 +24,7 @@ def configure_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     monkeypatch.setenv(
         "BACKEND_INVITATION_PUBLIC_BASE_URL",
-        "http://127.0.0.1:5173/activate",
+        "http://127.0.0.1:8080/activate",
     )
 
 
@@ -41,7 +41,7 @@ def test_settings_load_prefixed_environment(monkeypatch: pytest.MonkeyPatch) -> 
     )
     assert "opaque-admin-value-for-tests" not in repr(settings)
     assert str(settings.invitation_public_base_url).endswith("/activate")
-    assert "http://127.0.0.1:5173" in settings.cors_allowed_origins
+    assert "http://127.0.0.1:8080" in settings.cors_allowed_origins
 
 
 def test_settings_reject_invalid_synapse_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -49,6 +49,49 @@ def test_settings_reject_invalid_synapse_timeout(monkeypatch: pytest.MonkeyPatch
     monkeypatch.setenv("BACKEND_SYNAPSE_REQUEST_TIMEOUT_SECONDS", "0")
 
     with pytest.raises(ValueError):
+        Settings(_env_file=None)
+
+
+@pytest.mark.parametrize(
+    ("public_url", "expected_error"),
+    [
+        (
+            "http://127.0.0.1:8080/activate?token=forbidden",
+            "query or fragment",
+        ),
+        (
+            "http://127.0.0.1:8080/activate#forbidden",
+            "query or fragment",
+        ),
+        (
+            "http://user:password@127.0.0.1:8080/activate",
+            "credentials",
+        ),
+        (
+            "http://127.0.0.1:8080/register",
+            "activation route",
+        ),
+    ],
+)
+def test_settings_reject_unsafe_invitation_public_url(
+    monkeypatch: pytest.MonkeyPatch,
+    public_url: str,
+    expected_error: str,
+) -> None:
+    configure_environment(monkeypatch)
+    monkeypatch.setenv("BACKEND_INVITATION_PUBLIC_BASE_URL", public_url)
+
+    with pytest.raises(ValueError, match=expected_error):
+        Settings(_env_file=None)
+
+
+def test_settings_reject_matrix_server_name_formatted_as_url(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    configure_environment(monkeypatch)
+    monkeypatch.setenv("BACKEND_MATRIX_SERVER_NAME", "https://matrix.example")
+
+    with pytest.raises(ValueError, match="Matrix server name"):
         Settings(_env_file=None)
 
 

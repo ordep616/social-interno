@@ -75,16 +75,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Registrar o shared-secret registration como incompatível com MAS e exigir
   nova decisão conjunta de provisionamento antes de qualquer adoção futura do
   Matrix Authentication Service.
-- [~] Adaptar emissão, pré-validação, unidade de trabalho e orquestração ao
-  contrato aprovado, sem aceitar `username` do funcionário; emissão
-  administrativa já recebe `username` somente do `platform_admin`, persiste
-  `target_user_id` e a unidade de trabalho deriva a identidade do convite, mas
-  pré-validação pública, registro público, orquestração e reconciliação ainda
-  não existem.
-- [~] Implementar limites, auditoria e cabeçalhos de segurança antes de
-  publicar a ativação; respostas administrativas e de capacidades usam
-  `Cache-Control: no-store`, mas limites, auditoria e cabeçalhos específicos
-  da página/endpoints públicos de ativação ainda estão pendentes.
+
 - [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
 - [ ] Avaliar OIDC como evolução posterior, sem bloquear o MVP baseado em convite.
 - [~] Testar acessos negados e revogação de sessão; acessos negados de

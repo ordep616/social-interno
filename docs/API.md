@@ -286,8 +286,32 @@ Resposta válida:
 }
 ```
 
-A pré-validação não reserva nem consome o convite. O funcionário vê identidade
-e papel como somente leitura. Não existe endpoint público com token no caminho.
+A decisão `DEC-024`, aceita pelos dois colaboradores, detalha esta rota.
+O corpo é estrito e não aceita outros campos. Query strings são recusadas. O
+token é tratado como
+segredo e não poderá aparecer em erros automáticos, inclusive `422`, logs,
+representações, métricas ou rastreamento. A borda limitará o corpo antes de o
+FastAPI processá-lo.
+
+A pré-validação não reserva, consome, expira, revoga ou marca o convite como
+`conflicted`. O funcionário vê identidade e papel como somente leitura. Não
+existe endpoint público com token no caminho. Um `200` representa somente o
+estado observado naquele instante e não garante que a ativação posterior
+vencerá uma corrida pela identidade.
+
+Antes do sucesso, o serviço:
+
+- aceitar somente convite `pending` e ainda não expirado;
+- validar `target_user_id` contra o `matrix_server_name` configurado;
+- derivar `username` sem normalização silenciosa;
+- aceitar somente papel `user` ou `group_admin`;
+- encerrar a transação PostgreSQL antes da consulta externa;
+- chamar `SynapseAdminClient.get_user()` e considerar qualquer conta
+  retornada, inclusive bloqueada ou desativada, como indisponível.
+
+O token é localizado somente pelo SHA-256 já usado no banco.
+Convite inexistente não provocará chamada ao Synapse. Nenhuma credencial
+administrativa será enviada ao navegador.
 
 Criação do cadastro autorizado:
 
@@ -313,12 +337,76 @@ token e senha da memória, o frontend segue para o login normal com apenas o
 processamento necessário, nunca são persistidos em texto aberto e não aparecem
 em logs.
 
-Respostas esperadas: pré-validação `200` e criação do cadastro `201`. Token
-inexistente retorna `404`; token expirado, usado ou revogado retorna a mesma
-resposta genérica `410`; identidade indisponível retorna `409`; limite excedido
-retorna `429`. Endpoints administrativos retornam `401` sem autenticação válida
-e `403` sem `platform_admin`. Todas as respostas relacionadas à ativação,
-inclusive erros automáticos, usam `Cache-Control: no-store`.
+Respostas esperadas: pré-validação `200` e criação do cadastro `201`. Erros
+públicos dos dois endpoints usam somente o envelope mínimo e estável:
+
+```json
+{
+  "error": {
+    "code": "activation_conflict"
+  }
+}
+```
+
+O frontend traduz `error.code` para uma mensagem própria. O envelope não
+inclui token, senha, hash, valor rejeitado, estado interno, mensagem do Synapse
+ou detalhe de exceção. Os códigos públicos são:
+
+| HTTP | `error.code` | Situação pública |
+| --- | --- | --- |
+| `404` | `activation_not_found` | token não localizado |
+| `410` | `activation_unavailable` | convite expirado, usado ou revogado |
+| `409` | `activation_conflict` | convite ou identidade indisponível |
+| `422` | `invalid_request` | corpo estruturalmente inválido |
+| `422` | `password_policy_violation` | senha rejeitada em `POST /v1/registrations` |
+| `429` | `rate_limited` | limite excedido |
+| `502` | `upstream_invalid_response` | resposta inválida do Synapse |
+| `503` | `service_unavailable` | dependência indisponível ou falha fechada |
+
+`processing`, `conflicted`, conta já existente e tentativa associada em
+`reconciliation_required` compartilham `409 activation_conflict`; o cliente
+não recebe o estado interno que originou o conflito. Token expirado, usado ou
+revogado compartilha `410 activation_unavailable`.
+
+`POST /v1/registrations` retorna `422 password_policy_violation` quando a senha
+não atende à política. A resposta não repete a senha nem detalhes internos da
+política ou do Synapse. Um `422 invalid_request` também não inclui o campo
+`input` produzido pela validação automática.
+
+O limite local excedido inclui `Retry-After`. Resposta inválida do Synapse
+retorna `502 upstream_invalid_response`; indisponibilidade, credencial
+inválida ou falha fechada do limitador retornam
+`503 service_unavailable`.
+
+Endpoints administrativos retornam `401` sem autenticação válida e `403` sem
+`platform_admin`. Todas as respostas relacionadas à ativação, inclusive
+validação automática, método inválido e falha interna, usam
+`Cache-Control: no-store`. A implementação garante o cabeçalho fora do
+corpo do endpoint para alcançar também exceções não tratadas.
+
+### Limites da ativação
+
+Conforme `DEC-024`, a pré-validação usará duas camadas:
+
+- borda: 100 requisições por origem a cada 15 minutos, corpo inicial de no
+  máximo 1 KiB e confiança em endereço encaminhado somente para proxies
+  configurados;
+- backend: 10 pré-validações por hash de convite existente a cada 15 minutos,
+  com contador PostgreSQL separado das 5 tentativas de cadastro permitidas por
+  hash de convite existente na mesma janela.
+
+O backend não cria contador por hash de token desconhecido. A persistência
+guarda somente tipo do contador, hash, início da janela,
+quantidade e expiração operacional, com atualização atômica, retenção curta e
+limpeza obrigatória. O contador expirará operacionalmente uma hora após o fim
+da janela e poderá ser removido a partir desse instante por uma rotina
+periódica e idempotente. Um registro vencido não será considerado, ainda que a
+limpeza física esteja pendente. Se essa persistência estiver indisponível, a
+rota falhará fechada com `503` e não chamará o Synapse.
+
+CORS restringe quais navegadores podem ler a resposta, mas não autentica a
+rota. Auditoria e métricas usarão somente resultados sanitizados. Token aberto,
+corpo sensível e credenciais administrativas permanecem proibidos.
 
 ### Concorrência e falhas
 

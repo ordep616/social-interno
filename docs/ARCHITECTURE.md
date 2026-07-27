@@ -72,6 +72,9 @@ cadastro público desabilitado do Synapse.
 - O acesso público, o registro livre e a federação externa permanecem desabilitados, salvo decisão conjunta posterior.
 - Conforme `DEC-022`, o serviço de convites controlará uma identidade
   previamente definida e o Synapse autenticará a conta depois da ativação.
+- A pré-validação pública aprovada em `DEC-024` é somente leitura: consulta o
+  convite pelo hash, encerra a transação local e confirma no Synapse que
+  a identidade continua ausente, sem reservar ou modificar o convite.
 - A administração deve usar APIs e módulos suportados, evitando alterações diretas no banco do Synapse.
 - FastAPI não duplicará mensagens, salas, presença ou sincronização.
 - O serviço FastAPI usa PostgreSQL próprio e mantém credenciais administrativas fora do navegador.
@@ -94,6 +97,10 @@ cadastro público desabilitado do Synapse.
 - Uma reconciliação bem-sucedida retornará atomicamente a tentativa para
   `synapse_created`, limpará a falha e registrará a revogação antes de liberar
   a finalização.
+- Limites da pré-validação serão divididos entre a borda por origem e o
+  PostgreSQL próprio por hash de convite existente. Tokens desconhecidos não
+  criarão registros, e indisponibilidade do limitador bloqueará a operação
+  antes de qualquer chamada ao Synapse.
 
 ### Dados
 
@@ -168,9 +175,16 @@ O diretório `contracts/` será criado somente quando uma extensão corporativa 
   acesso após desligamento.
 - Segredos fora do frontend e do repositório.
 - Token de ativação no fragmento, removido da URL e mantido somente em memória.
+- Erros de pré-validação não repetem token, corpo ou entrada inválida; o limite
+  de corpo ocorre antes do processamento.
 - Autorização administrativa sempre revalidada no backend, independentemente
   da visibilidade do botão.
 - Limites de requisição e upload configurados.
+- O PostgreSQL próprio mantém contadores separados de pré-validação e cadastro
+  apenas para convites conhecidos, em janelas de 15 minutos. Os registros
+  expiram uma hora após o fim da janela e possuem limpeza periódica obrigatória.
+- Cabeçalhos encaminhados de origem só são aceitos de proxies confiáveis; CORS
+  não substitui autenticação nem limite na borda.
 - Política explícita para criptografia ponta a ponta, recuperação e auditoria.
 - Backups testados e criptografados.
 - Atualizações de segurança do homeserver acompanhadas continuamente.

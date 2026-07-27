@@ -24,7 +24,7 @@ def test_main_exposes_fastapi_app(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     monkeypatch.setenv(
         "BACKEND_INVITATION_PUBLIC_BASE_URL",
-        "http://127.0.0.1:8080/register",
+        "http://127.0.0.1:8080/activate",
     )
     get_settings.cache_clear()
     sys.modules.pop("social_internal_backend.main", None)

@@ -8,9 +8,9 @@ from social_internal_backend.synapse.admin_client import (
     SynapseAdminRateLimitedError,
     SynapseAdminUnavailableError,
     SynapseUser,
-    SynapseUserPage,
     SynapseUserAlreadyExistsError,
     SynapseUserNotFoundError,
+    SynapseUserPage,
 )
 from social_internal_backend.synapse.client import (
     InvalidMatrixAccessTokenError,

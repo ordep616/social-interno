@@ -52,6 +52,8 @@ A fundação inicial contém apenas:
   identidade Matrix previamente definida em `target_user_id`;
 - modelo `UserRoleAssignment` que associa uma identidade Matrix a um papel próprio;
 - modelo `RegistrationAttempt` com estado operacional sem token ou senha;
+- modelo `ActivationRateLimit` com contadores separados de pré-validação e
+  cadastro, sem token aberto ou endereço IP;
 - Alembic com revisão-base e migrações reversíveis de `invitations`,
   `user_role_assignments` e `registration_attempts`;
 - gerador de token URL-safe com 256 bits de entropia e hash SHA-256;
@@ -66,6 +68,8 @@ A fundação inicial contém apenas:
   capacidade de gerenciar ativações;
 - cliente administrativo mínimo para consultar e criar contas locais no Synapse;
 - endpoints REST administrativos para criar, listar, consultar e revogar convites;
+- endpoint público local `POST /v1/activation-validations`, somente leitura,
+  com resposta e erros sanitizados;
 - testes de saúde, configuração, banco, convite e ponto de entrada ASGI.
 
 O token aberto existe apenas no retorno da emissão e não aparece no `repr` do resultado. A emissão fixa validade de 24 horas. A reserva usa uma atualização condicional de `pending` para `processing`, impedindo que duas tentativas processem o mesmo convite; a conclusão e a liberação também usam transições condicionais.
@@ -73,12 +77,16 @@ O token aberto existe apenas no retorno da emissão e não aparece no `repr` do 
 Os endpoints administrativos aplicam autenticação Matrix por `Authorization:
 Bearer`, consultam o papel próprio e permitem acesso somente a
 `platform_admin`. A criação retorna `invite_url` uma única vez e utiliza
-`BACKEND_INVITATION_PUBLIC_BASE_URL` como prefixo configurável; o token é
-acrescentado como último segmento do endereço. Listagem, consulta e revogação
-não retornam o token nem seu hash.
+`BACKEND_INVITATION_PUBLIC_BASE_URL` como endereço configurável da rota
+`/activate`; o token é acrescentado somente no fragmento. A criação recebe
+`username` e papel, retorna `target_user_id` e consulta a disponibilidade da
+identidade usando a credencial administrativa mantida no backend. Listagem,
+consulta e revogação não retornam o token nem seu hash.
 
-Endpoints públicos, limites de tentativa, auditoria e a orquestração do
-provisionamento ainda não foram implementados.
+O endpoint de pré-validação e seu limite por hash estão implementados para
+validação local. O endpoint de cadastro, o limite por origem na borda, a
+auditoria e a orquestração do provisionamento ainda não foram implementados.
+Por isso, a pré-validação não deve ser publicada externamente.
 
 A revisão `20260723_0005` implementa somente a persistência aprovada em
 `DEC-022`: adiciona `target_user_id`, impede mais de um convite `pending` ou
@@ -93,9 +101,11 @@ conflito tanto uma conta existente quanto outro convite ativo para a mesma
 identidade. A consulta externa ocorre sem transação PostgreSQL aberta, e o
 índice parcial continua protegendo contra corridas na inserção.
 
-Os endpoints administrativos ainda não fornecem `username` ao serviço nem
-retornam `target_user_id`. Portanto, esta revisão intermediária não deve ser
-usada para emitir novos convites até a adaptação específica do contrato HTTP.
+O endpoint administrativo de criação já fornece `username` ao serviço, retorna
+`target_user_id` e produz `/activate#<token>`. A pré-validação pública já
+confirma localmente o convite e a ausência da conta, sem alterar o convite. O
+endpoint de cadastro ainda não existe; por isso, o link emitido ainda não
+conclui a criação da conta.
 
 ## Cliente administrativo do Synapse
 
@@ -206,6 +216,18 @@ uv run alembic upgrade head
 uv run alembic check
 ```
 
+Os contadores expirados dos fluxos de ativação possuem retenção operacional de
+uma hora após o fim da janela. A rotina idempotente de limpeza pode ser
+executada por um agendador do ambiente:
+
+```bash
+PYTHONPATH=src uv run python -m \
+  social_internal_backend.commands.cleanup_activation_rate_limits
+```
+
+O agendamento periódico é obrigatório antes da publicação dos endpoints
+públicos. A rotina não recebe token, senha ou endereço IP.
+
 A migração de convites foi validada com upgrade, downgrade e reaplicação em
 PostgreSQL `17.6-alpine`. O banco rejeitou papéis fora do contrato, hashes
 inválidos, identidades Matrix malformadas, estados ativos sem
@@ -231,6 +253,16 @@ confirmam identidade derivada do convite, rollback da reserva diante de
 concorrência, liberação composta, checkpoints condicionais, recuperação de
 reconciliação, bloqueio de finalização prematura e rollback de convite e
 tentativa quando a atribuição de papel conflita.
+
+O limitador persistente foi validado em PostgreSQL `17.6-alpine` com migração
+reversível, contadores separados para pré-validação e cadastro, incremento
+atômico concorrente, crescimento limitado, rotação de janela, retenção e
+limpeza idempotente. Hashes sem convite correspondente não criam registros.
+
+A pré-validação também foi validada no PostgreSQL descartável. Dez consultas
+na mesma janela foram permitidas, a décima primeira foi bloqueada e nenhum
+`registration_attempt` foi criado. O convite permaneceu `pending`, sem
+expiração materializada, reserva, revogação ou consumo.
 
 Para executar apenas esses testes contra um banco próprio já migrado e
 descartável:
