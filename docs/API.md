@@ -391,14 +391,17 @@ Conforme `DEC-024`, a pré-validação usará duas camadas:
   máximo 1 KiB e confiança em endereço encaminhado somente para proxies
   configurados;
 - backend: 10 pré-validações por hash de convite existente a cada 15 minutos,
-  com contador PostgreSQL separado daquele usado pela ativação.
+  com contador PostgreSQL separado das 5 tentativas de cadastro permitidas por
+  hash de convite existente na mesma janela.
 
 O backend não criará contador por hash de token desconhecido. A futura
 persistência guardará somente tipo do contador, hash, início da janela,
 quantidade e expiração operacional, com atualização atômica, retenção curta e
-limpeza obrigatória. O prazo exato de retenção será aprovado antes da
-migração. Se essa persistência estiver indisponível, a rota falhará fechada com
-`503` e não chamará o Synapse.
+limpeza obrigatória. O contador expirará operacionalmente uma hora após o fim
+da janela e poderá ser removido a partir desse instante por uma rotina
+periódica e idempotente. Um registro vencido não será considerado, ainda que a
+limpeza física esteja pendente. Se essa persistência estiver indisponível, a
+rota falhará fechada com `503` e não chamará o Synapse.
 
 CORS restringe quais navegadores podem ler a resposta, mas não autentica a
 rota. Auditoria e métricas usarão somente resultados sanitizados. Token aberto,

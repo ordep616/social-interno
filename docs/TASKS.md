@@ -77,7 +77,7 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Adaptar a emissão administrativa ao contrato aprovado, definindo
   `username`, `target_user_id` e papel antes de entregar o link.
 - [x] Registrar e aprovar conjuntamente a pré-validação segura em `DEC-024`.
-- [ ] Implementar o modelo e a migração reversível do limitador persistente
+- [x] Implementar o modelo e a migração reversível do limitador persistente
   conforme `DEC-024`, com contadores separados, retenção limitada e limpeza
   obrigatória.
 - [ ] Implementar `POST /v1/activation-validations` sem aceitar `username` do

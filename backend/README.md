@@ -209,6 +209,18 @@ uv run alembic upgrade head
 uv run alembic check
 ```
 
+Os contadores expirados dos fluxos de ativação possuem retenção operacional de
+uma hora após o fim da janela. A rotina idempotente de limpeza pode ser
+executada por um agendador do ambiente:
+
+```bash
+PYTHONPATH=src uv run python -m \
+  social_internal_backend.commands.cleanup_activation_rate_limits
+```
+
+O agendamento periódico é obrigatório antes da publicação dos endpoints
+públicos. A rotina não recebe token, senha ou endereço IP.
+
 A migração de convites foi validada com upgrade, downgrade e reaplicação em
 PostgreSQL `17.6-alpine`. O banco rejeitou papéis fora do contrato, hashes
 inválidos, identidades Matrix malformadas, estados ativos sem
@@ -234,6 +246,11 @@ confirmam identidade derivada do convite, rollback da reserva diante de
 concorrência, liberação composta, checkpoints condicionais, recuperação de
 reconciliação, bloqueio de finalização prematura e rollback de convite e
 tentativa quando a atribuição de papel conflita.
+
+O limitador persistente foi validado em PostgreSQL `17.6-alpine` com migração
+reversível, contadores separados para pré-validação e cadastro, incremento
+atômico concorrente, crescimento limitado, rotação de janela, retenção e
+limpeza idempotente. Hashes sem convite correspondente não criam registros.
 
 Para executar apenas esses testes contra um banco próprio já migrado e
 descartável:
