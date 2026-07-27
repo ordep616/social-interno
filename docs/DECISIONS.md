@@ -376,12 +376,26 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
   retornada, inclusive bloqueada ou desativada, tornará a identidade
   indisponível. A credencial administrativa continuará restrita ao servidor.
 - Estados HTTP: token inexistente retornará `404`; expirado, usado ou revogado
-  compartilharão `410` genérico; `processing`, `conflicted` ou conta existente
+  compartilharão `410` genérico; convite `processing`, `conflicted`, conta
+  existente ou tentativa associada em `reconciliation_required`
   compartilharão `409` genérico; limite local retornará `429` com
   `Retry-After`; resposta inválida do Synapse retornará `502`; e
   indisponibilidade, credencial inválida ou falha fechada do limitador
   retornarão `503`. Corpo estruturalmente inválido retornará `422` sanitizado,
   sem reproduzir o valor recebido.
+- Erro público: os dois endpoints de ativação usarão o envelope mínimo e
+  estável `{"error": {"code": "<codigo>"}}`. A pré-validação mapeará
+  `404` para `activation_not_found`, `410` para `activation_unavailable`,
+  `409` para `activation_conflict`, `429` para `rate_limited`, `422`
+  estrutural para `invalid_request`, `502` para
+  `upstream_invalid_response` e `503` para `service_unavailable`. O envelope
+  não conterá token, senha, hash, entrada rejeitada, estado interno, mensagem
+  do Synapse ou detalhe de exceção.
+- Política de senha: `POST /v1/registrations` usará o mesmo envelope e
+  retornará `422` com `password_policy_violation` quando a senha for rejeitada,
+  sem reproduzir a senha nem a regra interna que permitiria distinguir
+  estados protegidos. Essa padronização não autoriza a implementação do
+  endpoint de cadastro.
 - Limite em camadas: a configuração inicial é de 100 requisições por origem a cada
   15 minutos na borda e 10 pré-validações por hash de convite existente a
   cada 15 minutos no PostgreSQL próprio. A ativação terá contador separado.
@@ -405,15 +419,16 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
   externo ou handler apropriado garantirá o cabeçalho também quando uma
   exceção escapar antes de o endpoint construir a resposta.
 - Frontend: a página lerá `#token`, removerá o fragmento antes da requisição,
-  manterá o segredo somente em memória e tratará `404`, `410`, `409`, `429`,
-  `502` e `503` sem reutilizar o cadastro nativo Matrix. `Retry-After` orientará
-  somente repetição de falhas transitórias.
+  manterá o segredo somente em memória e mapeará os códigos públicos estáveis
+  para mensagens próprias, sem reutilizar o cadastro nativo Matrix.
+  `Retry-After` orientará somente repetição de falhas transitórias.
 - Publicação: a rota não será publicada até que limite, limpeza, auditoria,
   proteção de logs, cabeçalhos e testes de falha estejam implementados e
   aprovados.
-- Limite da decisão: esta decisão trata somente a pré-validação. Ela não cria
-  conta, recebe senha, implementa a saga de cadastro, altera o Synapse ou
-  substitui `DEC-021`, `DEC-022` e `DEC-023`.
+- Limite da decisão: esta decisão trata da pré-validação e padroniza o envelope
+  público compartilhado pelos endpoints de ativação. Ela não cria conta,
+  recebe senha, implementa a saga de cadastro, altera o Synapse ou substitui
+  `DEC-021`, `DEC-022` e `DEC-023`.
 
 ## Decisões pendentes
 - Confirmação do Synapse após prova de conceito e revisão da licença AGPL/comercial aplicável.

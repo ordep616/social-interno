@@ -336,14 +336,46 @@ token e senha da memória, o frontend segue para o login normal com apenas o
 processamento necessário, nunca são persistidos em texto aberto e não aparecem
 em logs.
 
-Respostas esperadas: pré-validação `200` e criação do cadastro `201`. Na
-pré-validação, token inexistente retorna `404`; token expirado, usado ou
-revogado retorna a mesma resposta genérica `410`; convite `processing`,
-`conflicted` ou identidade encontrada no Synapse retorna `409` genérico;
-limite local excedido retorna `429` com `Retry-After`; resposta inválida do
-Synapse retorna `502`; e indisponibilidade, credencial inválida ou falha
-fechada do limitador retorna `503`. Corpo inválido retorna `422` sanitizado,
-sem repetir o token ou o campo `input`.
+Respostas esperadas: pré-validação `200` e criação do cadastro `201`. Erros
+públicos dos dois endpoints usam somente o envelope mínimo e estável:
+
+```json
+{
+  "error": {
+    "code": "activation_conflict"
+  }
+}
+```
+
+O frontend traduz `error.code` para uma mensagem própria. O envelope não
+inclui token, senha, hash, valor rejeitado, estado interno, mensagem do Synapse
+ou detalhe de exceção. Os códigos públicos são:
+
+| HTTP | `error.code` | Situação pública |
+| --- | --- | --- |
+| `404` | `activation_not_found` | token não localizado |
+| `410` | `activation_unavailable` | convite expirado, usado ou revogado |
+| `409` | `activation_conflict` | convite ou identidade indisponível |
+| `422` | `invalid_request` | corpo estruturalmente inválido |
+| `422` | `password_policy_violation` | senha rejeitada em `POST /v1/registrations` |
+| `429` | `rate_limited` | limite excedido |
+| `502` | `upstream_invalid_response` | resposta inválida do Synapse |
+| `503` | `service_unavailable` | dependência indisponível ou falha fechada |
+
+`processing`, `conflicted`, conta já existente e tentativa associada em
+`reconciliation_required` compartilham `409 activation_conflict`; o cliente
+não recebe o estado interno que originou o conflito. Token expirado, usado ou
+revogado compartilha `410 activation_unavailable`.
+
+`POST /v1/registrations` retorna `422 password_policy_violation` quando a senha
+não atende à política. A resposta não repete a senha nem detalhes internos da
+política ou do Synapse. Um `422 invalid_request` também não inclui o campo
+`input` produzido pela validação automática.
+
+O limite local excedido inclui `Retry-After`. Resposta inválida do Synapse
+retorna `502 upstream_invalid_response`; indisponibilidade, credencial
+inválida ou falha fechada do limitador retornam
+`503 service_unavailable`.
 
 Endpoints administrativos retornam `401` sem autenticação válida e `403` sem
 `platform_admin`. Todas as respostas relacionadas à ativação, inclusive
