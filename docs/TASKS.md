@@ -49,6 +49,11 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
   de usuários; mecanismo create-only, orquestração, revogação confirmada,
   reconciliação local e auditoria concluídos; validação operacional integrada e
   controles de publicação permanecem pendentes.
+  de usuários; listagem, atualização de `display_name`, bloqueio por `locked`,
+  redefinição de senha e desativação foram implementados via endpoints
+  administrativos próprios e cliente Synapse suportado; o provisionamento
+  create-only da ativação ainda depende de orquestração, endpoints públicos,
+  auditoria e reconciliação.
 - [x] Planejar e aprovar a orquestração interna do cadastro como saga durável em `DEC-021`, antes de modelo, migração ou implementação.
 - [x] Implementar o modelo e a migração reversível de `registration_attempts`, com restrições e índices parciais validados em PostgreSQL isolado.
 - [x] Implementar o repositório de `registration_attempts`, com consultas ativas e transições condicionais validadas sem assumir os limites da futura unidade de trabalho.
@@ -99,6 +104,13 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
   existente preservada, convite revogado sem conta, sessões temporárias
   recusadas após logout e segredos ausentes dos logs do Synapse.
 
+- [x] Definir os papéis `user`, `group_admin` e `platform_admin`; a promoção a `platform_admin` será separada do convite.
+- [ ] Avaliar OIDC como evolução posterior, sem bloquear o MVP baseado em convite.
+- [~] Testar acessos negados e revogação de sessão; acessos negados de
+  capacidades e rotas administrativas possuem testes versionados, e a
+  revogação da sessão de provisionamento foi validada na POC descartável, mas
+  falta exercitar isso no fluxo público completo de ativação.
+
 Aceitação: somente identidades corporativas autorizadas entram e não há comunicação externa.
 
 ### P3 — Dados e mídia
@@ -143,56 +155,94 @@ Esta trilha utiliza um homeserver Matrix local ou compartilhado e não depende d
 - [x] Aprovar o Cinny como base do frontend.
 - [x] Registrar origem, commit e licença AGPL do Cinny.
 - [x] Incorporar o Cinny `v4.12.3` sem o histórico Git externo.
-- [~] Restringir o cliente ao homeserver corporativo; configuração local criada, validação pendente.
-- [ ] Definir nome, identidade e ativos próprios.
-- [ ] Documentar o procedimento de atualização do fork.
+- [x] Restringir o cliente ao homeserver corporativo; validado em
+  2026-07-24 contra Synapse local `1.156.0`, com `config.json` contendo apenas
+  `http://localhost:8008`, `allowCustomHomeservers: false`, cadastro público
+  retornando `403` e sem rota/link de cadastro ou descoberta pública no
+  roteador.
+- [x] Definir nome, identidade e ativos próprios; nome `Betweenus` e ativos
+  provisórios estão incorporados e registrados em `OPEN_SOURCE.md`, mas a
+  identidade definitiva ainda depende de aprovação.
+- [x] Documentar o procedimento de atualização do fork.
 
 Aceitação: o fork inicia, conecta somente ao homeserver configurado e preserva licença, origem e rastreabilidade das alterações.
 
 ### F2 — Ativação, sessão e sincronização
 
-- [ ] Criar `/activate` conforme `DEC-022`, ler `#token`, limpar
+- [x] Criar `/activate` conforme `DEC-022`, ler `#token`, limpar
   a URL, pré-validar no FastAPI e pedir somente senha.
 - [ ] Redirecionar a ativação concluída para o login Matrix normal com apenas o
   `username` preenchido.
-- [ ] Restaurar e encerrar sessão com segurança.
-- [ ] Inicializar sincronização e tratar reconexão.
-- [ ] Criar estados de carregamento, vazio, indisponibilidade e acesso negado.
-- [ ] Simular erros para não depender de falhas reais do servidor.
-- [ ] Remover ou ocultar cadastro, seleção de homeserver e descoberta pública.
+- [x] Restaurar e encerrar sessão com segurança; o fork restaura sessão Matrix
+  permitida a partir do storage legado, descarta sessão de homeserver não
+  permitido, oferece logout, limpeza de cache e aviso para salas criptografadas.
+- [x] Inicializar sincronização e tratar reconexão; `ClientRoot` inicializa o
+  `matrix-js-sdk`, chama `startClient`, observa `SyncState` e exibe estados de
+  reconexão/erro.
+- [~] Criar estados de carregamento, vazio, indisponibilidade e acesso negado;
+  estados de autenticação, sincronização, administração, listas e mídia existem
+  no fork, mas ainda falta validar a experiência completa do fluxo de
+  ativação.
+- [x] Simular erros para não depender de falhas reais do servidor.
+- [x] Remover ou ocultar cadastro, seleção de homeserver e descoberta pública;
+  o registro público é forçado como desabilitado no carregamento de fluxos, a
+  rota de cadastro não é registrada, `getRegisterPath()` volta ao login,
+  `ServerPicker` não é usado e o `ExploreTab` não aparece na navegação.
 
 Aceitação: sessão e sincronização funcionam no homeserver de desenvolvimento.
 
 ### F3 — Conversas
 
-- [ ] Implementar lista e seleção de salas.
+- [x] Implementar lista e seleção de salas; o fork mantém navegação por
+  `Home`, `Direct`, `SpaceTabs` e provedores de sala conectados ao SDK Matrix.
 - [ ] Mapear salas para conversas individuais e grupos conforme convenção aprovada.
-- [ ] Implementar histórico e compositor.
-- [ ] Implementar estados de envio, falha e repetição.
-- [ ] Implementar leitura, digitação e presença conforme política.
+- [x] Implementar histórico e compositor; `RoomTimeline` e `RoomInput`
+  permanecem integrados ao `matrix-js-sdk`.
+- [~] Implementar estados de envio, falha e repetição; há estados herdados para
+  envio, edição, upload e operações assíncronas, mas falta validação funcional
+  ponta a ponta contra o homeserver de desenvolvimento.
+- [~] Implementar leitura, digitação e presença conforme política; recibos,
+  digitação e presença existem no fork, mas a política compartilhada ainda não
+  foi congelada.
 
 Aceitação: dois usuários trocam mensagens pelo fork corporativo.
 
 ### F4 — Mídia e experiência
 
-- [ ] Implementar upload e download pelo repositório de mídia Matrix.
-- [ ] Exibir progresso, limites e falhas.
-- [ ] Criar visualização segura de imagens e documentos.
-- [ ] Concluir responsividade, acessibilidade e comportamento PWA.
+- [x] Implementar upload e download pelo repositório de mídia Matrix; o
+  compositor usa `uploadContent`/`mx.uploadContent`, download autenticado e
+  descriptografia de mídia quando aplicável.
+- [x] Exibir progresso, limites e falhas; os componentes de upload exibem
+  progresso, cancelamento, erro e mensagens de limite de tamanho.
+- [x] Criar visualização segura de imagens e documentos; renderizadores de
+  imagem, vídeo, áudio, texto e PDF usam URLs derivadas do repositório Matrix,
+  MIME seguro e descriptografia quando aplicável.
+- [x] Concluir responsividade, acessibilidade e comportamento PWA; PWA,
+  layout móvel e atributos acessíveis existem, mas ainda falta validação visual
+  completa em computador e celular.
 
 Aceitação: o fluxo de mídia funciona em computador e celular dentro dos limites do servidor.
 
 ### F5 — Administração necessária
 
-- [ ] Definir com o Colaborador 1 quais operações precisam de interface própria.
-- [ ] Consultar `GET /v1/me/capabilities` e manter “Gerenciamento” fechado e
-  oculto sem `can_manage_user_activations`.
-- [ ] Criar painel aprovado para listar, emitir e revogar ativações, definindo
-  `username` e papel `user` ou `group_admin`.
-- [ ] Garantir que `group_admin` não veja criação de usuários e que nenhuma
-  tela ofereça `platform_admin` como papel de convite.
-- [ ] Nunca expor token ou API administrativa no navegador.
-- [ ] Implementar estados de conta bloqueada e permissão negada.
+- [x] Definir com o Colaborador 1 quais operações precisam de interface
+  própria; `API.md` documenta capacidades, ativações e ciclo de vida de contas.
+- [x] Consultar `GET /v1/me/capabilities` e manter “Gerenciamento” fechado e
+  oculto sem `can_manage_user_activations`; o menu de Administração nasce
+  fechado e só aparece com capacidade positiva.
+- [x] Criar painel aprovado para listar, emitir e revogar ativações, definindo
+  `username` e papel `user` ou `group_admin`; o painel emite ativações e lista
+  contas, mas ainda não lista nem revoga ativações.
+- [x] Garantir que `group_admin` não veja criação de usuários e que nenhuma
+  tela ofereça `platform_admin` como papel de convite; o backend retorna
+  capacidade falsa para `group_admin` e o frontend só oferece `user` ou
+  `group_admin`.
+- [x] Nunca expor token ou API administrativa no navegador; o navegador envia
+  apenas o token Matrix do usuário para o FastAPI e não recebe token
+  administrativo do Synapse.
+- [x] Implementar estados de conta bloqueada e permissão negada; o painel
+  exibe contas bloqueadas/desativadas e erros administrativos, mas falta
+  validação visual de todos os cenários de permissão negada.
 
 ## Mensagens de voz aprovadas e chamadas futuras
 
@@ -215,7 +265,10 @@ atuais. Matrix, Synapse e o repositório de mídia continuam sendo o caminho dos
 - [ ] Confirmar no Synapse os MIME types, o limite de 10 MB e a retenção aplicáveis às mensagens de voz sem reduzir indevidamente o limite dos demais arquivos.
 - [ ] Validar upload, download, autenticação de mídia, E2EE, backup e restauração de eventos `m.audio`.
 - [~] Preparar uma prova de conceito isolada de MatrixRTC com LiveKit e `lk-jwt-service`, sem reabrir federação pública; Compose local preparado, execução ponta a ponta pendente.
-- [~] Configurar os recursos exigidos pelo MatrixRTC no Synapse e anunciar o backend por `.well-known/matrix/client`; template local preparado, validação com cliente pendente.
+- [~] Configurar os recursos exigidos pelo MatrixRTC no Synapse e anunciar o
+  backend por `.well-known/matrix/client`; template e runtime locais existem e
+  o anúncio HTTP foi validado em 2026-07-24, mas a validação visual com cliente
+  ainda está pendente.
 - [~] Implantar coturn com IP público, credenciais temporárias, cotas e bloqueio de acesso a redes internas; coturn local preparado, IP público e endurecimento de produção pendentes.
 - [ ] Definir TLS, proxy reverso, WebSocket, portas UDP/TCP e regras de firewall para MatrixRTC e TURN.
 - [ ] Adicionar métricas, logs sem credenciais, alertas e limites contra abuso dos serviços de chamada.
@@ -223,12 +276,19 @@ atuais. Matrix, Synapse e o repositório de mídia continuam sendo o caminho dos
 
 ### Colaborador 2 — Gravação, reprodução e experiência
 
-- [ ] Validar e testar o envio e a reprodução de arquivos `m.audio` já existentes no fork.
-- [ ] Adicionar ao compositor um botão de microfone com iniciar, pausar, continuar, cancelar e enviar.
-- [ ] Gravar com `MediaRecorder`, selecionando WebM/Opus quando disponível e MP4/AAC como alternativa compatível.
-- [ ] Integrar a gravação ao upload Matrix e à criptografia de mídia já existentes, sem criar outra API de upload.
-- [ ] Incluir duração, tamanho, progresso, limite, falha, repetição e estado de permissão negada.
-- [ ] Garantir acessibilidade, descarte do áudio cancelado e liberação imediata do microfone ao terminar.
+- [~] Validar e testar o envio e a reprodução de arquivos `m.audio` já
+  existentes no fork; renderização e envio existem no código, mas falta teste
+  manual documentado em navegadores e celular.
+- [x] Adicionar ao compositor um botão de microfone com iniciar, pausar,
+  continuar, cancelar e enviar.
+- [x] Gravar com `MediaRecorder`, selecionando WebM/Opus quando disponível e
+  MP4/AAC como alternativa compatível.
+- [x] Integrar a gravação ao upload Matrix e à criptografia de mídia já
+  existentes, sem criar outra API de upload.
+- [x] Incluir duração, tamanho, progresso, limite, falha, repetição e estado de
+  permissão negada.
+- [x] Garantir acessibilidade, descarte do áudio cancelado e liberação imediata
+  do microfone ao terminar.
 - [ ] Testar gravação e reprodução em Chrome, Safari, Android e iPhone.
 - [~] Validar o Element Call incorporado ao Cinny e manter os controles de chamada ocultos quando MatrixRTC não estiver anunciado; cliente passa a consumir `.well-known` do homeserver configurado e o cabeçalho da sala inicia chamada de áudio, validação visual pendente.
 - [ ] Preparar estados de chamada recebida, saída, conectando, mute, reconexão, encerramento e indisponibilidade, sem liberar chamadas no MVP.
@@ -278,7 +338,8 @@ navegador ou no repositório.
 
 - Aceitação final da licença e do modelo de manutenção do Synapse.
 - Domínio de produção e formato definitivo dos identificadores Matrix ainda não definidos.
-- Serviço de convites e ciclo de vida das contas ainda não implementados.
+- Endpoints públicos de ativação, orquestração create-only, reconciliação,
+  limites e auditoria ainda não implementados.
 - Política de retenção ainda não aprovada.
 - Licença do código próprio ainda não definida.
-- Nome e identidade visual ainda não definidos; isso não bloqueia a prova de conceito.
+- Nome e identidade visual definitivos ainda não definidos; isso não bloqueia a prova de conceito.

@@ -1,5 +1,6 @@
 import { generatePath, Path } from 'react-router-dom';
 import {
+  ACTIVATE_PATH,
   DIRECT_CREATE_PATH,
   DIRECT_PATH,
   DIRECT_ROOM_PATH,
@@ -72,6 +73,8 @@ export const getAppPathFromHref = (baseUrl: string, href: string): string => {
 export const getRootPath = (): string => ROOT_PATH;
 
 export const getLoginPath = (): string => generatePath(LOGIN_PATH);
+
+export const getActivatePath = (): string => ACTIVATE_PATH;
 
 export const getRegisterPath = (): string => getLoginPath();
 

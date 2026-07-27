@@ -9,8 +9,9 @@ import {
 } from 'react-router-dom';
 
 import { ClientConfig, clientAllowedServer } from '../hooks/useClientConfig';
-import { AuthLayout, Login, ResetPassword } from './auth';
+import { Activate, AuthLayout, AuthPageFrame, Login, ResetPassword } from './auth';
 import {
+  ACTIVATE_PATH,
   DIRECT_PATH,
   HOME_PATH,
   LOGIN_PATH,
@@ -88,6 +89,25 @@ export const createRouter = (clientConfig: ClientConfig, screenSize: ScreenSize)
           return redirect(getLoginPath());
         }}
       />
+      <Route
+        loader={() => {
+          if (getAllowedFallbackSession()) {
+            return redirect(getHomePath());
+          }
+
+          return null;
+        }}
+        element={
+          <>
+            <AuthPageFrame>
+              <Outlet />
+            </AuthPageFrame>
+            <UnAuthRouteThemeManager />
+          </>
+        }
+      >
+        <Route path={ACTIVATE_PATH} element={<Activate />} />
+      </Route>
       <Route
         loader={() => {
           if (getAllowedFallbackSession()) {
