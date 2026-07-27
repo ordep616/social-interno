@@ -23,6 +23,10 @@ def configure_environment(monkeypatch: pytest.MonkeyPatch) -> None:
         "opaque-admin-value-for-tests",
     )
     monkeypatch.setenv(
+        "BACKEND_SYNAPSE_REGISTRATION_SHARED_SECRET",
+        "opaque-registration-secret",
+    )
+    monkeypatch.setenv(
         "BACKEND_INVITATION_PUBLIC_BASE_URL",
         "http://127.0.0.1:8080/activate",
     )

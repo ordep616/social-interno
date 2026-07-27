@@ -17,11 +17,13 @@
 - Federação limitada por lista vazia.
 - Diretório público e pré-visualização de URLs desabilitados.
 - Configuração gerada localmente a partir de variáveis, sem versionar segredos.
+- Traefik `3.7.1` como borda local da ativação, publicado somente em
+  `127.0.0.1:8082`, com limites e cabeçalhos documentados em `proxy/README.md`.
 
 Este ambiente é uma prova de conceito local. Não possui TLS, OIDC, backup,
 monitoramento ou endurecimento de produção. A POC de chamadas não altera o MVP
 e não deve ser exposta na internet sem domínio, HTTPS, TURN público,
-observabilidade, limites e revisão de licenças.
+observabilidade, parâmetros finais de limites e revisão de licenças.
 
 ## Pré-requisitos
 
@@ -135,7 +137,7 @@ python3 create_only_registration.py
 ## Pendências antes de produção
 
 - domínio definitivo;
-- proxy reverso e TLS;
+- TLS e topologia definitiva do proxy reverso;
 - provedor OIDC;
 - política final de federação;
 - política de criptografia ponta a ponta;

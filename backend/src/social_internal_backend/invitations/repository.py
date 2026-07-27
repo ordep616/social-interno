@@ -143,3 +143,17 @@ class InvitationRepository:
             .returning(Invitation)
         )
         return self._session.execute(statement).scalar_one_or_none()
+
+    def conflict_processing(self, invitation_id: UUID) -> Invitation | None:
+        """Encerra uma reserva cuja identidade tornou-se indisponível."""
+
+        statement = (
+            update(Invitation)
+            .where(
+                Invitation.id == invitation_id,
+                Invitation.status == InvitationStatus.processing,
+            )
+            .values(status=InvitationStatus.conflicted)
+            .returning(Invitation)
+        )
+        return self._session.execute(statement).scalar_one_or_none()

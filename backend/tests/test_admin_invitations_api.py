@@ -155,7 +155,13 @@ class FakeInvitationService:
             raise self.get_error
         return self.invitation
 
-    def revoke(self, invitation_id: UUID) -> Invitation:
+    def revoke(
+        self,
+        invitation_id: UUID,
+        *,
+        actor_user_id: str | None = None,
+    ) -> Invitation:
+        assert actor_user_id == ADMIN_USER_ID
         self.revoked_id = invitation_id
         if self.revoke_error is not None:
             raise self.revoke_error

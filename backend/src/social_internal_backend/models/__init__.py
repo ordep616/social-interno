@@ -4,6 +4,7 @@ from social_internal_backend.models.activation_rate_limit import (
     ActivationRateLimit,
     ActivationRateLimitKind,
 )
+from social_internal_backend.models.audit_event import AuditAction, AuditEvent, AuditResult
 from social_internal_backend.models.invitation import (
     Invitation,
     InvitationRole,
@@ -18,6 +19,9 @@ from social_internal_backend.models.user_role_assignment import UserRole, UserRo
 __all__ = [
     "ActivationRateLimit",
     "ActivationRateLimitKind",
+    "AuditAction",
+    "AuditEvent",
+    "AuditResult",
     "Invitation",
     "InvitationRole",
     "InvitationStatus",

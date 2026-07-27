@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from social_internal_backend.accounts import AccountService
 from social_internal_backend.activations import ActivationValidationService
+from social_internal_backend.audit import AuditService
 from social_internal_backend.authorization import (
     AuthorizedPlatformAdmin,
     CorporateUserAccessDeniedError,
@@ -19,6 +20,7 @@ from social_internal_backend.authorization import (
     UserRoleAssignmentRepository,
 )
 from social_internal_backend.invitations import InvitationService
+from social_internal_backend.registrations import RegistrationService
 from social_internal_backend.settings import Settings
 from social_internal_backend.synapse import (
     InvalidMatrixAccessTokenError,
@@ -27,6 +29,7 @@ from social_internal_backend.synapse import (
     SynapseClient,
     SynapseProtocolError,
     SynapseRateLimitedError,
+    SynapseRegistrationClient,
     SynapseUnavailableError,
 )
 
@@ -48,6 +51,13 @@ def get_database_session(request: Request) -> Iterator[Session]:
 
 
 DatabaseSession = Annotated[Session, Depends(get_database_session)]
+
+
+def get_audit_service(session: DatabaseSession) -> AuditService:
+    return AuditService(session)
+
+
+AuditServiceDependency = Annotated[AuditService, Depends(get_audit_service)]
 
 
 def get_app_settings(request: Request) -> Settings:
@@ -133,6 +143,44 @@ def get_activation_validation_service(
 ActivationValidationServiceDependency = Annotated[
     ActivationValidationService,
     Depends(get_activation_validation_service),
+]
+
+
+def get_registration_service(
+    settings: AppSettings,
+    session: DatabaseSession,
+) -> Iterator[RegistrationService]:
+    """Monta a saga com segredos mantidos exclusivamente no backend."""
+
+    with (
+        SynapseRegistrationClient(
+            base_url=str(settings.synapse_base_url),
+            timeout_seconds=settings.synapse_request_timeout_seconds,
+            shared_secret=settings.synapse_registration_shared_secret,
+        ) as registration_client,
+        SynapseClient(
+            base_url=str(settings.synapse_base_url),
+            timeout_seconds=settings.synapse_request_timeout_seconds,
+        ) as identity_client,
+        SynapseAdminClient(
+            base_url=str(settings.synapse_base_url),
+            timeout_seconds=settings.synapse_request_timeout_seconds,
+            matrix_server_name=settings.matrix_server_name,
+            admin_access_token=settings.synapse_admin_access_token,
+        ) as admin_client,
+    ):
+        yield RegistrationService(
+            session,
+            registration_provider=registration_client,
+            identity_provider=identity_client,
+            admin_provider=admin_client,
+            matrix_server_name=settings.matrix_server_name,
+        )
+
+
+RegistrationServiceDependency = Annotated[
+    RegistrationService,
+    Depends(get_registration_service),
 ]
 
 

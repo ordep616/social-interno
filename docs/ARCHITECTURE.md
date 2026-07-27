@@ -41,6 +41,8 @@ cadastro público desabilitado do Synapse.
 - Frontend: fork do Cinny `v4.12.3`, baseado em React, Vite e `matrix-js-sdk`.
 - SDK do frontend: versão utilizada e fixada pelo Cinny; atualizações exigem teste conjunto.
 - Banco do Synapse: PostgreSQL.
+- Borda local da ativação: Traefik `v3.7.1` pelo file provider, sem acesso ao
+  socket Docker; TLS e topologia de homologação permanecem pendentes.
 - Identidade inicial: `DEC-022` exige que `platform_admin` defina
   previamente a conta local e que o funcionário escolha somente sua senha por
   link de uso único; OIDC poderá ser avaliado posteriormente. O mecanismo

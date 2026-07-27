@@ -10,6 +10,7 @@ from pydantic import SecretStr
 
 from social_internal_backend.api.dependencies import (
     get_account_service,
+    get_audit_service,
     get_platform_admin_authorization_service,
 )
 from social_internal_backend.application import create_app
@@ -142,6 +143,15 @@ class FakeAccountService:
             raise self.error
 
 
+class FakeAuditService:
+    def __init__(self) -> None:
+        self.events: list[dict[str, object]] = []
+
+    def record(self, **event: object) -> object:
+        self.events.append(event)
+        return object()
+
+
 @asynccontextmanager
 async def make_client(
     settings: Settings,
@@ -157,6 +167,7 @@ async def make_client(
         return authorization
 
     app.dependency_overrides[get_account_service] = override_account_service
+    app.dependency_overrides[get_audit_service] = lambda: FakeAuditService()
     app.dependency_overrides[get_platform_admin_authorization_service] = (
         override_authorization_service
     )
