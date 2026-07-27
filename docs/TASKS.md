@@ -80,8 +80,9 @@ Aceitação: o homeserver inicia e o fluxo básico funciona sem o frontend próp
 - [x] Implementar o modelo e a migração reversível do limitador persistente
   conforme `DEC-024`, com contadores separados, retenção limitada e limpeza
   obrigatória.
-- [ ] Implementar `POST /v1/activation-validations` sem aceitar `username` do
-  funcionário e sem publicar a rota antes dos controles de segurança.
+- [x] Implementar `POST /v1/activation-validations` sem aceitar `username` do
+  funcionário; a publicação externa permanece bloqueada até a conclusão dos
+  controles de segurança.
 - [ ] Adaptar a orquestração do cadastro ao contrato aprovado, conectando a
   unidade de trabalho, o mecanismo create-only e a revogação confirmada.
 - [ ] Implementar limites, auditoria e cabeçalhos de segurança antes de

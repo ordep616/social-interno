@@ -72,8 +72,8 @@ cadastro público desabilitado do Synapse.
 - O acesso público, o registro livre e a federação externa permanecem desabilitados, salvo decisão conjunta posterior.
 - Conforme `DEC-022`, o serviço de convites controlará uma identidade
   previamente definida e o Synapse autenticará a conta depois da ativação.
-- A pré-validação pública aprovada em `DEC-024` será somente leitura: consultará
-  o convite pelo hash, encerrará a transação local e confirmará no Synapse que
+- A pré-validação pública aprovada em `DEC-024` é somente leitura: consulta o
+  convite pelo hash, encerra a transação local e confirma no Synapse que
   a identidade continua ausente, sem reservar ou modificar o convite.
 - A administração deve usar APIs e módulos suportados, evitando alterações diretas no banco do Synapse.
 - FastAPI não duplicará mensagens, salas, presença ou sincronização.

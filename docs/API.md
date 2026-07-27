@@ -287,7 +287,8 @@ Resposta válida:
 ```
 
 A decisão `DEC-024`, aceita pelos dois colaboradores, detalha esta rota.
-O corpo será estrito e não aceitará outros campos. O token será tratado como
+O corpo é estrito e não aceita outros campos. Query strings são recusadas. O
+token é tratado como
 segredo e não poderá aparecer em erros automáticos, inclusive `422`, logs,
 representações, métricas ou rastreamento. A borda limitará o corpo antes de o
 FastAPI processá-lo.
@@ -298,7 +299,7 @@ existe endpoint público com token no caminho. Um `200` representa somente o
 estado observado naquele instante e não garante que a ativação posterior
 vencerá uma corrida pela identidade.
 
-Antes do sucesso, o serviço deverá:
+Antes do sucesso, o serviço:
 
 - aceitar somente convite `pending` e ainda não expirado;
 - validar `target_user_id` contra o `matrix_server_name` configurado;
@@ -308,7 +309,7 @@ Antes do sucesso, o serviço deverá:
 - chamar `SynapseAdminClient.get_user()` e considerar qualquer conta
   retornada, inclusive bloqueada ou desativada, como indisponível.
 
-O token continuará sendo localizado somente pelo SHA-256 já usado no banco.
+O token é localizado somente pelo SHA-256 já usado no banco.
 Convite inexistente não provocará chamada ao Synapse. Nenhuma credencial
 administrativa será enviada ao navegador.
 
@@ -380,7 +381,7 @@ inválida ou falha fechada do limitador retornam
 Endpoints administrativos retornam `401` sem autenticação válida e `403` sem
 `platform_admin`. Todas as respostas relacionadas à ativação, inclusive
 validação automática, método inválido e falha interna, usam
-`Cache-Control: no-store`. A implementação deverá garantir o cabeçalho fora do
+`Cache-Control: no-store`. A implementação garante o cabeçalho fora do
 corpo do endpoint para alcançar também exceções não tratadas.
 
 ### Limites da ativação
@@ -394,8 +395,8 @@ Conforme `DEC-024`, a pré-validação usará duas camadas:
   com contador PostgreSQL separado das 5 tentativas de cadastro permitidas por
   hash de convite existente na mesma janela.
 
-O backend não criará contador por hash de token desconhecido. A futura
-persistência guardará somente tipo do contador, hash, início da janela,
+O backend não cria contador por hash de token desconhecido. A persistência
+guarda somente tipo do contador, hash, início da janela,
 quantidade e expiração operacional, com atualização atômica, retenção curta e
 limpeza obrigatória. O contador expirará operacionalmente uma hora após o fim
 da janela e poderá ser removido a partir desse instante por uma rotina
