@@ -171,8 +171,10 @@ Aceitação: o fork inicia, conecta somente ao homeserver configurado e preserva
 
 - [x] Criar `/activate` conforme `DEC-022`, ler `#token`, limpar
   a URL, pré-validar no FastAPI e pedir somente senha.
-- [ ] Redirecionar a ativação concluída para o login Matrix normal com apenas o
-  `username` preenchido.
+- [x] Redirecionar a ativação concluída para o login Matrix normal com apenas o
+  `username` preenchido; o frontend usa somente o `username` recebido na
+  pré-validação, limpa token e senha da memória e não transporta sessão de
+  provisionamento.
 - [x] Restaurar e encerrar sessão com segurança; o fork restaura sessão Matrix
   permitida a partir do storage legado, descarta sessão de homeserver não
   permitido, oferece logout, limpeza de cache e aviso para salas criptografadas.

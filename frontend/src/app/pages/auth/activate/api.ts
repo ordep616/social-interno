@@ -15,14 +15,15 @@ export type RegistrationResponse = {
 };
 
 export type ActivationErrorCode =
-  | 'token_not_found'
-  | 'token_unavailable'
-  | 'identity_unavailable'
+  | 'activation_not_found'
+  | 'activation_unavailable'
+  | 'activation_conflict'
+  | 'invalid_request'
+  | 'password_policy_violation'
   | 'rate_limited'
-  | 'invalid_password'
+  | 'upstream_invalid_response'
+  | 'service_unavailable'
   | 'access_denied'
-  | 'backend_unavailable'
-  | 'invalid_response'
   | 'unknown';
 
 export class ActivationApiError extends Error {
@@ -40,16 +41,50 @@ export class ActivationApiError extends Error {
 export const activationBackendUrl = (clientConfig: ClientConfig): string =>
   trimTrailingSlash(clientConfig.backendUrl ?? 'http://127.0.0.1:8081');
 
-const activationErrorCode = (status: number): ActivationErrorCode => {
-  if (status === 404) return 'token_not_found';
-  if (status === 410) return 'token_unavailable';
-  if (status === 409) return 'identity_unavailable';
+const PUBLIC_ERROR_CODES = new Set<ActivationErrorCode>([
+  'activation_not_found',
+  'activation_unavailable',
+  'activation_conflict',
+  'invalid_request',
+  'password_policy_violation',
+  'rate_limited',
+  'upstream_invalid_response',
+  'service_unavailable',
+  'access_denied',
+]);
+
+const USERNAME_REGEX = /^[a-z0-9][a-z0-9._-]{1,30}[a-z0-9]$/;
+
+const isActivationErrorCode = (code: unknown): code is ActivationErrorCode =>
+  typeof code === 'string' && PUBLIC_ERROR_CODES.has(code as ActivationErrorCode);
+
+const activationErrorCodeFromStatus = (status: number): ActivationErrorCode => {
+  if (status === 400) return 'invalid_request';
+  if (status === 404) return 'activation_not_found';
+  if (status === 409) return 'activation_conflict';
+  if (status === 410) return 'activation_unavailable';
+  if (status === 422) return 'password_policy_violation';
   if (status === 429) return 'rate_limited';
-  if (status === 422) return 'invalid_password';
   if (status === 401 || status === 403) return 'access_denied';
-  if (status === 502) return 'invalid_response';
-  if (status === 503) return 'backend_unavailable';
+  if (status === 502) return 'upstream_invalid_response';
+  if (status === 503) return 'service_unavailable';
   return 'unknown';
+};
+
+const readPublicErrorCode = async (response: Response): Promise<ActivationErrorCode> => {
+  try {
+    const payload = await response.clone().json();
+    if (typeof payload !== 'object' || payload === null) {
+      return activationErrorCodeFromStatus(response.status);
+    }
+
+    const code = (payload as { error?: { code?: unknown } }).error?.code;
+    if (isActivationErrorCode(code)) return code;
+  } catch {
+    return activationErrorCodeFromStatus(response.status);
+  }
+
+  return activationErrorCodeFromStatus(response.status);
 };
 
 const activationErrorMessage = (status: number): string =>
@@ -67,6 +102,7 @@ const isActivationValidationResponse = (
   return (
     typeof response.target_user_id === 'string' &&
     typeof response.username === 'string' &&
+    USERNAME_REGEX.test(response.username) &&
     isActivationRole(response.role) &&
     typeof response.expires_at === 'string'
   );
@@ -83,7 +119,11 @@ const readJson = async (response: Response): Promise<unknown> => {
   try {
     return await response.json();
   } catch {
-    throw new ActivationApiError(502, 'invalid_response', 'Resposta de ativacao fora do contrato.');
+    throw new ActivationApiError(
+      502,
+      'upstream_invalid_response',
+      'Resposta de ativacao fora do contrato.'
+    );
   }
 };
 
@@ -106,15 +146,17 @@ const activationRequest = async (
   });
 
   if (!response.ok) {
-    throw new ActivationApiError(
-      response.status,
-      activationErrorCode(response.status),
-      activationErrorMessage(response.status)
-    );
+    const code = await readPublicErrorCode(response);
+
+    throw new ActivationApiError(response.status, code, activationErrorMessage(response.status));
   }
 
   if (response.status !== expectedStatus) {
-    throw new ActivationApiError(502, 'invalid_response', 'Resposta de ativacao fora do contrato.');
+    throw new ActivationApiError(
+      502,
+      'upstream_invalid_response',
+      'Resposta de ativacao fora do contrato.'
+    );
   }
 
   return readJson(response);
@@ -132,19 +174,19 @@ const mockActivation = async (token: string): Promise<ActivationValidationRespon
 
   const scenario = token.slice('mock:'.length);
   if (scenario === 'not-found') {
-    throw new ActivationApiError(404, 'token_not_found', activationErrorMessage(404));
+    throw new ActivationApiError(404, 'activation_not_found', activationErrorMessage(404));
   }
   if (scenario === 'expired' || scenario === 'used' || scenario === 'revoked') {
-    throw new ActivationApiError(410, 'token_unavailable', activationErrorMessage(410));
+    throw new ActivationApiError(410, 'activation_unavailable', activationErrorMessage(410));
   }
   if (scenario === 'conflict') {
-    throw new ActivationApiError(409, 'identity_unavailable', activationErrorMessage(409));
+    throw new ActivationApiError(409, 'activation_conflict', activationErrorMessage(409));
   }
   if (scenario === 'rate-limit') {
     throw new ActivationApiError(429, 'rate_limited', activationErrorMessage(429));
   }
   if (scenario === 'unavailable') {
-    throw new ActivationApiError(503, 'backend_unavailable', activationErrorMessage(503));
+    throw new ActivationApiError(503, 'service_unavailable', activationErrorMessage(503));
   }
   if (scenario === 'network') {
     throw new TypeError('Failed to fetch');
@@ -168,16 +210,16 @@ const mockRegistration = async (
 
   const scenario = token.slice('mock:'.length);
   if (scenario === 'invalid-password') {
-    throw new ActivationApiError(422, 'invalid_password', activationErrorMessage(422));
+    throw new ActivationApiError(422, 'password_policy_violation', activationErrorMessage(422));
   }
   if (scenario === 'register-conflict') {
-    throw new ActivationApiError(409, 'identity_unavailable', activationErrorMessage(409));
+    throw new ActivationApiError(409, 'activation_conflict', activationErrorMessage(409));
   }
   if (scenario === 'register-rate-limit') {
     throw new ActivationApiError(429, 'rate_limited', activationErrorMessage(429));
   }
   if (scenario === 'register-unavailable') {
-    throw new ActivationApiError(503, 'backend_unavailable', activationErrorMessage(503));
+    throw new ActivationApiError(503, 'service_unavailable', activationErrorMessage(503));
   }
   if (scenario === 'register-network') {
     throw new TypeError('Failed to fetch');
@@ -200,7 +242,11 @@ export const validateActivation = async (
   });
 
   if (!isActivationValidationResponse(payload)) {
-    throw new ActivationApiError(502, 'invalid_response', 'Resposta de ativacao fora do contrato.');
+    throw new ActivationApiError(
+      502,
+      'upstream_invalid_response',
+      'Resposta de ativacao fora do contrato.'
+    );
   }
 
   return payload;
@@ -221,7 +267,11 @@ export const registerActivation = async (
   });
 
   if (!isRegistrationResponse(payload)) {
-    throw new ActivationApiError(502, 'invalid_response', 'Resposta de ativacao fora do contrato.');
+    throw new ActivationApiError(
+      502,
+      'upstream_invalid_response',
+      'Resposta de ativacao fora do contrato.'
+    );
   }
 
   return payload;
