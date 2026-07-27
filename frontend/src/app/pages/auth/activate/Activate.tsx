@@ -6,7 +6,6 @@ import { PasswordInput } from '../../../components/password-input';
 import { useClientConfig } from '../../../hooks/useClientConfig';
 import { FieldError } from '../FiledError';
 import { getLoginPath, withSearchParam } from '../../pathUtils';
-import { LoginPathSearchParams } from '../../paths';
 import {
   ActivationApiError,
   ActivationRole,
@@ -36,6 +35,9 @@ type ActivationState =
       activation: ActivationValidationResponse;
     }
   | {
+      status: 'success';
+    }
+  | {
       status: 'error';
       error: unknown;
     };
@@ -53,13 +55,8 @@ const readActivationTokenFromLocation = (): string => {
 };
 
 const removeActivationHashFromLocation = () => {
-  const { pathname, search } = window.location;
-  window.history.replaceState(window.history.state, document.title, `${pathname}${search}`);
-};
-
-const getUsernameFromMatrixId = (userId: string): string | undefined => {
-  const match = /^@([^:]+):.+$/.exec(userId);
-  return match?.[1];
+  const { pathname } = window.location;
+  window.history.replaceState(window.history.state, document.title, pathname);
 };
 
 const formatExpiration = (expiresAt: string): string => {
@@ -80,13 +77,13 @@ const getPasswordError = (password: string): string | undefined => {
 
 const getActivationErrorCopy = (error: unknown): ErrorCopy => {
   if (error instanceof ActivationApiError) {
-    if (error.code === 'token_not_found' || error.code === 'token_unavailable') {
+    if (error.code === 'activation_not_found' || error.code === 'activation_unavailable') {
       return {
         title: 'Link de ativação indisponível',
         message: 'O link está inválido, expirado, usado ou revogado.',
       };
     }
-    if (error.code === 'identity_unavailable') {
+    if (error.code === 'activation_conflict') {
       return {
         title: 'Identidade indisponível',
         message: 'A conta definida para este link precisa ser revisada pela administração.',
@@ -98,10 +95,16 @@ const getActivationErrorCopy = (error: unknown): ErrorCopy => {
         message: 'Aguarde alguns minutos antes de tentar ativar a conta novamente.',
       };
     }
-    if (error.code === 'invalid_password') {
+    if (error.code === 'password_policy_violation') {
       return {
         title: 'Senha não aceita',
         message: 'Use uma senha entre 15 e 128 caracteres.',
+      };
+    }
+    if (error.code === 'invalid_request') {
+      return {
+        title: 'Solicitação inválida',
+        message: 'Abra novamente o link enviado pela administração.',
       };
     }
     if (error.code === 'access_denied') {
@@ -110,10 +113,16 @@ const getActivationErrorCopy = (error: unknown): ErrorCopy => {
         message: 'O serviço recusou esta ativação.',
       };
     }
-    if (error.code === 'invalid_response') {
+    if (error.code === 'upstream_invalid_response') {
       return {
         title: 'Resposta inesperada',
         message: 'O serviço de ativação respondeu fora do contrato combinado.',
+      };
+    }
+    if (error.code === 'service_unavailable') {
+      return {
+        title: 'Serviço de ativação indisponível',
+        message: 'Não foi possível concluir a ativação agora.',
       };
     }
   }
@@ -233,7 +242,7 @@ export function Activate() {
     tokenReadRef.current = true;
 
     const token = readActivationTokenFromLocation();
-    if (window.location.hash) {
+    if (window.location.hash || window.location.search) {
       removeActivationHashFromLocation();
     }
 
@@ -298,24 +307,24 @@ export function Activate() {
       if (registration.user_id !== activationState.activation.target_user_id) {
         throw new ActivationApiError(
           502,
-          'invalid_response',
+          'upstream_invalid_response',
           'Resposta de ativacao fora do contrato.'
         );
       }
 
-      const username =
-        activationState.activation.username || getUsernameFromMatrixId(registration.user_id);
+      const { username } = activationState.activation;
       if (!username) {
         throw new ActivationApiError(
           502,
-          'invalid_response',
+          'upstream_invalid_response',
           'Resposta de ativacao fora do contrato.'
         );
       }
 
       tokenRef.current = undefined;
       passwordInput.value = '';
-      navigate(withSearchParam<LoginPathSearchParams>(getLoginPath(), { username }), {
+      setActivationState({ status: 'success' });
+      navigate(withSearchParam(getLoginPath(), { username }), {
         replace: true,
       });
     } catch (error) {
@@ -387,6 +396,10 @@ export function Activate() {
     );
   }
 
+  if (activationState.status === 'success') {
+    return <ActivationLoading message="Conta ativada. Redirecionando para login..." />;
+  }
+
   const { activation } = activationState;
   const submissionErrorCopy = submissionError ? getActivationErrorCopy(submissionError) : undefined;
 
@@ -403,11 +416,12 @@ export function Activate() {
 
       <Box direction="Column" gap="300">
         <Box direction="Column" gap="100">
-          <Text as="label" size="L400" priority="300">
-            Identidade
+          <Text as="label" htmlFor="activation-username" size="L400" priority="300">
+            Usuário
           </Text>
           <Input
-            value={activation.target_user_id}
+            id="activation-username"
+            value={activation.username}
             variant="Background"
             size="500"
             readOnly
@@ -415,10 +429,11 @@ export function Activate() {
           />
         </Box>
         <Box direction="Column" gap="100">
-          <Text as="label" size="L400" priority="300">
+          <Text as="label" htmlFor="activation-role" size="L400" priority="300">
             Papel
           </Text>
           <Input
+            id="activation-role"
             value={ROLE_LABEL[activation.role]}
             variant="Background"
             size="500"
@@ -432,10 +447,11 @@ export function Activate() {
       </Box>
 
       <Box direction="Column" gap="100">
-        <Text as="label" size="L400" priority="300">
+        <Text as="label" htmlFor="activation-password" size="L400" priority="300">
           Senha
         </Text>
         <PasswordInput
+          id="activation-password"
           name="passwordInput"
           variant="Background"
           size="500"
