@@ -8,6 +8,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session, sessionmaker
 
 from social_internal_backend.accounts import AccountService
+from social_internal_backend.activations import ActivationValidationService
 from social_internal_backend.authorization import (
     AuthorizedPlatformAdmin,
     CorporateUserAccessDeniedError,
@@ -98,6 +99,40 @@ def get_invitation_issuance_service(
 InvitationIssuanceServiceDependency = Annotated[
     InvitationService,
     Depends(get_invitation_issuance_service),
+]
+
+
+def get_activation_validation_service(
+    settings: AppSettings,
+    session: DatabaseSession,
+) -> Iterator[ActivationValidationService]:
+    """Monta a pré-validação sem expor a credencial administrativa."""
+
+    try:
+        client = SynapseAdminClient(
+            base_url=str(settings.synapse_base_url),
+            timeout_seconds=settings.synapse_request_timeout_seconds,
+            matrix_server_name=settings.matrix_server_name,
+            admin_access_token=settings.synapse_admin_access_token,
+        )
+    except InvalidSynapseAdminCredentialError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Activation validation is not configured",
+            headers=NO_STORE_HEADERS,
+        ) from None
+
+    with client:
+        yield ActivationValidationService(
+            session,
+            identity_provider=client,
+            matrix_server_name=settings.matrix_server_name,
+        )
+
+
+ActivationValidationServiceDependency = Annotated[
+    ActivationValidationService,
+    Depends(get_activation_validation_service),
 ]
 
 
