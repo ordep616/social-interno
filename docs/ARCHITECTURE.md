@@ -180,6 +180,9 @@ O diretório `contracts/` será criado somente quando uma extensão corporativa 
 - Autorização administrativa sempre revalidada no backend, independentemente
   da visibilidade do botão.
 - Limites de requisição e upload configurados.
+- O PostgreSQL próprio mantém contadores separados de pré-validação e cadastro
+  apenas para convites conhecidos, em janelas de 15 minutos. Os registros
+  expiram uma hora após o fim da janela e possuem limpeza periódica obrigatória.
 - Cabeçalhos encaminhados de origem só são aceitos de proxies confiáveis; CORS
   não substitui autenticação nem limite na borda.
 - Política explícita para criptografia ponta a ponta, recuperação e auditoria.

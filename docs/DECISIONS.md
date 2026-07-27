@@ -397,16 +397,20 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
   estados protegidos. Essa padronização não autoriza a implementação do
   endpoint de cadastro.
 - Limite em camadas: a configuração inicial é de 100 requisições por origem a cada
-  15 minutos na borda e 10 pré-validações por hash de convite existente a
-  cada 15 minutos no PostgreSQL próprio. A ativação terá contador separado.
+  15 minutos na borda, 10 pré-validações por hash de convite existente a cada
+  15 minutos no PostgreSQL próprio e 5 tentativas de cadastro por hash de
+  convite existente na mesma janela. Pré-validação e cadastro terão contadores
+  separados.
   Tokens desconhecidos não criarão linhas no limitador; serão contidos pela
   borda para impedir crescimento arbitrário do banco.
 - Persistência do limite: a futura estrutura guardará somente tipo do
   contador, hash já derivado, janela, quantidade e expiração operacional. Não
   guardará token aberto nem IP, que permanecerá responsabilidade da borda.
-  Atualizações serão atômicas e resistentes à concorrência. A retenção será
-  curta e limitada, com limpeza obrigatória; o prazo exato será aprovado antes
-  da migração.
+  Atualizações serão atômicas e resistentes à concorrência. Cada contador
+  expirará operacionalmente uma hora após o fim da janela de 15 minutos e
+  poderá ser removido a partir desse instante. A limpeza será obrigatória,
+  periódica e idempotente. Um registro vencido nunca poderá autorizar nem
+  bloquear uma requisição, mesmo antes da remoção física.
 - Confiança de rede: a borda limitará o corpo inicialmente a 1 KiB e só
   aceitará cabeçalhos de endereço encaminhado de proxies explicitamente
   confiáveis. CORS restringirá navegadores conhecidos, mas não será descrito
@@ -440,5 +444,5 @@ Não apague decisões antigas. Quando algo mudar, marque a decisão anterior com
 - Licença do código próprio.
 - Política de retenção.
 - Nome e identidade visual definitivos; os textos genéricos atuais são provisórios.
-- Definição do prazo exato de retenção do limitador e confirmação dos
-  parâmetros finais da borda antes da migração de `DEC-024`.
+- Confirmação dos parâmetros finais da borda antes da publicação das rotas de
+  ativação de `DEC-024`.
